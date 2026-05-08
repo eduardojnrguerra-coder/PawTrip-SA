@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200">
+  <rect width="1200" height="1200" fill="#f7efe4"/>
+  <rect x="70" y="70" width="1060" height="1060" rx="64" fill="#ffffff"/>
+  <rect x="180" y="290" width="840" height="560" rx="54" fill="#174132"/>
+  <circle cx="410" cy="620" r="100" fill="#cb7b37"/>
+  <circle cx="790" cy="620" r="100" fill="#f6d6bf"/>
+  <text x="600" y="980" font-family="Arial, sans-serif" font-size="70" text-anchor="middle" fill="#174132">Travel Bowl Set</text>
+</svg>

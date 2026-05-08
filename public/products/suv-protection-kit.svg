@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200">
+  <rect width="1200" height="1200" fill="#f7efe4"/>
+  <rect x="70" y="70" width="1060" height="1060" rx="64" fill="#ffffff"/>
+  <rect x="150" y="260" width="900" height="620" rx="56" fill="#0f3025"/>
+  <rect x="260" y="380" width="680" height="360" rx="40" fill="#cb7b37"/>
+  <text x="600" y="980" font-family="Arial, sans-serif" font-size="68" text-anchor="middle" fill="#174132">SUV Protection Kit</text>
+</svg>

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200">
+  <rect width="1200" height="1200" fill="#f7efe4"/>
+  <rect x="70" y="70" width="1060" height="1060" rx="64" fill="#ffffff"/>
+  <rect x="170" y="280" width="860" height="580" rx="50" fill="#174132"/>
+  <rect x="290" y="420" width="620" height="300" rx="38" fill="#f6d6bf"/>
+  <text x="600" y="980" font-family="Arial, sans-serif" font-size="62" text-anchor="middle" fill="#174132">Senior Dog Travel Kit</text>
+</svg>
