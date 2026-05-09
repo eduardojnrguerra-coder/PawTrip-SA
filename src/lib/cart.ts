@@ -52,7 +52,7 @@ export function calculateCartTotals(items: CartItem[], products: Product[]) {
   }>;
 
   const subtotal = detailed.reduce((sum, item) => sum + item.lineTotal, 0);
-  const deliveryFee = calculateDeliveryFee(subtotal);
+  const deliveryFee = calculateDeliveryFee(detailed);
   return {
     items: detailed,
     subtotal,

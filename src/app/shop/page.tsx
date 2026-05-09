@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { ShopBrowser } from '@/components/shop-browser';
-import { categories, products } from '@/data/products';
+import { categories, publicProducts as products } from '@/data/products';
 import { pageMetadata } from '@/lib/seo';
 import { ProductCard } from '@/components/product-card';
 import { Reveal } from '@/components/reveal';

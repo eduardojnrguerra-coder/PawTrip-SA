@@ -109,6 +109,12 @@ export function CartPageClient() {
               <p>Pay through PayFast. Orders are processed after payment confirmation.</p>
             </div>
           </div>
+          <div className="checkoutTrustStrip">
+            <span>Secure PayFast checkout</span>
+            <span>Card details handled by PayFast</span>
+            <span>Delivery shown before payment</span>
+            <span>Support before paying</span>
+          </div>
           <div className="summaryRow totalRow">
             <span>Total</span>
             <strong>{formatZar(totals.total)}</strong>

@@ -1,12 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowRight, BadgeCheck, Car, CheckCircle2, HelpCircle, ShieldCheck, Sparkles, Wand2 } from 'lucide-react';
+import { ArrowRight, BadgeCheck, Bone, Car, CheckCircle2, Dog, Gauge, HelpCircle, ShieldCheck, Sparkles, Waves, Wand2 } from 'lucide-react';
 import { AnimatedHero } from '@/components/animated-hero';
 import { EmailCaptureBanner } from '@/components/email-capture-banner';
 import { KitFinderPreview } from '@/components/kit-finder-preview';
 import { ProductCard } from '@/components/product-card';
 import { Reveal } from '@/components/reveal';
 import { collections } from '@/data/collections';
+import { blogPosts } from '@/data/blog';
 import { categories, getFeaturedProducts, products } from '@/lib/catalog';
 import { pageMetadata } from '@/lib/seo';
 
@@ -25,27 +26,39 @@ export const metadata: Metadata = pageMetadata({
 
 const shopNeeds = [
   {
-    title: 'Cleaner cars',
-    copy: 'Seat covers, boot liners and cleanup tools for hair, mud and beach sand.',
+    title: 'Dog hair everywhere',
+    copy: 'Seat covers, boot liners and hair tools for the fur that somehow reaches the dashboard.',
     href: '/collections/car-protection-essentials',
     icon: <Car size={20} />,
   },
   {
-    title: 'Travel-ready kits',
-    copy: 'Bundles for road trips, SUVs, beach days and senior dog access.',
-    href: '/shop/category/travel-kits',
-    icon: <ShieldCheck size={20} />,
+    title: 'Muddy beach paws',
+    copy: 'Towels, bowls and beach-ready kits for sandy returns and wet-dog logistics.',
+    href: '/blog/best-dog-travel-accessories-beach-trips',
+    icon: <Waves size={20} />,
   },
   {
-    title: 'Bored dog fixes',
-    copy: 'Chew, sniff, lick and puzzle products for better outlets at home or away.',
+    title: 'Bored chewing',
+    copy: 'Chew, sniff, lick and puzzle products for dogs with demolition energy.',
     href: '/collections/bored-dog-fixes',
-    icon: <Sparkles size={20} />,
+    icon: <Bone size={20} />,
   },
   {
-    title: 'New dog owner basics',
-    copy: 'A calmer first setup for training, feeding, walking and car trips.',
+    title: 'Fast eating',
+    copy: 'Slow feeders and mats for meals that should not look like a motorsport event.',
+    href: '/blog/best-slow-feeder-bowls-dogs-south-africa',
+    icon: <Gauge size={20} />,
+  },
+  {
+    title: 'Puppy training',
+    copy: 'Starter-kit basics for tiny teeth, treats and everyday puppy admin.',
     href: '/collections/top-picks-new-dog-owners',
+    icon: <Dog size={20} />,
+  },
+  {
+    title: 'Senior dog access',
+    copy: 'Travel support for older dogs who need a kinder way into the car.',
+    href: '/shop/product/senior-dog-travel-kit',
     icon: <BadgeCheck size={20} />,
   },
 ];
@@ -77,6 +90,7 @@ export default function HomePage() {
   const coreCategories = categories.filter((category) =>
     ['travel-kits', 'car-protection', 'toys', 'grooming'].includes(category.slug),
   );
+  const guideTeasers = blogPosts.slice(0, 3);
 
   return (
     <>
@@ -96,8 +110,8 @@ export default function HomePage() {
           <Reveal>
             <div className="sectionHeader sectionHeaderInline">
               <div>
-                <span className="eyebrow">Shop by need</span>
-                <h2>Start with the problem you want solved.</h2>
+                <span className="eyebrow">Shop by your dog&apos;s chaos</span>
+                <h2>Start with the mess, not the menu.</h2>
               </div>
               <Link href="/find-my-kit" className="button buttonSecondary buttonSheen">
                 Find My Kit <ArrowRight size={15} />
@@ -114,6 +128,40 @@ export default function HomePage() {
                 </Link>
               </Reveal>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section premiumHomeSection cleanCarStory">
+        <div className="container cleanCarPanel">
+          <Reveal>
+            <div className="cleanCarCopy">
+              <span className="eyebrow">Clean car setup</span>
+              <h2>Before: mystery fur. After: a car you can offer someone a lift in.</h2>
+              <p>
+                Build around one protected travel zone, then add a towel, brush or bowl only when it solves the next
+                obvious problem.
+              </p>
+              <Link href="/collections/car-protection-essentials" className="button buttonPrimary buttonSheen">
+                Shop car protection <ArrowRight size={15} />
+              </Link>
+            </div>
+          </Reveal>
+          <div className="beforeAfterGrid">
+            <Reveal>
+              <div className="beforeAfterCard beforeCard">
+                <span>Before</span>
+                <strong>Hair, sand, wet paws</strong>
+                <p>The classic post-park upholstery situation.</p>
+              </div>
+            </Reveal>
+            <Reveal delay={0.06}>
+              <div className="beforeAfterCard afterCard">
+                <span>After</span>
+                <strong>Protected, wipeable, calmer</strong>
+                <p>A reset-friendly setup for real dog travel.</p>
+              </div>
+            </Reveal>
           </div>
         </div>
       </section>
@@ -186,6 +234,34 @@ export default function HomePage() {
                   <strong>{title}</strong>
                   <p>{copy}</p>
                 </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section premiumHomeSection blogTeaserHome">
+        <div className="container">
+          <Reveal>
+            <div className="sectionHeader sectionHeaderInline">
+              <div>
+                <span className="eyebrow">Guides with personality</span>
+                <h2>Dog advice for fewer tiny disasters.</h2>
+                <p>Funny, practical reads for hair, mud, road trips, feeding and bored-dog chaos.</p>
+              </div>
+              <Link href="/blog" className="button buttonSecondary buttonSheen">
+                Read guides
+              </Link>
+            </div>
+          </Reveal>
+          <div className="homeGuideGrid">
+            {guideTeasers.map((post, index) => (
+              <Reveal key={post.slug} delay={index * 0.04}>
+                <Link href={`/blog/${post.slug}`} className="homeGuideCard">
+                  <span>{post.category}</span>
+                  <strong>{post.title}</strong>
+                  <p>{post.funnyHook || post.excerpt}</p>
+                </Link>
               </Reveal>
             ))}
           </div>

@@ -95,9 +95,12 @@ export function productSchema(product: Product) {
     itemCondition: 'https://schema.org/NewCondition',
   };
 
-  if (product.availability === 'in_stock') {
-    offer.availability = 'https://schema.org/InStock';
-  }
+  offer.availability =
+    product.availability === 'in_stock'
+      ? 'https://schema.org/InStock'
+      : product.availability === 'unavailable'
+        ? 'https://schema.org/OutOfStock'
+        : 'https://schema.org/PreOrder';
 
   return {
     '@context': 'https://schema.org',

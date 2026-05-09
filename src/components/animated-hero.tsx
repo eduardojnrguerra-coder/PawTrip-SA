@@ -8,7 +8,7 @@ import { formatZar } from '@/lib/money';
 import { getProductImageAlt, ProductImage } from '@/components/product-image';
 import { HeroRoute } from '@/components/hero-route';
 
-const floatingBadges = ['Waterproof protection', 'Easy clean-up', 'Fast-fit design', 'Comfort-first setup', 'SA-focused picks'];
+const floatingBadges = ['Mud-proof car setup', 'Best for beach dogs', 'Boredom buster picks', 'Secure checkout', 'No fake reviews'];
 
 const copyContainer: Variants = {
   hidden: { opacity: 0 },
@@ -44,21 +44,24 @@ export function AnimatedHero({ products }: { products: Product[] }) {
           <motion.span className="eyebrow" variants={copyItem}>
             South African pet travel & essentials store
           </motion.span>
-          <motion.h1 variants={copyItem}>Travel better with your dog.</motion.h1>
+          <motion.div className="saStoreBadge" variants={copyItem}>
+            South African store
+          </motion.div>
+          <motion.h1 variants={copyItem}>Cleaner cars. Calmer dogs. Better trips.</motion.h1>
           <motion.p variants={copyItem}>
-            Premium dog travel kits, car protection and practical everyday essentials selected for cleaner cars,
-            calmer routines and happier South African road trips.
+            Dog travel kits, car protection and everyday essentials for South African pet owners dealing with hair,
+            mud, sand, boredom and road-trip chaos.
           </motion.p>
           <div className="heroActions">
             <motion.div variants={copyItem}>
-              <Link href="/shop" className="button buttonPrimary buttonSheen">
-                Shop Best Sellers
-                <ArrowRight size={16} />
+              <Link href="/find-my-kit" className="button buttonPrimary buttonSheen">
+                Find My Kit
               </Link>
             </motion.div>
             <motion.div variants={copyItem}>
-              <Link href="/find-my-kit" className="button buttonSecondary buttonSheen">
-                Find My Kit
+              <Link href="/shop" className="button buttonSecondary buttonSheen">
+                Shop Best Sellers
+                <ArrowRight size={16} />
               </Link>
             </motion.div>
           </div>

@@ -12,10 +12,15 @@ export function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart();
   const reduceMotion = useReducedMotion();
   const savings = Math.max(0, product.compareAtPrice - product.price);
+  const problemHeadline = product.problemsSolved?.[0] ?? product.shortDescription;
+  const whyItHelps = product.benefits?.[0] ?? product.shortDescription;
+
+  if (!product.launchVisible || !product.imageReady) return null;
 
   return (
     <motion.article className="productCard" whileHover={reduceMotion ? undefined : { y: -6 }} transition={{ duration: 0.2 }}>
       <Link href={`/shop/product/${product.slug}`} className="productCardMedia">
+        <span className="productMediaBadge">{product.isBundle ? 'Starter kit' : product.categoryName}</span>
         <ProductImage
           src={product.image}
           alt={getProductImageAlt(product.name, product.category)}
@@ -36,7 +41,10 @@ export function ProductCard({ product }: { product: Product }) {
         <Link href={`/shop/product/${product.slug}`} className="productName">
           {product.name}
         </Link>
-        <p>{product.shortDescription}</p>
+        <p className="productProblemLine">{problemHeadline}</p>
+        <p className="productWhyLine">
+          <strong>Why it helps:</strong> {whyItHelps}
+        </p>
         <div className="priceRow">
           <strong>{formatZar(product.price)}</strong>
           <span>{formatZar(product.compareAtPrice)}</span>

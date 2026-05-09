@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { QuizClient } from '@/components/quiz-client';
-import { products } from '@/data/products';
+import { publicProducts } from '@/data/products';
 import { pageMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = pageMetadata({
@@ -21,7 +21,7 @@ export default function FindMyKitPage() {
             without product overload.
           </p>
         </div>
-        <QuizClient products={products} />
+        <QuizClient products={publicProducts} />
       </div>
     </section>
   );

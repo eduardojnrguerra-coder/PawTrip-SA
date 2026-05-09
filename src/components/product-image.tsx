@@ -32,7 +32,7 @@ export function ProductImage({ src, alt, productName, category, className, image
         <div className="placeholderMark">P</div>
         <strong>PawTrip SA</strong>
         <span>{category}</span>
-        <p>Product image coming soon</p>
+        {process.env.NODE_ENV === 'development' ? <p>Product image coming soon</p> : null}
       </div>
     );
   }
@@ -49,4 +49,3 @@ export function ProductImage({ src, alt, productName, category, className, image
     />
   );
 }
-

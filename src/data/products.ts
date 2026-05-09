@@ -47,7 +47,9 @@ export type Product = {
   relatedProductSlugs: string[];
   sourcePermissionStatus: 'needs_supplier_images' | 'supplier_permission_confirmed' | 'original_photos_needed';
   availability: 'in_stock' | 'checking_availability' | 'made_to_order' | 'unavailable';
-  shippingClass: 'standard' | 'bulky' | 'fragile' | 'digital';
+  shippingClass: 'small' | 'standard' | 'bulky' | 'oversized';
+  imageReady: boolean;
+  launchVisible: boolean;
   featured?: boolean;
   problemsSolved: string[];
   faqs: Array<{ question: string; answer: string }>;
@@ -135,7 +137,24 @@ function defaultHowToUse(entry: { name: string; isBundle: boolean; categoryGroup
   ];
 }
 
-function makeProduct(entry: Omit<InternalProduct, 'categorySlug' | 'categoryName' | 'galleryImages' | 'qualityNotes' | 'material' | 'dimensions' | 'notIdealFor' | 'compatibility' | 'howToUse' | 'sourcePermissionStatus' | 'availability' | 'shippingClass' | 'longDescription' | 'included' | 'care' | 'returnsNote' | 'keywords' | 'problemsSolved' | 'faqs' | 'benefits' | 'supplierName' | 'supplierUrl'> & {
+function productImageFor(entry: { slug: string; isBundle: boolean; categoryGroup: keyof typeof categoryMap }) {
+  if (entry.slug.includes('road-trip')) return '/products/road-trip-starter-kit.svg';
+  if (entry.slug.includes('suv-protection')) return '/products/suv-protection-kit.svg';
+  if (entry.slug.includes('beach-dog')) return '/products/beach-dog-kit.svg';
+  if (entry.slug.includes('senior-dog')) return '/products/senior-dog-travel-kit.svg';
+  if (entry.slug.includes('boredom-buster')) return '/products/boredom-buster-toy-kit.svg';
+  if (entry.slug.includes('grooming-starter')) return '/products/grooming-starter-kit.svg';
+  if (entry.slug.includes('slow-feeder')) return '/products/slow-feeder-bowl.svg';
+  if (entry.categoryGroup === 'car') return entry.slug.includes('boot') || entry.slug.includes('suv') ? '/products/cargo-liner.svg' : '/products/dog-seat-cover.svg';
+  if (entry.categoryGroup === 'toys') return '/products/tough-chew-toy-pack.svg';
+  if (entry.categoryGroup === 'grooming') return '/products/grooming-brush.svg';
+  if (entry.categoryGroup === 'walking') return '/products/everyday-walking-harness.svg';
+  if (entry.categoryGroup === 'comfort') return '/products/comfort-rest-mat.svg';
+  if (entry.categoryGroup === 'feeding' || entry.categoryGroup === 'treats') return '/products/slow-feeder-bowl.svg';
+  return '/products/road-trip-starter-kit.svg';
+}
+
+function makeProduct(entry: Omit<InternalProduct, 'categorySlug' | 'categoryName' | 'galleryImages' | 'qualityNotes' | 'material' | 'dimensions' | 'notIdealFor' | 'compatibility' | 'howToUse' | 'sourcePermissionStatus' | 'availability' | 'shippingClass' | 'imageReady' | 'launchVisible' | 'longDescription' | 'included' | 'care' | 'returnsNote' | 'keywords' | 'problemsSolved' | 'faqs' | 'benefits' | 'supplierName' | 'supplierUrl'> & {
   categoryGroup: keyof typeof categoryMap;
   galleryImages?: string[];
   qualityNotes?: string[];
@@ -147,6 +166,8 @@ function makeProduct(entry: Omit<InternalProduct, 'categorySlug' | 'categoryName
   sourcePermissionStatus?: Product['sourcePermissionStatus'];
   availability?: Product['availability'];
   shippingClass?: Product['shippingClass'];
+  imageReady?: boolean;
+  launchVisible?: boolean;
   longDescription?: string;
   included?: string[];
   care?: string[];
@@ -156,12 +177,15 @@ function makeProduct(entry: Omit<InternalProduct, 'categorySlug' | 'categoryName
   benefits?: string[];
 }): InternalProduct {
   const category = categoryMap[entry.categoryGroup];
+  const publicImage = productImageFor(entry);
   return {
     ...entry,
+    image: publicImage,
+    gallery: [publicImage],
     category: entry.category,
     categorySlug: category.slug,
     categoryName: category.name,
-    galleryImages: entry.galleryImages ?? entry.gallery,
+    galleryImages: entry.galleryImages ?? [publicImage],
     qualityNotes: entry.qualityNotes ?? defaultQualityNotes(entry),
     material: entry.material ?? defaultMaterial(entry),
     dimensions: entry.dimensions ?? entry.measurements,
@@ -178,7 +202,9 @@ function makeProduct(entry: Omit<InternalProduct, 'categorySlug' | 'categoryName
     howToUse: entry.howToUse ?? defaultHowToUse(entry),
     sourcePermissionStatus: entry.sourcePermissionStatus ?? 'needs_supplier_images',
     availability: entry.availability ?? 'checking_availability',
-    shippingClass: entry.shippingClass ?? (entry.slug.includes('ramp') ? 'bulky' : 'standard'),
+    shippingClass: entry.shippingClass ?? (entry.slug.includes('ramp') ? 'oversized' : entry.isBundle ? 'bulky' : entry.price < 200 ? 'small' : 'standard'),
+    imageReady: entry.imageReady ?? true,
+    launchVisible: entry.launchVisible ?? true,
     longDescription: entry.longDescription ?? entry.fullDescription,
     included: entry.whatsIncluded,
     care: entry.careInstructions,
@@ -199,6 +225,10 @@ function makeProduct(entry: Omit<InternalProduct, 'categorySlug' | 'categoryName
     supplierName: '',
     supplierUrl: '',
   };
+}
+
+export function isPublicProduct(product: Product) {
+  return product.launchVisible && product.imageReady;
 }
 
 export const categories: Category[] = [
@@ -1826,9 +1856,10 @@ export const internalProducts: InternalProduct[] = productsData.map((product) =>
 }));
 
 export const products: Product[] = internalProducts.map(({ supplierCostEstimate, supplierNotes, ...product }) => product);
+export const publicProducts = products.filter(isPublicProduct);
 
 export function getProductBySlug(slug: string) {
-  return products.find((product) => product.slug === slug);
+  return publicProducts.find((product) => product.slug === slug);
 }
 
 export function getCategoryBySlug(slug: string) {
@@ -1836,7 +1867,7 @@ export function getCategoryBySlug(slug: string) {
 }
 
 export function getProductsByCategory(slug: CategorySlug) {
-  return products.filter((product) => product.categorySlug === slug);
+  return publicProducts.filter((product) => product.categorySlug === slug);
 }
 
 export function getRelatedProducts(product: Product) {
@@ -1844,18 +1875,18 @@ export function getRelatedProducts(product: Product) {
     .map((slug) => getProductBySlug(slug))
     .filter(Boolean) as Product[];
   if (explicit.length) return explicit.slice(0, 4);
-  return products
+  return publicProducts
     .filter((entry) => entry.slug !== product.slug && entry.categorySlug === product.categorySlug)
     .slice(0, 4);
 }
 
 export function getFeaturedProducts() {
-  return products.filter((product) => product.featured);
+  return publicProducts.filter((product) => product.featured);
 }
 
 export function searchProducts(query: string, categorySlug?: string) {
   const term = query.trim().toLowerCase();
-  return products.filter((product) => {
+  return publicProducts.filter((product) => {
     const matchesCategory = !categorySlug || categorySlug === 'all' || product.categorySlug === categorySlug;
     const matchesQuery =
       !term ||

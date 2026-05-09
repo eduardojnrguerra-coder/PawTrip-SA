@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { products } from '@/data/products';
+import { publicProducts as products } from '@/data/products';
 import { calculateCartTotals, type CartItem, type PendingOrder } from '@/lib/cart';
 import { createPayFastPayment, generateOrderReference } from '@/lib/payfast';
 import { createSupabaseOrder } from '@/lib/supabase';

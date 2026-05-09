@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { FileText, Headphones, Loader2, LockKeyhole, MapPin, PackageCheck, ShieldCheck, Truck } from 'lucide-react';
 import { useCart } from '@/components/cart-provider';
 import { calculateCartTotals, type PendingOrder, PENDING_ORDER_KEY } from '@/lib/cart';
-import { formatZar } from '@/lib/money';
+import { formatZar, shippingClassFees } from '@/lib/money';
 import { trackEvent } from '@/lib/analytics';
 
 type FormState = {
@@ -342,6 +342,13 @@ export function CheckoutForm() {
             <span>Delivery fee</span>
             <strong>{formatZar(totals.deliveryFee)}</strong>
           </div>
+          <div className="shippingClassBox">
+            <strong>Shipping classes</strong>
+            <p>
+              Small {formatZar(shippingClassFees.small)} | Standard {formatZar(shippingClassFees.standard)} | Bulky{' '}
+              {formatZar(shippingClassFees.bulky)} | Oversized {formatZar(shippingClassFees.oversized)}
+            </p>
+          </div>
           {savings > 0 ? (
             <div className="summaryRow savingsRow">
               <span>Savings from compare-at prices</span>
@@ -359,6 +366,12 @@ export function CheckoutForm() {
               <strong>Secure online payment</strong>
               <p>You will be redirected to PayFast. PawTrip SA does not store your card details.</p>
             </div>
+          </div>
+          <div className="checkoutTrustStrip">
+            <span>Secure PayFast checkout</span>
+            <span>Card details handled by PayFast</span>
+            <span>Delivery shown before payment</span>
+            <span>Support before paying</span>
           </div>
           <div className="trustBlock">
             <MapPin size={18} />

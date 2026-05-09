@@ -1,13 +1,14 @@
-import { blogArticles, categories, categorySeoCopy, products, type CategorySlug, type Product } from '@/data/products';
+import { blogArticles, categories, categorySeoCopy, publicProducts, products as allProducts, type CategorySlug, type Product } from '@/data/products';
 import { blogPosts } from '@/data/blog';
 export { calculateDeliveryFee, formatZar } from '@/lib/money';
 
-export { products } from '@/data/products';
+export const products = publicProducts;
+export const allProductsForOperations = allProducts;
 export { blogPosts } from '@/data/blog';
 export { categories, categorySeoCopy };
 
 export function getProductBySlug(slug: string) {
-  return products.find((product) => product.slug === slug);
+  return publicProducts.find((product) => product.slug === slug);
 }
 
 export function getCategoryBySlug(slug: string) {
@@ -16,28 +17,28 @@ export function getCategoryBySlug(slug: string) {
 
 export function getProductsByCategory(slug: CategorySlug) {
   if (slug === 'puppy-essentials') {
-    return products.filter((product) => product.tags.some((tag) => tag.toLowerCase().includes('puppy')) || product.slug.includes('puppy'));
+    return publicProducts.filter((product) => product.tags.some((tag) => tag.toLowerCase().includes('puppy')) || product.slug.includes('puppy'));
   }
-  return products.filter((product) => product.categorySlug === slug);
+  return publicProducts.filter((product) => product.categorySlug === slug);
 }
 
 export function getRelatedProducts(product: Product) {
   const explicit = product.relatedProductSlugs
-    .map((slug) => products.find((entry) => entry.slug === slug))
+    .map((slug) => publicProducts.find((entry) => entry.slug === slug))
     .filter(Boolean) as Product[];
   if (explicit.length) return explicit.slice(0, 4);
-  return products
+  return publicProducts
     .filter((entry) => entry.slug !== product.slug && entry.categorySlug === product.categorySlug)
     .slice(0, 4);
 }
 
 export function getFeaturedProducts() {
-  return products.filter((product) => product.featured);
+  return publicProducts.filter((product) => product.featured);
 }
 
 export function searchProducts(query: string, categorySlug?: string) {
   const term = query.trim().toLowerCase();
-  return products.filter((product) => {
+  return publicProducts.filter((product) => {
     const matchesCategory = !categorySlug || categorySlug === 'all' || product.categorySlug === categorySlug;
     const matchesQuery =
       !term ||

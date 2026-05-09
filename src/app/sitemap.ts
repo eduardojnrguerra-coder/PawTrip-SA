@@ -41,12 +41,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     }));
 
-  const blogRoutes = blogPosts.map((post) => ({
-    url: `${base}/blog/${post.slug}`,
-    lastModified: new Date(post.date),
-    changeFrequency: 'monthly' as const,
-    priority: post.sections.length > 1 ? 0.75 : 0.45,
-  }));
+  const blogRoutes = blogPosts
+    .filter((post) => post.slug)
+    .map((post) => ({
+      url: `${base}/blog/${post.slug}`,
+      lastModified: new Date(post.date),
+      changeFrequency: 'monthly' as const,
+      priority: Array.isArray(post.sections) && post.sections.length > 1 ? 0.75 : 0.45,
+    }));
 
   const collectionRoutes = collections.map((collection) => ({
     url: `${base}/collections/${collection.slug}`,

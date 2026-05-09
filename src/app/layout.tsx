@@ -10,7 +10,7 @@ import { Toasts } from '@/components/toasts';
 import { AnalyticsPlaceholder } from '@/components/analytics-placeholder';
 import { JsonLd } from '@/components/json-ld';
 import { siteDescription, siteName, siteTagline, getSiteUrl } from '@/lib/site';
-import { categories, products } from '@/data/products';
+import { categories, publicProducts } from '@/data/products';
 import { defaultOgImage, organizationSchema, websiteSchema } from '@/lib/seo';
 
 export const metadata: Metadata = {
@@ -57,7 +57,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <CartProvider products={products}>
+        <CartProvider products={publicProducts}>
           <SiteHeader categories={categories} />
           <main className="siteMain">{children}</main>
           <SiteFooter />
