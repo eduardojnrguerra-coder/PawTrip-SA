@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">Lick Mat vs Snuffle Mat</title>
+  <desc id="desc">Premium PawTrip SA toy article card with lick mat grid and snuffle mat folds.</desc>
+  <rect width="1200" height="675" fill="#1F4D3A"/>
+  <rect x="82" y="78" width="1036" height="520" rx="44" fill="#143628"/>
+  <rect x="698" y="190" width="160" height="250" rx="30" fill="#E8B15A"/>
+  <g fill="#143628" opacity=".35">
+    <circle cx="735" cy="230" r="12"/><circle cx="780" cy="230" r="12"/><circle cx="825" cy="230" r="12"/>
+    <circle cx="735" cy="280" r="12"/><circle cx="780" cy="280" r="12"/><circle cx="825" cy="280" r="12"/>
+    <circle cx="735" cy="330" r="12"/><circle cx="780" cy="330" r="12"/><circle cx="825" cy="330" r="12"/>
+    <circle cx="735" cy="380" r="12"/><circle cx="780" cy="380" r="12"/><circle cx="825" cy="380" r="12"/>
+  </g>
+  <path d="M910 204c35 38 70 38 105 0v240c-35-38-70-38-105 0z" fill="#A7C4AE"/>
+  <path d="M910 264c35 38 70 38 105 0M910 324c35 38 70 38 105 0M910 384c35 38 70 38 105 0" fill="none" stroke="#FBF8F3" stroke-width="10" opacity=".55"/>
+  <text x="150" y="170" font-family="Sora, Arial, sans-serif" font-size="34" font-weight="800" fill="#E8B15A">ENRICHMENT GUIDE</text>
+  <text x="150" y="290" font-family="Sora, Arial, sans-serif" font-size="68" font-weight="900" fill="#FBF8F3">Lick Mat vs</text>
+  <text x="150" y="368" font-family="Sora, Arial, sans-serif" font-size="68" font-weight="900" fill="#FBF8F3">Snuffle Mat</text>
+  <text x="150" y="448" font-family="Inter, Arial, sans-serif" font-size="31" fill="#DCE7D6">Licking, sniffing and calmer dog routines.</text>
+  <text x="150" y="525" font-family="Sora, Arial, sans-serif" font-size="30" font-weight="800" fill="#A7C4AE">PawTrip SA</text>
+</svg>

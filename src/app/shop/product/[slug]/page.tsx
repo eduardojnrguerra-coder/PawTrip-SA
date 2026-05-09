@@ -4,7 +4,7 @@ import { getProductBySlug, getRelatedProducts } from '@/lib/catalog';
 import { ProductDetailClient } from '@/components/product-detail-client';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { JsonLd } from '@/components/json-ld';
-import { breadcrumbSchema, pageMetadata, productSchema } from '@/lib/seo';
+import { breadcrumbSchema, faqSchema, pageMetadata, productSchema } from '@/lib/seo';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -34,7 +34,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   return (
     <section className="section">
       <div className="container">
-        <JsonLd data={[productSchema(product), breadcrumbSchema(breadcrumbItems)]} />
+        <JsonLd data={[productSchema(product), breadcrumbSchema(breadcrumbItems), faqSchema(product.faqs.slice(0, 5))]} />
         <Breadcrumbs items={breadcrumbItems} />
         <div className="detailPageHeader">
           <span className="eyebrow">{product.categoryName}</span>

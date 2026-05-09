@@ -18,7 +18,7 @@ export const problemSolutions: ProblemSolution[] = [
     bestFor: ['Shedding dogs', 'Daily car trips', 'Back-seat travel'],
     mainProductSlug: 'clean-car-kit',
     addOnSlugs: ['waterproof-dog-car-seat-cover', 'pet-hair-removal-brush'],
-    guideSlug: 'protect-car-from-dog-hair-and-mud',
+    guideSlug: 'stop-dog-hair-taking-over-car',
   },
   {
     slug: 'mud-and-beach-sand',
@@ -38,7 +38,7 @@ export const problemSolutions: ProblemSolution[] = [
     bestFor: ['SUV owners', 'Energetic dogs', 'Cargo-area travel'],
     mainProductSlug: 'suv-protection-kit',
     addOnSlugs: ['dog-hammock-back-seat-cover', 'waterproof-dog-boot-seat-cover-with-side-protection'],
-    guideSlug: 'dog-seat-cover-vs-boot-liner',
+    guideSlug: 'dog-hammock-vs-dog-seat-cover',
   },
   {
     slug: 'bored-dog',
@@ -48,7 +48,7 @@ export const problemSolutions: ProblemSolution[] = [
     bestFor: ['Indoor days', 'Chewers', 'High-energy dogs'],
     mainProductSlug: 'boredom-buster-toy-kit',
     addOnSlugs: ['treat-dispensing-chew-toy', 'snuffle-mat'],
-    guideSlug: 'best-toys-dogs-bored-easily',
+    guideSlug: 'best-toys-bored-dogs-destroy-everything',
   },
   {
     slug: 'fast-eating',
@@ -58,7 +58,7 @@ export const problemSolutions: ProblemSolution[] = [
     bestFor: ['Fast eaters', 'Messy feeding', 'Puppies'],
     mainProductSlug: 'slow-feeder-bowl',
     addOnSlugs: ['silicone-feeding-mat', 'no-spill-dog-travel-bowl'],
-    guideSlug: 'slow-feeder-bowls-why-dogs-need-them',
+    guideSlug: 'best-slow-feeder-bowls-dogs-south-africa',
   },
   {
     slug: 'senior-dog-access',
@@ -68,7 +68,7 @@ export const problemSolutions: ProblemSolution[] = [
     bestFor: ['Senior dogs', 'SUV loading', 'Mobility support'],
     mainProductSlug: 'senior-dog-travel-kit',
     addOnSlugs: ['foldable-dog-ramp-for-cars-and-suvs', 'soft-crate-mat'],
-    guideSlug: 'help-older-dog-get-into-suv',
+    guideSlug: 'dog-road-trip-checklist-south-africa',
   },
   {
     slug: 'puppy-training',
@@ -78,7 +78,7 @@ export const problemSolutions: ProblemSolution[] = [
     bestFor: ['New puppies', 'Training rewards', 'First-time owners'],
     mainProductSlug: 'puppy-starter-kit',
     addOnSlugs: ['training-treats', 'training-treat-pouch'],
-    guideSlug: 'best-puppy-starter-essentials-south-africa',
+    guideSlug: 'puppy-starter-kit-checklist-south-africa',
   },
   {
     slug: 'shedding-and-grooming',
@@ -88,6 +88,6 @@ export const problemSolutions: ProblemSolution[] = [
     bestFor: ['Shedding dogs', 'Home grooming', 'Post-walk cleanup'],
     mainProductSlug: 'grooming-starter-kit',
     addOnSlugs: ['deshedding-grooming-brush', 'dog-drying-towel'],
-    guideSlug: 'best-dog-grooming-tools-shedding',
+    guideSlug: 'best-grooming-tools-dogs-that-shed',
   },
 ];

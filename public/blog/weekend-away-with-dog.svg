@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">What to Pack for a Weekend Away With Your Dog</title>
+  <desc id="desc">Premium PawTrip SA travel article card with suitcase, leash, bowl and road icons.</desc>
+  <rect width="1200" height="675" fill="#1F4D3A"/>
+  <rect x="82" y="78" width="1036" height="520" rx="44" fill="#143628"/>
+  <path d="M650 510c115-100 190-20 290-110 60-54 94-96 175-78" fill="none" stroke="#E8B15A" stroke-width="15" stroke-linecap="round"/>
+  <path d="M650 510c115-100 190-20 290-110 60-54 94-96 175-78" fill="none" stroke="#FBF8F3" stroke-width="4" stroke-dasharray="25 22" stroke-linecap="round"/>
+  <rect x="720" y="220" width="210" height="190" rx="32" fill="#FBF8F3"/>
+  <rect x="768" y="172" width="116" height="70" rx="30" fill="none" stroke="#E8B15A" stroke-width="16"/>
+  <circle cx="770" cy="452" r="16" fill="#A7C4AE"/><circle cx="885" cy="452" r="16" fill="#A7C4AE"/>
+  <path d="M965 238c64 57 54 135-6 195" fill="none" stroke="#A7C4AE" stroke-width="18" stroke-linecap="round"/>
+  <circle cx="958" cy="446" r="22" fill="#E8B15A"/>
+  <text x="150" y="170" font-family="Sora, Arial, sans-serif" font-size="34" font-weight="800" fill="#E8B15A">WEEKEND PACKING GUIDE</text>
+  <text x="150" y="290" font-family="Sora, Arial, sans-serif" font-size="68" font-weight="900" fill="#FBF8F3">Weekend Away</text>
+  <text x="150" y="368" font-family="Sora, Arial, sans-serif" font-size="68" font-weight="900" fill="#FBF8F3">With Your Dog</text>
+  <text x="150" y="448" font-family="Inter, Arial, sans-serif" font-size="31" fill="#DCE7D6">Pack the useful stuff before the wet-dog moment.</text>
+  <text x="150" y="525" font-family="Sora, Arial, sans-serif" font-size="30" font-weight="800" fill="#A7C4AE">PawTrip SA</text>
+</svg>

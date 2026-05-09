@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">Dog Hammock vs Dog Seat Cover</title>
+  <desc id="desc">Premium PawTrip SA article card comparing a hammock and seat cover with car interior icons.</desc>
+  <rect width="1200" height="675" fill="#1F4D3A"/>
+  <rect x="82" y="78" width="1036" height="520" rx="44" fill="#143628"/>
+  <circle cx="980" cy="520" r="230" fill="#E8B15A" opacity=".18"/>
+  <circle cx="168" cy="122" r="150" fill="#A7C4AE" opacity=".16"/>
+  <g transform="translate(680 160)">
+    <rect x="0" y="78" width="310" height="210" rx="35" fill="#FBF8F3"/>
+    <rect x="32" y="122" width="112" height="126" rx="28" fill="#A7C4AE"/>
+    <rect x="166" y="122" width="112" height="126" rx="28" fill="#E8B15A"/>
+    <path d="M32 122C95 206 199 206 278 122" fill="none" stroke="#1F4D3A" stroke-width="15" stroke-linecap="round"/>
+    <path d="M36 82V28M274 82V28" stroke="#FBF8F3" stroke-width="16" stroke-linecap="round"/>
+    <circle cx="68" cy="22" r="20" fill="#E8B15A"/><circle cx="274" cy="22" r="20" fill="#A7C4AE"/>
+  </g>
+  <path d="M975 182l42 17v44c0 49-18 82-42 102-25-20-43-53-43-102v-44l43-17z" fill="#A7C4AE"/>
+  <text x="150" y="170" font-family="Sora, Arial, sans-serif" font-size="34" font-weight="800" fill="#E8B15A">CHOOSING GUIDE</text>
+  <text x="150" y="290" font-family="Sora, Arial, sans-serif" font-size="70" font-weight="900" fill="#FBF8F3">Hammock vs</text>
+  <text x="150" y="370" font-family="Sora, Arial, sans-serif" font-size="70" font-weight="900" fill="#FBF8F3">Seat Cover</text>
+  <text x="150" y="450" font-family="Inter, Arial, sans-serif" font-size="31" fill="#DCE7D6">Choose by car space, dog movement and mess.</text>
+  <text x="150" y="525" font-family="Sora, Arial, sans-serif" font-size="30" font-weight="800" fill="#A7C4AE">PawTrip SA</text>
+</svg>

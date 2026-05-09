@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">Best Slow Feeder Bowls for Dogs in South Africa</title>
+  <desc id="desc">Premium PawTrip SA feeding article card with bowl and slow feeder pattern.</desc>
+  <rect width="1200" height="675" fill="#1F4D3A"/>
+  <rect x="82" y="78" width="1036" height="520" rx="44" fill="#143628"/>
+  <circle cx="900" cy="336" r="185" fill="#FBF8F3"/>
+  <circle cx="900" cy="336" r="130" fill="#E8B15A"/>
+  <path d="M822 334c40-70 117-70 157 0-40 70-117 70-157 0z" fill="#143628" opacity=".25"/>
+  <path d="M900 235v202M799 336h202M832 264l136 144M968 264L832 408" stroke="#1F4D3A" stroke-width="18" stroke-linecap="round" opacity=".45"/>
+  <path d="M750 504h300c-34 64-89 92-150 92s-116-28-150-92z" fill="#A7C4AE"/>
+  <text x="150" y="170" font-family="Sora, Arial, sans-serif" font-size="34" font-weight="800" fill="#E8B15A">FEEDING GUIDE</text>
+  <text x="150" y="290" font-family="Sora, Arial, sans-serif" font-size="68" font-weight="900" fill="#FBF8F3">Slow Feeder</text>
+  <text x="150" y="368" font-family="Sora, Arial, sans-serif" font-size="68" font-weight="900" fill="#FBF8F3">Bowls</text>
+  <text x="150" y="448" font-family="Inter, Arial, sans-serif" font-size="31" fill="#DCE7D6">For dogs who inhale dinner like a deadline.</text>
+  <text x="150" y="525" font-family="Sora, Arial, sans-serif" font-size="30" font-weight="800" fill="#A7C4AE">PawTrip SA</text>
+</svg>

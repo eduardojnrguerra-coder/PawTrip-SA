@@ -120,7 +120,7 @@ function recommendationSlugs(answers: Partial<Record<AnswerKey, string>>): Recom
     return {
       primary: 'senior-dog-travel-kit',
       addOns: ['soft-crate-mat', 'pet-boot-barrier'],
-      guide: 'help-older-dog-get-into-suv',
+      guide: 'dog-road-trip-checklist-south-africa',
       why: `Senior access needs a calmer loading plan, not just another accessory. This kit prioritises easier car entry, travel comfort and less strain on the owner. ${buyer}`,
     };
   }
@@ -138,7 +138,7 @@ function recommendationSlugs(answers: Partial<Record<AnswerKey, string>>): Recom
     return {
       primary: 'boredom-buster-toy-kit',
       addOns: ['puzzle-feeder-toy', 'durable-chew-bone-toy'],
-      guide: 'best-toys-dogs-bored-easily',
+      guide: 'best-toys-bored-dogs-destroy-everything',
       why: `Boredom usually needs different outlets: chewing, licking, sniffing and problem solving. This result gives your dog more than one way to stay busy. ${buyer}`,
     };
   }
@@ -147,7 +147,7 @@ function recommendationSlugs(answers: Partial<Record<AnswerKey, string>>): Recom
     return {
       primary: 'slow-feeder-bowl',
       addOns: ['lick-mat', 'training-treats'],
-      guide: 'slow-feeder-bowls-why-dogs-need-them',
+      guide: 'best-slow-feeder-bowls-dogs-south-africa',
       why: `Fast eating is a feeding routine problem, so the best setup is a slow feeder plus enrichment and reward basics. It is useful without pretending to be a medical fix. ${buyer}`,
     };
   }
@@ -156,7 +156,7 @@ function recommendationSlugs(answers: Partial<Record<AnswerKey, string>>): Recom
     return {
       primary: 'puppy-starter-kit',
       addOns: ['training-treat-pouch', 'poop-bag-holder-and-refill'],
-      guide: 'best-puppy-starter-essentials-south-africa',
+      guide: 'puppy-starter-kit-checklist-south-africa',
       why: `Puppies need useful basics more than a crowded basket: chewing outlets, training rewards, feeding control and simple walking support. ${buyer}`,
     };
   }
@@ -165,7 +165,7 @@ function recommendationSlugs(answers: Partial<Record<AnswerKey, string>>): Recom
     return {
       primary: 'grooming-starter-kit',
       addOns: ['paw-cleaner-cup', 'pet-hair-removal-brush'],
-      guide: 'best-dog-grooming-tools-shedding',
+      guide: 'best-grooming-tools-dogs-that-shed',
       why: `Shedding is easier to manage when grooming and cleanup work together. This setup covers coat maintenance, drying and the car or couch hair that follows. ${buyer}`,
     };
   }
@@ -174,7 +174,7 @@ function recommendationSlugs(answers: Partial<Record<AnswerKey, string>>): Recom
     return {
       primary: 'suv-protection-kit',
       addOns: ['pet-boot-barrier', 'foldable-dog-ramp-for-cars-and-suvs'],
-      guide: 'dog-seat-cover-vs-boot-liner',
+      guide: 'dog-hammock-vs-dog-seat-cover',
       why: `Your answer points to boot or load-area travel, so a cargo-focused protection kit makes more sense than a back-seat-only setup. ${buyer}`,
     };
   }
@@ -183,7 +183,7 @@ function recommendationSlugs(answers: Partial<Record<AnswerKey, string>>): Recom
     return {
       primary: 'road-trip-starter-kit',
       addOns: ['pet-hair-removal-brush', 'waterproof-dog-travel-blanket'],
-      guide: 'dog-travel-checklist-south-african-road-trips',
+      guide: 'dog-road-trip-checklist-south-africa',
       why: `For hatchbacks and sedans, a clean back-seat setup is usually the most practical starting point. This kit keeps the recommendation focused and easy to use. ${buyer}`,
     };
   }
@@ -192,7 +192,7 @@ function recommendationSlugs(answers: Partial<Record<AnswerKey, string>>): Recom
     return {
       primary: 'suv-protection-kit',
       addOns: ['pet-boot-barrier', 'collapsible-dog-travel-bowl'],
-      guide: 'dog-seat-cover-vs-boot-liner',
+      guide: 'dog-hammock-vs-dog-seat-cover',
       why: `SUVs and bakkies usually benefit from boot-area protection and a tidy travel setup before smaller add-ons. ${buyer}`,
     };
   }
@@ -200,7 +200,7 @@ function recommendationSlugs(answers: Partial<Record<AnswerKey, string>>): Recom
   return {
     primary: 'road-trip-starter-kit',
     addOns: ['collapsible-dog-travel-bowl', 'travel-treat-jar'],
-    guide: 'build-dog-road-trip-kit',
+    guide: 'dog-road-trip-checklist-south-africa',
     why: `This is the balanced starter result for cleaner everyday trips: protection, a simple travel bowl and useful packing basics without product overload. ${buyer}`,
   };
 }
@@ -229,6 +229,7 @@ export function QuizClient({ products }: { products: Product[] }) {
       why: slugs.why,
       includedProducts: isFeedingSetup ? [primary.name, ...addOns.map((product) => product.name)] : primary.whatsIncluded,
       cartSlugs: isFeedingSetup ? [primary.slug, ...addOns.map((product) => product.slug)] : [primary.slug],
+      fullSetupSlugs: [primary.slug, ...addOns.map((product) => product.slug)],
     };
   }, [answers, products]);
 
@@ -253,10 +254,10 @@ export function QuizClient({ products }: { products: Product[] }) {
   }
 
   function addRecommendationToCart() {
-    result.cartSlugs.forEach((slug) => addItem(slug));
+    result.fullSetupSlugs.forEach((slug) => addItem(slug));
     trackEvent('recommended_kit_added', {
       item_slug: result.primary.slug,
-      value: result.cartSlugs.reduce((sum, slug) => sum + bySlug(products, slug).price, 0),
+      value: result.fullSetupSlugs.reduce((sum, slug) => sum + bySlug(products, slug).price, 0),
       currency: 'ZAR',
     });
   }
@@ -264,33 +265,61 @@ export function QuizClient({ products }: { products: Product[] }) {
   if (complete) {
     return (
       <motion.div
-        className="kitQuizResult"
+        className="kitQuizResult kitQuizResultRich"
         initial={reduceMotion ? false : { opacity: 0, y: 18 }}
         animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: 'easeOut' }}
       >
         <div className="kitQuizResultMedia">
           <ProductImage
-            src={result.primary.image}
+            src={result.primary.galleryImages[0] ?? result.primary.image}
             alt={getProductImageAlt(result.primary.name, result.primary.category, 'kit finder recommendation')}
             productName={result.primary.name}
             category={result.primary.category}
             className="kitQuizResultImage"
           />
+          <div className="kitQuizResultThumbs" aria-label={`${result.primary.name} gallery preview`}>
+            {result.primary.galleryImages.slice(0, 3).map((image, index) => (
+              <ProductImage
+                key={image}
+                src={image}
+                alt={getProductImageAlt(result.primary.name, result.primary.category, `quiz gallery ${index + 1}`)}
+                productName={result.primary.name}
+                category={result.primary.category}
+                className="kitQuizResultThumb"
+              />
+            ))}
+          </div>
           <div className="kitQuizResultBadge">
             <Sparkles size={15} />
             Best match from your answers
+          </div>
+          <div className="kitQuizFloatingBenefits">
+            {result.primary.bestFor.slice(0, 3).map((item) => (
+              <motion.span
+                key={item}
+                animate={reduceMotion ? undefined : { y: [0, -6, 0] }}
+                transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <ShieldCheck size={13} /> {item}
+              </motion.span>
+            ))}
           </div>
         </div>
 
         <div className="kitQuizResultCopy">
           <span className="eyebrow">Recommended setup</span>
           <h2>{result.primary.name}</h2>
-          <p>{result.why}</p>
+          <p>{result.primary.shortDescription}</p>
 
           <div className="kitQuizPriceLine">
             <strong>{formatZar(result.primary.price)}</strong>
             {result.primary.compareAtPrice > result.primary.price ? <span>{formatZar(result.primary.compareAtPrice)}</span> : null}
+          </div>
+
+          <div className="fitmentHelpBox">
+            <strong>Why this kit matches your answers</strong>
+            <p>{result.why}</p>
           </div>
 
           <div className="kitQuizIncluded">
@@ -306,14 +335,81 @@ export function QuizClient({ products }: { products: Product[] }) {
 
           <div className="kitQuizActions">
             <button type="button" className="button buttonPrimary buttonSheen" onClick={addRecommendationToCart}>
-              Add kit to cart
+              Add full setup to cart
             </button>
-            <Link href="/shop" className="button buttonSecondary buttonSheen">
-              Shop all products
+            <Link href={`/shop/product/${result.primary.slug}`} className="button buttonSecondary buttonSheen">
+              View full details
             </Link>
-            <Link href={`/shop/product/${result.primary.slug}`} className="button buttonGhost">
-              View details
+            <Link href="/shop/category/travel-kits" className="button buttonGhost">
+              Compare another kit
             </Link>
+            <button
+              type="button"
+              className="button buttonGhost"
+              onClick={() => {
+                setAnswers({});
+                setStep(0);
+                setStarted(false);
+                setCompletedTracked(false);
+              }}
+            >
+              Start again
+            </button>
+          </div>
+        </div>
+
+        <div className="kitQuizResultPanel kitQuizDetailPanel">
+          <h3>Best for</h3>
+          <div className="kitQuizPillGrid">
+            {result.primary.bestFor.map((item) => (
+              <span key={item}>
+                <CheckCircle2 size={15} /> {item}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="kitQuizResultPanel kitQuizDetailPanel">
+          <h3>Quality and materials</h3>
+          <p>
+            <strong>Material:</strong> {result.primary.material}
+          </p>
+          <ul className="bulletList">
+            {result.primary.qualityNotes.slice(0, 3).map((item) => (
+              <li key={item}>
+                <CheckCircle2 size={15} /> <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="kitQuizResultPanel kitQuizDetailPanel">
+          <h3>How to use it</h3>
+          <ul className="bulletList">
+            {result.primary.howToUse.slice(0, 3).map((item) => (
+              <li key={item}>
+                <CheckCircle2 size={15} /> <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="kitQuizResultPanel kitQuizDetailPanel">
+          <h3>Delivery and returns</h3>
+          <p>{result.primary.deliveryNote}</p>
+          <p>{result.primary.returnNote}</p>
+          <p>Orders are processed after payment confirmation. Availability is marked as {result.primary.availability.replaceAll('_', ' ')}.</p>
+        </div>
+
+        <div className="kitQuizResultPanel kitQuizDetailPanel">
+          <h3>FAQs</h3>
+          <div className="kitQuizFaqGrid">
+            {result.primary.faqs.slice(0, 3).map((faq) => (
+              <div key={faq.question}>
+                <strong>{faq.question}</strong>
+                <p>{faq.answer}</p>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -351,19 +447,6 @@ export function QuizClient({ products }: { products: Product[] }) {
             </Link>
           </div>
         ) : null}
-
-        <button
-          type="button"
-          className="button buttonGhost kitQuizRetake"
-          onClick={() => {
-            setAnswers({});
-            setStep(0);
-            setStarted(false);
-            setCompletedTracked(false);
-          }}
-        >
-          Start again
-        </button>
       </motion.div>
     );
   }

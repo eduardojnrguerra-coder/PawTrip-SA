@@ -26,7 +26,7 @@ export const educationBlocks: EducationBlock[] = [
       { option: 'Seat cover', bestFor: 'Sedans, hatchbacks and rear-seat travel', consider: 'Protects the rear bench from hair and paw marks.' },
       { option: 'Boot liner', bestFor: 'SUVs, crossovers and cargo-area travel', consider: 'Protects boot carpet and loading areas.' },
     ],
-    guideHref: '/blog/dog-seat-cover-vs-boot-liner',
+    guideHref: '/blog/dog-hammock-vs-dog-seat-cover',
   },
   {
     title: 'Lick mat vs snuffle mat',
@@ -44,7 +44,7 @@ export const educationBlocks: EducationBlock[] = [
       { option: 'Slow feeder', bestFor: 'Dogs that rush meals', consider: 'Adds structure and makes eating less frantic.' },
       { option: 'Normal bowl', bestFor: 'Dogs with calm, tidy meals', consider: 'Simpler if speed is not a concern.' },
     ],
-    guideHref: '/blog/slow-feeder-bowls-why-dogs-need-them',
+    guideHref: '/blog/best-slow-feeder-bowls-dogs-south-africa',
   },
   {
     title: 'Harness vs leash only',
@@ -53,7 +53,7 @@ export const educationBlocks: EducationBlock[] = [
       { option: 'Harness', bestFor: 'Better body control and comfort', consider: 'Helpful for active dogs and unfamiliar stops.' },
       { option: 'Leash only', bestFor: 'Calm dogs with good lead manners', consider: 'Still needs secure fit and visibility.' },
     ],
-    guideHref: '/blog/choose-right-dog-harness',
+    guideHref: '/shop/category/walking-gear',
   },
   {
     title: 'Ramp vs lifting your dog',
@@ -62,7 +62,7 @@ export const educationBlocks: EducationBlock[] = [
       { option: 'Ramp', bestFor: 'Senior dogs, SUVs and repeat loading', consider: 'Reduces awkward jumps and repeated lifting.' },
       { option: 'Lifting', bestFor: 'Small dogs and occasional help', consider: 'Can be awkward for large or sore dogs.' },
     ],
-    guideHref: '/blog/dog-ramp-buying-guide-cars-bakkies',
+    guideHref: '/blog/dog-road-trip-checklist-south-africa',
   },
 ];
 

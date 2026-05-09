@@ -9,6 +9,15 @@ export type BlogPost = {
   updatedAt?: string;
   readTime: string;
   image: string;
+  heroSubtitle?: string;
+  quickAnswer?: string;
+  funnyHook?: string;
+  checklist?: string[];
+  commonMistakes?: string[];
+  productBlockTitle?: string;
+  pullQuotes?: string[];
+  targetKeywords?: string[];
+  relatedArticleSlugs?: string[];
   relatedProductSlugs: string[];
   recommendedProductSlugs?: string[];
   ctaBundleSlug?: string;
@@ -17,6 +26,62 @@ export type BlogPost = {
   outline: string[];
   sections: Array<{ heading: string; paragraphs: string[] }>;
 };
+
+type BlogPostValidation = {
+  valid: boolean;
+  warnings: string[];
+};
+
+function isNonEmptyString(value: unknown) {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+export function validateBlogPost(post: Partial<BlogPost> | null | undefined): BlogPostValidation {
+  const warnings: string[] = [];
+
+  if (!post) {
+    warnings.push('Blog post is missing.');
+  } else {
+    const requiredTextFields: Array<keyof BlogPost> = [
+      'slug',
+      'title',
+      'excerpt',
+      'seoTitle',
+      'seoDescription',
+      'category',
+      'date',
+      'image',
+    ];
+
+    requiredTextFields.forEach((field) => {
+      if (!isNonEmptyString(post[field])) {
+        warnings.push(`Missing or empty blog field: ${String(field)}.`);
+      }
+    });
+
+    if (!Array.isArray(post.outline)) {
+      warnings.push('Missing or invalid blog outline array.');
+    } else if (!post.outline.length) {
+      warnings.push('Blog outline is empty.');
+    }
+
+    if (!Array.isArray(post.sections)) {
+      warnings.push('Missing or invalid blog sections array.');
+    } else if (!post.sections.length) {
+      warnings.push('Blog sections are empty.');
+    }
+  }
+
+  if (process.env.NODE_ENV === 'development' && warnings.length) {
+    const label = post?.slug || post?.title || 'unknown blog post';
+    console.warn(`[PawTrip blog validation] ${label}`, warnings);
+  }
+
+  return {
+    valid: Boolean(isNonEmptyString(post?.slug) && isNonEmptyString(post?.title)),
+    warnings,
+  };
+}
 
 const longCarSeatCoverSections = [
   {
@@ -213,7 +278,462 @@ const longBeachSections = [
   },
 ];
 
-export const blogPosts: BlogPost[] = [
+type GuideInput = {
+  slug: string;
+  title: string;
+  excerpt: string;
+  seoDescription: string;
+  category: string;
+  image: string;
+  targetPhrase: string;
+  funnyHook: string;
+  quickAnswer: string;
+  realLifeIntro: string;
+  chooseAdvice: string;
+  practicalAdvice: string;
+  productAdvice: string;
+  relatedProductSlugs: string[];
+  recommendedProductSlugs: string[];
+  ctaBundleSlug?: string;
+  checklist: string[];
+  commonMistakes: string[];
+  faqs: Array<{ question: string; answer: string }>;
+  internalLinks: Array<{ label: string; href: string }>;
+  pullQuotes: string[];
+  relatedArticleSlugs: string[];
+};
+
+function makeGuide(input: GuideInput): BlogPost {
+  return {
+    slug: input.slug,
+    title: input.title,
+    excerpt: input.excerpt,
+    seoTitle: `${input.title} | PawTrip SA`,
+    seoDescription: input.seoDescription,
+    category: input.category,
+    date: '2026-05-09',
+    updatedAt: '2026-05-09',
+    readTime: '7 min read',
+    image: input.image,
+    heroSubtitle: input.realLifeIntro,
+    quickAnswer: input.quickAnswer,
+    funnyHook: input.funnyHook,
+    checklist: input.checklist,
+    commonMistakes: input.commonMistakes,
+    productBlockTitle: 'PawTrip picks for this problem',
+    pullQuotes: input.pullQuotes,
+    targetKeywords: [input.targetPhrase, `${input.category} South Africa`, 'PawTrip SA dog products'],
+    relatedArticleSlugs: input.relatedArticleSlugs,
+    relatedProductSlugs: input.relatedProductSlugs,
+    recommendedProductSlugs: input.recommendedProductSlugs,
+    ctaBundleSlug: input.ctaBundleSlug,
+    internalLinks: input.internalLinks,
+    faqs: input.faqs,
+    outline: ['Quick answer', 'How to choose', 'Common mistakes', 'PawTrip product picks'],
+    sections: [
+      {
+        heading: 'The real-life version',
+        paragraphs: [
+          input.realLifeIntro,
+          input.quickAnswer,
+        ],
+      },
+      {
+        heading: 'How to choose without overbuying',
+        paragraphs: [
+          input.chooseAdvice,
+          `If you searched for ${input.targetPhrase}, the useful question is not "what is the fanciest option?" It is "what will make tomorrow easier without creating another thing to clean, store or explain to the family?"`,
+        ],
+      },
+      {
+        heading: 'Practical advice for South African dog owners',
+        paragraphs: [
+          input.practicalAdvice,
+          'Think about heat, dust, rain, beach sand, parking areas, apartment lifts, school runs and the fact that most dog gear has to work on ordinary weekdays, not only on glossy weekend plans.',
+        ],
+      },
+      {
+        heading: 'Products that actually connect to the problem',
+        paragraphs: [
+          input.productAdvice,
+          'PawTrip SA keeps the recommendation practical: start with the core product or kit, then add only the accessories that solve the next clear problem. No fake urgency. No pretend miracle gear. Just a setup that makes dog life a little less dramatic.',
+        ],
+      },
+    ],
+  };
+}
+
+const starterBlogPosts: BlogPost[] = [
+  makeGuide({
+    slug: 'best-dog-boot-liners-suvs-south-africa',
+    title: 'Best Dog Boot Liners for SUVs in South Africa',
+    excerpt: 'A practical SUV boot liner guide for dog owners dealing with hair, sand, mud and cargo-area scratches.',
+    seoDescription: 'Compare dog boot liner South Africa options for SUVs, cargo areas, beach dogs and everyday car protection.',
+    category: 'Car Protection',
+    image: '/blog/suv-dog-boot-liners.svg',
+    targetPhrase: 'dog boot liner South Africa',
+    funnyHook: 'The SUV boot is not a second dog bed, even if your dog has submitted the paperwork.',
+    quickAnswer:
+      'Choose a boot liner if your dog travels in the cargo area, jumps in wet or sandy, or shares space with bags and outdoor gear. SUV owners usually need boot protection before they need more small accessories.',
+    realLifeIntro:
+      'If your SUV boot currently contains hair, beach sand, one mystery leaf and the ghost of last weekend, a dog boot liner is the boring product that suddenly becomes very exciting.',
+    chooseAdvice:
+      'Start by checking how your dog enters the car. If they jump straight into the cargo area, a rear seat cover will not protect the place where the mess actually happens. Look for coverage across the boot floor, enough edge protection for loading, and a surface you can shake out or wipe down.',
+    practicalAdvice:
+      'South African SUV routines can mean dusty park runs, wet beach mornings, dam weekends and bakkie-style family packing. A liner should make the boot easier to reset after each outing, not turn loading the dog into a wrestling match.',
+    productAdvice:
+      'Start with the SUV Dog Boot Liner for everyday cargo-area protection. If your dog leans into side trim or the boot takes heavy beach use, compare the Waterproof Dog Boot Seat Cover with Side Protection. The SUV Protection Kit adds a hair brush and travel bowl for a more complete setup.',
+    relatedProductSlugs: ['suv-dog-boot-liner', 'waterproof-dog-boot-seat-cover-with-side-protection', 'suv-protection-kit', 'pet-hair-removal-brush'],
+    recommendedProductSlugs: ['suv-dog-boot-liner', 'waterproof-dog-boot-seat-cover-with-side-protection', 'suv-protection-kit'],
+    ctaBundleSlug: 'suv-protection-kit',
+    checklist: ['Measure the boot floor.', 'Check loading lip and side coverage.', 'Choose wipe-down materials.', 'Add a brush if shedding is the main issue.'],
+    commonMistakes: ['Buying a back-seat cover for a boot-travelling dog.', 'Forgetting the loading lip.', 'Leaving wet liners rolled up after beach trips.'],
+    faqs: [
+      { question: 'Is a boot liner better than a hammock for SUVs?', answer: 'Yes, if your dog travels in the cargo area. A hammock is better for back-seat travel.' },
+      { question: 'Will a universal boot liner fit every SUV?', answer: 'Fit can vary. Measure your boot area and check how your seats and headrests are arranged.' },
+      { question: 'What should I add to a boot liner?', answer: 'A pet hair removal brush, travel bowl and towel are sensible add-ons for regular dog trips.' },
+    ],
+    internalLinks: [
+      { label: 'Shop Car Protection', href: '/shop/category/car-protection' },
+      { label: 'Compare hammocks and seat covers', href: '/blog/dog-hammock-vs-dog-seat-cover' },
+      { label: 'Read the road trip checklist', href: '/blog/dog-road-trip-checklist-south-africa' },
+    ],
+    pullQuotes: ['Protect the space your dog actually uses. The back seat cannot defend the boot from sand.', 'A boot liner is not glamorous. Neither is vacuuming carpet for 40 minutes.'],
+    relatedArticleSlugs: ['dog-hammock-vs-dog-seat-cover', 'stop-dog-hair-taking-over-car', 'best-dog-car-seat-covers-south-africa'],
+  }),
+  makeGuide({
+    slug: 'what-to-pack-weekend-away-with-dog',
+    title: 'What to Pack for a Weekend Away With Your Dog',
+    excerpt: 'A weekend dog packing list for travel bowls, blankets, treats, cleanup and the things people remember too late.',
+    seoDescription: 'Plan dog travel accessories South Africa owners can pack for weekend trips, guest houses, family visits and beach breaks.',
+    category: 'Travel',
+    image: '/blog/weekend-away-with-dog.svg',
+    targetPhrase: 'dog travel accessories South Africa',
+    funnyHook: 'You will remember your charger. Your dog will remember to roll in something questionable.',
+    quickAnswer:
+      'Pack water, a travel bowl, food or treats, lead, waste bags, car protection, towel, blanket or travel bed, and one enrichment item. Keep the dog basics reachable, not buried under the cooler box.',
+    realLifeIntro:
+      'A weekend away with your dog sounds relaxed until you are standing outside a guest house with no towel, a wet dog and a host who definitely owns cream carpets.',
+    chooseAdvice:
+      'Pack for the trip you are actually taking. A family visit needs comfort and manners. A beach weekend needs towels and car protection. A farm stay needs cleanup and walking control. You do not need every accessory, but you do need the right few.',
+    practicalAdvice:
+      'Keep a small dog bag ready with a bowl, waste bags, towel, treats and lead. Add food, water and destination-specific items before leaving. The goal is to avoid rebuilding the whole kit while everyone else is already in the car.',
+    productAdvice:
+      'The Road Trip Starter Kit covers car protection, a seat belt clip and travel bowl. Add a Foldable Travel Dog Bed for overnight comfort, a Travel Treat Jar for rewards, and a Dog Drying Towel if water, mud or grass is likely.',
+    relatedProductSlugs: ['road-trip-starter-kit', 'foldable-travel-dog-bed', 'travel-treat-jar', 'dog-drying-towel'],
+    recommendedProductSlugs: ['road-trip-starter-kit', 'foldable-travel-dog-bed', 'collapsible-dog-travel-bowl'],
+    ctaBundleSlug: 'road-trip-starter-kit',
+    checklist: ['Water and bowl.', 'Lead, harness and waste bags.', 'Food, treats and medication if relevant.', 'Towel, blanket or travel bed.', 'Car protection for the ride home.'],
+    commonMistakes: ['Packing food but forgetting the bowl.', 'Putting the towel at the bottom of the boot.', 'Assuming the destination is dog-ready.'],
+    faqs: [
+      { question: 'What is the most forgotten dog weekend item?', answer: 'A towel or spare cleanup item. It only feels optional until your dog is wet.' },
+      { question: 'Should I pack toys for a weekend away?', answer: 'One calm enrichment item is useful, but avoid overpacking. Comfort, water and cleanup matter first.' },
+      { question: 'Can I use the same kit for road trips?', answer: 'Yes. A weekend kit and road trip kit overlap heavily, especially bowls, towels, treats and car protection.' },
+    ],
+    internalLinks: [
+      { label: 'Read the road trip checklist', href: '/blog/dog-road-trip-checklist-south-africa' },
+      { label: 'Shop Travel Kits', href: '/shop/category/travel-kits' },
+      { label: 'Beach trip accessories', href: '/blog/best-dog-travel-accessories-beach-trips' },
+    ],
+    pullQuotes: ['A weekend dog bag should be boringly useful. Boring is excellent when the dog is wet.', 'Reachable gear is useful gear. Buried gear is boot decoration.'],
+    relatedArticleSlugs: ['dog-road-trip-checklist-south-africa', 'best-dog-travel-accessories-beach-trips', 'best-dog-boot-liners-suvs-south-africa'],
+  }),
+  makeGuide({
+    slug: 'best-toys-bored-dogs-destroy-everything',
+    title: 'Best Toys for Bored Dogs That Destroy Everything',
+    excerpt: 'Toy types that support chewing, sniffing, licking and calmer indoor energy for dogs with big opinions.',
+    seoDescription: 'Find the best dog toys for bored dogs, including chew toys, lick mats, snuffle mats and puzzle feeders for South African homes.',
+    category: 'Toys',
+    image: '/blog/bored-dog-toys.svg',
+    targetPhrase: 'best dog toys for bored dogs',
+    funnyHook: 'If the couch had a loyalty card, your bored dog would be on gold status.',
+    quickAnswer:
+      'Bored dogs usually need a mix of chewing, sniffing, licking and problem-solving toys. One toy rarely solves everything, so rotate a small set instead of buying random squeaky objects.',
+    realLifeIntro:
+      'A bored dog can turn a quiet afternoon into a forensic investigation involving slippers, cushions and one suspiciously proud face.',
+    chooseAdvice:
+      'Match the toy to the behaviour. Chewers need durable chew outlets. Sniffers enjoy snuffle mats. Dogs that need calmer settling may prefer lick mats. Clever dogs often enjoy puzzle feeders, but start easy so it stays fun.',
+    practicalAdvice:
+      'Use toys as part of a routine, not as a bribe after chaos begins. Rotate two or three options so they stay interesting. Supervise new toys, remove damaged items, and avoid anything that becomes a swallowing risk.',
+    productAdvice:
+      'The Boredom Buster Toy Kit gives a balanced starting point. Add a Treat Dispensing Chew Toy for chewing and reward, a Snuffle Mat for sniffing, and a Lick Mat for calmer enrichment.',
+    relatedProductSlugs: ['boredom-buster-toy-kit', 'treat-dispensing-chew-toy', 'snuffle-mat', 'lick-mat'],
+    recommendedProductSlugs: ['boredom-buster-toy-kit', 'treat-dispensing-chew-toy', 'puzzle-feeder-toy'],
+    ctaBundleSlug: 'boredom-buster-toy-kit',
+    checklist: ['Choose one chew outlet.', 'Choose one sniffing or licking activity.', 'Rotate toys weekly.', 'Supervise new toys before leaving your dog alone with them.'],
+    commonMistakes: ['Buying only plush toys for a heavy chewer.', 'Leaving all toys out all the time.', 'Expecting toys to replace walks, training and attention.'],
+    faqs: [
+      { question: 'What toy is best for a destructive dog?', answer: 'Start with durable chew and treat-dispensing toys, then add sniffing or licking enrichment. Supervision matters with any new toy.' },
+      { question: 'Are snuffle mats good for bored dogs?', answer: 'Yes, many dogs enjoy sniffing and searching for treats. Use them as enrichment, not as a medical or behaviour cure.' },
+      { question: 'How many toys does a bored dog need?', answer: 'A small rotation is better than a pile. Two or three useful toy types can cover chewing, sniffing and settling.' },
+    ],
+    internalLinks: [
+      { label: 'Shop Toys', href: '/shop/category/toys' },
+      { label: 'Compare lick mats and snuffle mats', href: '/blog/lick-mats-vs-snuffle-mats' },
+      { label: 'Shop bored dog fixes', href: '/collections/bored-dog-fixes' },
+    ],
+    pullQuotes: ['A bored dog does not need a toy mountain. They need better jobs.', 'The slipper is not a chew toy. Your dog has simply misunderstood retail.'],
+    relatedArticleSlugs: ['lick-mats-vs-snuffle-mats', 'best-dog-products-under-r250', 'puppy-starter-kit-checklist-south-africa'],
+  }),
+  makeGuide({
+    slug: 'lick-mats-vs-snuffle-mats',
+    title: 'Lick Mat vs Snuffle Mat: Which One Is Better?',
+    excerpt: 'Compare licking, sniffing and feeding enrichment for different dog routines.',
+    seoDescription: 'Compare lick mats and snuffle mat for dogs South Africa options for enrichment, feeding pace and boredom support.',
+    category: 'Toys',
+    image: '/blog/lick-mat-vs-snuffle-mat.svg',
+    targetPhrase: 'snuffle mat for dogs South Africa',
+    funnyHook: 'One says "please lick calmly"; the other says "go forth and sniff like a detective."',
+    quickAnswer:
+      'Choose a lick mat for calmer licking and spreadable treats. Choose a snuffle mat for sniffing, searching and dry treats. Many homes can use both, but they solve different enrichment jobs.',
+    realLifeIntro:
+      'Lick mats and snuffle mats look like simple pet products until your dog treats them like serious career paths.',
+    chooseAdvice:
+      'A lick mat suits dogs that enjoy slow licking, grooming distractions or quieter indoor moments. A snuffle mat suits dogs that like using their nose and searching for hidden treats. If your dog is new to enrichment, start simple and make success easy.',
+    practicalAdvice:
+      'Use lick mats on surfaces that are easy to clean and avoid messy spreads in carpeted areas. Use snuffle mats with dry treats and shake them out after use. Always supervise until you know how your dog behaves with the product.',
+    productAdvice:
+      'Start with the Lick Mat for calmer licking routines or the Snuffle Mat for nose-work style enrichment. The Boredom Buster Toy Kit is useful if you want both enrichment styles plus a chew outlet.',
+    relatedProductSlugs: ['lick-mat', 'snuffle-mat', 'boredom-buster-toy-kit', 'training-treats'],
+    recommendedProductSlugs: ['lick-mat', 'snuffle-mat', 'boredom-buster-toy-kit'],
+    ctaBundleSlug: 'boredom-buster-toy-kit',
+    checklist: ['Pick lick mat for spreads.', 'Pick snuffle mat for dry treats.', 'Supervise first use.', 'Clean and dry after use.'],
+    commonMistakes: ['Using wet food on a snuffle mat.', 'Leaving enrichment products out unsupervised.', 'Making the first session too difficult.'],
+    faqs: [
+      { question: 'Is a lick mat or snuffle mat better?', answer: 'Neither is automatically better. Lick mats support licking and settling; snuffle mats support sniffing and searching.' },
+      { question: 'Can puppies use lick mats?', answer: 'Many puppies can, with supervision and age-appropriate treats. Ask your vet if your puppy has dietary or health concerns.' },
+      { question: 'What treats work in a snuffle mat?', answer: 'Small dry treats usually work best because they are easier to hide and cleaner to remove.' },
+    ],
+    internalLinks: [
+      { label: 'Shop Toys', href: '/shop/category/toys' },
+      { label: 'Best toys for bored dogs', href: '/blog/best-toys-bored-dogs-destroy-everything' },
+      { label: 'Shop Treats', href: '/shop/category/treats-chews' },
+    ],
+    pullQuotes: ['Licking is slow and soothing. Sniffing is busy and brilliant. Dogs contain multitudes.', 'If cleanup sounds annoying, choose the mat that matches the treat.'],
+    relatedArticleSlugs: ['best-toys-bored-dogs-destroy-everything', 'best-slow-feeder-bowls-dogs-south-africa', 'best-dog-products-under-r250'],
+  }),
+  makeGuide({
+    slug: 'best-slow-feeder-bowls-dogs-south-africa',
+    title: 'Best Slow Feeder Bowls for Dogs in South Africa',
+    excerpt: 'Why fast eaters may benefit from a slower, more structured mealtime and how to choose a practical bowl.',
+    seoDescription: 'Choose a slow feeder dog bowl South Africa owners can use for fast eaters, messy meals and more structured feeding routines.',
+    category: 'Feeding',
+    image: '/blog/slow-feeder-bowls.svg',
+    targetPhrase: 'slow feeder dog bowl South Africa',
+    funnyHook: 'Some dogs eat like the bowl personally offended them.',
+    quickAnswer:
+      'A slow feeder bowl can help make mealtimes more structured for dogs that rush food, but it is not a medical fix. If your dog coughs, vomits, bloats or has health concerns, speak to a vet.',
+    realLifeIntro:
+      'Fast eating is impressive for about three seconds, then you are left with a messy floor, a confused dog and the feeling that dinner should not require a referee.',
+    chooseAdvice:
+      'Choose a slow feeder with grooves that suit your dog size and food type. It should slow the meal without frustrating the dog completely. Pair it with a silicone feeding mat if spills are part of the performance.',
+    practicalAdvice:
+      'Introduce the bowl gradually. Some dogs need easier meals first before the pattern becomes more challenging. Keep the bowl clean, check for chewing damage, and stop using it if your dog becomes stressed or unsafe around meals.',
+    productAdvice:
+      'Start with the Slow Feeder Bowl for fast meals. Add a Silicone Feeding Mat for easier cleanup, a Lick Mat for calmer treat routines and Training Treats for reward-based practice away from the main meal.',
+    relatedProductSlugs: ['slow-feeder-bowl', 'silicone-feeding-mat', 'lick-mat', 'training-treats'],
+    recommendedProductSlugs: ['slow-feeder-bowl', 'silicone-feeding-mat', 'lick-mat'],
+    checklist: ['Choose size for your dog.', 'Use food that fits the grooves.', 'Clean after meals.', 'Speak to a vet for health concerns.'],
+    commonMistakes: ['Choosing a bowl that is too difficult.', 'Ignoring chewing or frustration.', 'Treating fast eating as solved if there are health symptoms.'],
+    faqs: [
+      { question: 'Do slow feeder bowls stop health problems?', answer: 'No product can promise that. They can support slower, more structured meals, but health concerns should be discussed with a vet.' },
+      { question: 'Can puppies use slow feeder bowls?', answer: 'Some can, but choose an easy pattern and supervise. Puppy feeding concerns should be checked with a vet.' },
+      { question: 'What should I use with a slow feeder?', answer: 'A silicone feeding mat and lick mat are practical add-ons for cleanup and enrichment.' },
+    ],
+    internalLinks: [
+      { label: 'Shop Bowls and Feeding', href: '/shop/category/bowls-feeding' },
+      { label: 'Compare lick mats and snuffle mats', href: '/blog/lick-mats-vs-snuffle-mats' },
+      { label: 'Puppy starter checklist', href: '/blog/puppy-starter-kit-checklist-south-africa' },
+    ],
+    pullQuotes: ['Slow feeder bowls are for structure, not miracles.', 'Dinner should not look like a speed-running event.'],
+    relatedArticleSlugs: ['lick-mats-vs-snuffle-mats', 'puppy-starter-kit-checklist-south-africa', 'best-dog-products-under-r250'],
+  }),
+  makeGuide({
+    slug: 'puppy-starter-kit-checklist-south-africa',
+    title: 'Puppy Starter Kit Checklist South Africa',
+    excerpt: 'A focused puppy starter checklist for feeding, training, chewing and play without buying half the internet.',
+    seoDescription: 'Build a puppy starter kit South Africa new owners can use for training treats, chew toys, feeding mats and practical basics.',
+    category: 'Puppy Essentials',
+    image: '/blog/puppy-starter-kit.svg',
+    targetPhrase: 'puppy starter kit South Africa',
+    funnyHook: 'Puppies are tiny, adorable admin departments with teeth.',
+    quickAnswer:
+      'A useful puppy starter kit includes training treats, safe chew outlets, feeding basics, cleanup items, a lead or harness plan and simple enrichment. Start practical, then add as your puppy grows.',
+    realLifeIntro:
+      'Bringing home a puppy is joyful. It is also a period where socks vanish, floors become training zones and every object is apparently a taste test.',
+    chooseAdvice:
+      'Focus on routines first: feeding, training, chewing, walking and cleanup. Puppy products should make those routines easier rather than filling a cupboard before you know what your puppy actually likes.',
+    practicalAdvice:
+      'Use small rewards for training, keep chew options available, and make feeding easy to clean. If you have questions about diet, vaccinations or health, your vet is the right source. Product guides should support care, not replace it.',
+    productAdvice:
+      'The Puppy Starter Kit covers chewing, treats, feeding support and play. Add Training Treats, a Training Treat Pouch and Poop Bag Holder when walks and early training begin.',
+    relatedProductSlugs: ['puppy-starter-kit', 'puppy-chew-starter-set', 'training-treats', 'silicone-feeding-mat'],
+    recommendedProductSlugs: ['puppy-starter-kit', 'training-treats', 'training-treat-pouch'],
+    ctaBundleSlug: 'puppy-starter-kit',
+    checklist: ['Training treats.', 'Chew toys.', 'Feeding mat or bowl setup.', 'Waste bags.', 'Simple enrichment toy.'],
+    commonMistakes: ['Buying too many toys before learning what your puppy likes.', 'Skipping cleanup basics.', 'Using adult dog products without checking puppy suitability.'],
+    faqs: [
+      { question: 'What should be in a puppy starter kit?', answer: 'Start with treats, chew toys, feeding basics, cleanup items and simple walking support.' },
+      { question: 'Do puppies need enrichment toys?', answer: 'Yes, simple enrichment can help keep puppies busy, but supervise use and choose age-appropriate options.' },
+      { question: 'Should I buy everything before the puppy arrives?', answer: 'Buy the basics first. Add products once you understand your puppy, home and routine.' },
+    ],
+    internalLinks: [
+      { label: 'Shop Puppy Essentials', href: '/shop/category/puppy-essentials' },
+      { label: 'Best slow feeder bowls', href: '/blog/best-slow-feeder-bowls-dogs-south-africa' },
+      { label: 'Shop Top Picks for New Dog Owners', href: '/collections/top-picks-new-dog-owners' },
+    ],
+    pullQuotes: ['Puppy shopping should support routines, not panic.', 'If it saves your socks, it has earned shelf space.'],
+    relatedArticleSlugs: ['best-slow-feeder-bowls-dogs-south-africa', 'best-toys-bored-dogs-destroy-everything', 'best-dog-products-under-r250'],
+  }),
+  makeGuide({
+    slug: 'best-grooming-tools-dogs-that-shed',
+    title: 'Best Grooming Tools for Dogs That Shed',
+    excerpt: 'Brushes, gloves and towels that help manage shedding at home before your car becomes a fur archive.',
+    seoDescription: 'Compare dog grooming tools South Africa owners can use for shedding, drying, brushing and easier cleanup at home or after trips.',
+    category: 'Grooming',
+    image: '/blog/dog-grooming-tools-shedding.svg',
+    targetPhrase: 'dog grooming tools South Africa',
+    funnyHook: 'At some point you stop owning clothes and start owning portable dog hair displays.',
+    quickAnswer:
+      'For shedding dogs, use a grooming brush or glove for coat maintenance, a towel for wet trips and a pet hair removal brush for the car or couch. Small frequent sessions beat rare dramatic grooming marathons.',
+    realLifeIntro:
+      'Shedding has a way of appearing everywhere except on the dog, where you would prefer it to stay politely attached.',
+    chooseAdvice:
+      'Choose the tool by coat and tolerance. Some dogs prefer a glove, others need a de-shedding brush. Keep sessions short, gentle and positive, especially if your dog is new to grooming.',
+    practicalAdvice:
+      'Brush before car trips when possible, dry wet coats after rainy walks, and clean tools after use. If your dog has skin irritation, bald patches or discomfort, speak to a vet or qualified groomer rather than guessing.',
+    productAdvice:
+      'The Grooming Starter Kit combines a de-shedding brush, grooming glove, shampoo bar and drying towel. Add the Pet Hair Removal Brush when car seats or couches need regular resets.',
+    relatedProductSlugs: ['grooming-starter-kit', 'deshedding-grooming-brush', 'grooming-glove', 'dog-drying-towel'],
+    recommendedProductSlugs: ['grooming-starter-kit', 'deshedding-grooming-brush', 'pet-hair-removal-brush'],
+    ctaBundleSlug: 'grooming-starter-kit',
+    checklist: ['Choose brush or glove by coat type.', 'Keep sessions short.', 'Dry wet coats properly.', 'Use a separate hair brush for car fabric.'],
+    commonMistakes: ['Brushing too hard.', 'Waiting until shedding is out of control.', 'Ignoring skin discomfort or irritation.'],
+    faqs: [
+      { question: 'What grooming tool is best for shedding?', answer: 'It depends on coat type and dog tolerance. A de-shedding brush or grooming glove is a practical starting point.' },
+      { question: 'How often should I brush my dog?', answer: 'It depends on breed, coat and season. Short regular sessions are usually easier than occasional long sessions.' },
+      { question: 'Can grooming reduce car hair?', answer: 'It can help reduce loose hair before trips, especially when paired with seat covers and a pet hair removal brush.' },
+    ],
+    internalLinks: [
+      { label: 'Shop Grooming', href: '/shop/category/grooming' },
+      { label: 'Stop dog hair taking over your car', href: '/blog/stop-dog-hair-taking-over-car' },
+      { label: 'Shop Car Protection', href: '/shop/category/car-protection' },
+    ],
+    pullQuotes: ['Brush the dog before the car becomes the brush.', 'A little grooming often is easier than one heroic fur battle.'],
+    relatedArticleSlugs: ['stop-dog-hair-taking-over-car', 'keep-car-clean-when-own-dog', 'best-dog-car-seat-covers-south-africa'],
+  }),
+  makeGuide({
+    slug: 'keep-car-clean-when-own-dog',
+    title: 'How to Keep Your Car Clean When You Own a Dog',
+    excerpt: 'A simple clean-car routine for dog owners who travel often.',
+    seoDescription: 'Learn how to keep car clean with dogs using seat covers, boot liners, towels, brushes and simple reset habits.',
+    category: 'Car Protection',
+    image: '/blog/keep-car-clean-dogs.svg',
+    targetPhrase: 'how to keep car clean with dogs',
+    funnyHook: 'A clean dog car is not spotless. It is just no longer crunchy.',
+    quickAnswer:
+      'Create one protected dog zone, keep a towel and hair brush in the car, reset after messy trips and dry wet items outside the vehicle. Consistency matters more than a giant cleaning kit.',
+    realLifeIntro:
+      'Owning a dog and a clean car at the same time is possible, but it does require accepting that prevention is easier than archaeology.',
+    chooseAdvice:
+      'Start with where the dog sits: back seat, hammock area or SUV boot. Protect that surface first. Then add cleanup tools based on your dog: hair brush for shedders, towel for swimmers, paw cleaner for mud collectors.',
+    practicalAdvice:
+      'Do a quick reset after each messy outing. Shake covers, wipe waterproof surfaces, remove damp towels and brush loose hair before it gets pressed into fabric. Five minutes now saves a much bigger clean later.',
+    productAdvice:
+      'The Clean Car Kit is the focused choice for hair, wet paws and quick cleanup. Pair it with the Waterproof Dog Car Seat Cover or SUV Dog Boot Liner depending on where your dog travels.',
+    relatedProductSlugs: ['clean-car-kit', 'waterproof-dog-car-seat-cover', 'suv-dog-boot-liner', 'dog-drying-towel'],
+    recommendedProductSlugs: ['clean-car-kit', 'waterproof-dog-car-seat-cover', 'pet-hair-removal-brush'],
+    ctaBundleSlug: 'clean-car-kit',
+    checklist: ['Protect the dog zone.', 'Keep towel and brush reachable.', 'Reset after trips.', 'Dry damp items outside the car.'],
+    commonMistakes: ['Letting wet covers sit overnight.', 'Cleaning only when the mess is severe.', 'Buying accessories before choosing the main protection layer.'],
+    faqs: [
+      { question: 'What is the easiest way to keep a dog car clean?', answer: 'Use a cover or liner and reset it after trips. Prevention is easier than deep cleaning upholstery.' },
+      { question: 'Do I need a seat cover or boot liner?', answer: 'Choose based on where your dog travels most often.' },
+      { question: 'How do I reduce dog smell in the car?', answer: 'Dry damp towels and covers, remove hair regularly and avoid leaving wet fabric in a warm vehicle.' },
+    ],
+    internalLinks: [
+      { label: 'Shop Clean Car Kit', href: '/shop/product/clean-car-kit' },
+      { label: 'Dog car seat cover guide', href: '/blog/best-dog-car-seat-covers-south-africa' },
+      { label: 'Boot liner guide', href: '/blog/best-dog-boot-liners-suvs-south-africa' },
+    ],
+    pullQuotes: ['Clean-car dog ownership is mostly tiny resets, not grand gestures.', 'The towel must be reachable before the dog is already inside.'],
+    relatedArticleSlugs: ['stop-dog-hair-taking-over-car', 'best-dog-car-seat-covers-south-africa', 'best-dog-boot-liners-suvs-south-africa'],
+  }),
+  makeGuide({
+    slug: 'best-dog-products-under-r250',
+    title: 'Best Dog Products Under R250',
+    excerpt: 'Useful PawTrip SA picks under R250 for treats, toys, cleanup, feeding and everyday dog-owner wins.',
+    seoDescription: 'Shop practical dog products under R250 in South Africa, including treats, travel bowls, lick mats, leashes and cleanup add-ons.',
+    category: 'Shopping Guides',
+    image: '/blog/dog-products-under-r250.svg',
+    targetPhrase: 'dog products under R250 South Africa',
+    funnyHook: 'Proof that useful dog shopping does not always need to financially humble you.',
+    quickAnswer:
+      'The best under-R250 dog products are small items that solve regular problems: training treats, travel bowls, lick mats, leashes, poop bags, shampoo bars and pet hair brushes.',
+    realLifeIntro:
+      'Not every dog purchase needs to be a big bundle. Sometimes the hero is a humble bowl, a treat pouch or the brush that saves your work pants.',
+    chooseAdvice:
+      'Choose by frequency. If you use it weekly, it is worth considering. If it solves one very specific imaginary future problem, maybe leave it for later.',
+    practicalAdvice:
+      'Under-R250 products are excellent add-ons for checkout, gifts or filling a gap in your routine. They are also a good way to test what your dog enjoys before buying a bigger kit.',
+    productAdvice:
+      'Start with Training Treats for rewards, a Collapsible Dog Travel Bowl for outings, a Lick Mat for enrichment, a Pet Hair Removal Brush for cleanup and a Poop Bag Holder for walks.',
+    relatedProductSlugs: ['training-treats', 'collapsible-dog-travel-bowl', 'lick-mat', 'pet-hair-removal-brush'],
+    recommendedProductSlugs: ['training-treats', 'collapsible-dog-travel-bowl', 'poop-bag-holder-and-refill'],
+    checklist: ['Pick products used weekly.', 'Choose one training item.', 'Choose one travel or cleanup item.', 'Avoid novelty items that do not solve a problem.'],
+    commonMistakes: ['Buying cheap items that are not useful.', 'Ignoring care and cleaning needs.', 'Buying random toys without considering your dog size or chewing style.'],
+    faqs: [
+      { question: 'What dog products under R250 are most useful?', answer: 'Treats, travel bowls, poop bags, lick mats and cleanup tools are practical starting points.' },
+      { question: 'Are under-R250 products good gifts?', answer: 'Yes, if they are useful. Practical gifts beat novelty clutter for most dog owners.' },
+      { question: 'Can I build a full kit under R250?', answer: 'Usually no. Under-R250 items work best as add-ons or small routine helpers.' },
+    ],
+    internalLinks: [
+      { label: 'Shop Under R250', href: '/collections/under-r250' },
+      { label: 'Best gifts for dog owners', href: '/blog/best-gifts-dog-owners-south-africa' },
+      { label: 'Puppy starter checklist', href: '/blog/puppy-starter-kit-checklist-south-africa' },
+    ],
+    pullQuotes: ['Small products are only bargains when they get used.', 'Under R250 is a price point, not a personality. Choose useful.'],
+    relatedArticleSlugs: ['best-gifts-dog-owners-south-africa', 'puppy-starter-kit-checklist-south-africa', 'best-toys-bored-dogs-destroy-everything'],
+  }),
+  makeGuide({
+    slug: 'best-gifts-dog-owners-south-africa',
+    title: 'Best Gifts for Dog Owners in South Africa',
+    excerpt: 'Practical gift ideas for dog owners who value cleaner cars, happier routines and fewer novelty mugs.',
+    seoDescription: 'Find practical gifts for dog owners in South Africa, including travel kits, grooming tools, toys, car protection and useful under-R250 add-ons.',
+    category: 'Gifts',
+    image: '/blog/gifts-for-dog-owners.svg',
+    targetPhrase: 'gifts for dog owners South Africa',
+    funnyHook: 'The best dog-owner gift is something they will use after the dog has ignored the gift wrap.',
+    quickAnswer:
+      'Choose gifts that solve real dog-owner problems: cleaner cars, boredom, grooming, travel, walking or feeding. Practical gifts are less flashy, but they usually get used.',
+    realLifeIntro:
+      'Dog owners are easy to buy for if you avoid the trap of buying something shaped like a dog that does absolutely nothing.',
+    chooseAdvice:
+      'Think about the person, their dog and their routine. Car people may love protection or cleanup. New puppy owners need practical basics. Indoor-dog households may appreciate enrichment toys. Beach families need towels and travel bowls.',
+    practicalAdvice:
+      'If you are unsure, avoid size-sensitive products like harnesses unless you know the fit. Kits, treats, toys, grooming tools and travel accessories are easier gift choices.',
+    productAdvice:
+      'The Boredom Buster Toy Kit, Grooming Starter Kit, Clean Car Kit and Road Trip Starter Kit are practical gifts. For smaller budgets, Training Treats, Lick Mats and Travel Bowls are easy wins.',
+    relatedProductSlugs: ['boredom-buster-toy-kit', 'grooming-starter-kit', 'clean-car-kit', 'road-trip-starter-kit'],
+    recommendedProductSlugs: ['boredom-buster-toy-kit', 'grooming-starter-kit', 'travel-treat-jar'],
+    checklist: ['Choose by routine, not novelty.', 'Avoid size-specific gear unless you know measurements.', 'Pick practical products for car, grooming, travel or boredom.', 'Include the order reference if contacting support about a gift order.'],
+    commonMistakes: ['Buying decorative clutter.', 'Guessing harness size.', 'Choosing treats without considering the dog owner preferences.'],
+    faqs: [
+      { question: 'What is a useful gift for a dog owner?', answer: 'A toy kit, grooming kit, clean-car kit or travel accessory is usually more useful than novelty decor.' },
+      { question: 'Should I buy a harness as a gift?', answer: 'Only if you know the dog measurements and fit needs. Otherwise choose less size-sensitive products.' },
+      { question: 'What is a good budget gift?', answer: 'Training treats, lick mats, travel bowls and treat jars are practical smaller gifts.' },
+    ],
+    internalLinks: [
+      { label: 'Shop Gifts Under R250', href: '/collections/under-r250' },
+      { label: 'Bored dog toy guide', href: '/blog/best-toys-bored-dogs-destroy-everything' },
+      { label: 'Shop all products', href: '/shop' },
+    ],
+    pullQuotes: ['A useful dog gift should make the human sigh with relief, not wonder where to put it.', 'If the dog enjoys it and the owner uses it, that is the sweet spot.'],
+    relatedArticleSlugs: ['best-dog-products-under-r250', 'best-toys-bored-dogs-destroy-everything', 'puppy-starter-kit-checklist-south-africa'],
+  }),
+];
+
+const rawBlogPosts: BlogPost[] = [
   {
     slug: 'best-dog-car-seat-covers-south-africa',
     title: 'Best Dog Car Seat Covers in South Africa',
@@ -223,14 +743,14 @@ export const blogPosts: BlogPost[] = [
     category: 'Car Protection',
     date: '2026-05-07',
     readTime: '10 min read',
-    image: '/blog/car-protection.svg',
+    image: '/blog/best-dog-car-seat-covers.svg',
     relatedProductSlugs: ['waterproof-dog-car-seat-cover', 'dog-hammock-back-seat-cover', 'suv-dog-boot-liner', 'pet-hair-removal-brush'],
     recommendedProductSlugs: ['waterproof-dog-car-seat-cover', 'dog-hammock-back-seat-cover', 'suv-dog-boot-liner', 'road-trip-starter-kit'],
     ctaBundleSlug: 'road-trip-starter-kit',
     internalLinks: [
       { label: 'Shop Car Protection', href: '/shop/category/car-protection' },
       { label: 'Shop Dog Travel Kits', href: '/shop/category/travel-kits' },
-      { label: 'Compare seat covers and boot liners', href: '/blog/dog-seat-cover-vs-boot-liner' },
+      { label: 'Compare hammocks and seat covers', href: '/blog/dog-hammock-vs-dog-seat-cover' },
     ],
     faqs: [
       {
@@ -253,15 +773,15 @@ export const blogPosts: BlogPost[] = [
     sections: longCarSeatCoverSections,
   },
   {
-    slug: 'dog-travel-checklist-south-african-road-trips',
-    title: 'Dog Travel Checklist for South African Road Trips',
-    excerpt: 'A road-trip packing checklist for dog owners covering water, car protection, cleaning, comfort and safer stops.',
-    seoTitle: 'Dog Travel Checklist for South African Road Trips | PawTrip SA',
-    seoDescription: 'Build a practical dog travel checklist for South African road trips with bowls, seat covers, blankets, treats and cleanup basics.',
+    slug: 'dog-road-trip-checklist-south-africa',
+    title: 'Dog Road Trip Checklist South Africa',
+    excerpt: 'A South African dog road trip checklist covering water, car protection, cleaning, comfort and calmer stops.',
+    seoTitle: 'Dog Road Trip Checklist South Africa | PawTrip SA',
+    seoDescription: 'Build a practical dog road trip checklist for South Africa with bowls, seat covers, blankets, treats and cleanup basics.',
     category: 'Travel',
     date: '2026-05-07',
     readTime: '10 min read',
-    image: '/blog/travel-guide.svg',
+    image: '/blog/dog-road-trip-checklist.svg',
     relatedProductSlugs: ['road-trip-starter-kit', 'collapsible-dog-travel-bowl', 'pet-seat-belt-clip', 'waterproof-dog-travel-blanket'],
     recommendedProductSlugs: ['road-trip-starter-kit', 'collapsible-dog-travel-bowl', 'pet-seat-belt-clip', 'travel-treat-jar'],
     ctaBundleSlug: 'road-trip-starter-kit',
@@ -291,15 +811,15 @@ export const blogPosts: BlogPost[] = [
     sections: longRoadTripSections,
   },
   {
-    slug: 'dog-seat-cover-vs-boot-liner',
-    title: 'Dog Seat Cover vs Boot Liner: Which One Should You Buy?',
-    excerpt: 'A clear comparison for choosing back-seat protection, hammock covers or SUV boot liners.',
-    seoTitle: 'Dog Seat Cover vs Boot Liner South Africa | PawTrip SA',
-    seoDescription: 'Compare dog seat covers and boot liners for South African cars, SUVs and bakkies before choosing your car protection setup.',
+    slug: 'dog-hammock-vs-dog-seat-cover',
+    title: 'Dog Hammock vs Dog Seat Cover: Which One Should You Buy?',
+    excerpt: 'A clear comparison for choosing a hammock, flat dog seat cover or SUV boot liner without overbuying.',
+    seoTitle: 'Dog Hammock vs Dog Seat Cover South Africa | PawTrip SA',
+    seoDescription: 'Compare dog hammocks, dog seat covers and boot liners for South African cars, SUVs and bakkies before choosing your setup.',
     category: 'Car Protection',
     date: '2026-05-07',
     readTime: '10 min read',
-    image: '/blog/car-protection.svg',
+    image: '/blog/dog-hammock-vs-seat-cover.svg',
     relatedProductSlugs: ['dog-hammock-back-seat-cover', 'suv-dog-boot-liner', 'waterproof-dog-boot-seat-cover-with-side-protection', 'suv-protection-kit'],
     recommendedProductSlugs: ['dog-hammock-back-seat-cover', 'suv-dog-boot-liner', 'waterproof-dog-boot-seat-cover-with-side-protection', 'suv-protection-kit'],
     ctaBundleSlug: 'suv-protection-kit',
@@ -329,22 +849,22 @@ export const blogPosts: BlogPost[] = [
     sections: longComparisonSections,
   },
   {
-    slug: 'protect-car-from-dog-hair-and-mud',
-    title: 'How to Protect Your Car from Dog Hair and Mud',
+    slug: 'stop-dog-hair-taking-over-car',
+    title: 'How to Stop Dog Hair Taking Over Your Car',
     excerpt: 'Simple products and habits that help keep upholstery, boot carpet and door areas easier to clean.',
-    seoTitle: 'How to Protect Your Car from Dog Hair and Mud | PawTrip SA',
-    seoDescription: 'Learn how seat covers, boot liners, towels and pet hair removal brushes help protect cars from dog hair, mud and sand.',
+    seoTitle: 'How to Stop Dog Hair Taking Over Your Car | PawTrip SA',
+    seoDescription: 'Learn how seat covers, boot liners, towels and pet hair removal brushes help manage dog hair, mud and sand in your car.',
     category: 'Car Protection',
     date: '2026-05-07',
     readTime: '10 min read',
-    image: '/blog/car-protection.svg',
+    image: '/blog/stop-dog-hair-car.svg',
     relatedProductSlugs: ['clean-car-kit', 'pet-hair-removal-brush', 'dog-drying-towel', 'paw-cleaner-cup'],
     recommendedProductSlugs: ['clean-car-kit', 'pet-hair-removal-brush', 'dog-drying-towel', 'paw-cleaner-cup'],
     ctaBundleSlug: 'clean-car-kit',
     internalLinks: [
       { label: 'Shop Car Protection', href: '/shop/category/car-protection' },
       { label: 'Shop Grooming', href: '/shop/category/grooming' },
-      { label: 'Read how to reduce dog smell in your car', href: '/blog/reduce-dog-smell-in-car' },
+      { label: 'Read how to keep your car clean with dogs', href: '/blog/keep-car-clean-when-own-dog' },
     ],
     faqs: [
       {
@@ -375,14 +895,14 @@ export const blogPosts: BlogPost[] = [
     category: 'Travel',
     date: '2026-05-07',
     readTime: '10 min read',
-    image: '/blog/travel-guide.svg',
+    image: '/blog/beach-dog-travel-accessories.svg',
     relatedProductSlugs: ['beach-dog-kit', 'dog-drying-towel', 'collapsible-dog-travel-bowl', 'waterproof-dog-travel-blanket'],
     recommendedProductSlugs: ['beach-dog-kit', 'dog-drying-towel', 'collapsible-dog-travel-bowl', 'paw-cleaner-cup'],
     ctaBundleSlug: 'beach-dog-kit',
     internalLinks: [
       { label: 'Shop Dog Travel Kits', href: '/shop/category/travel-kits' },
       { label: 'Shop Grooming and Cleaning', href: '/shop/category/grooming' },
-      { label: 'Read the road trip checklist', href: '/blog/dog-travel-checklist-south-african-road-trips' },
+      { label: 'Read the road trip checklist', href: '/blog/dog-road-trip-checklist-south-africa' },
     ],
     faqs: [
       {
@@ -404,57 +924,175 @@ export const blogPosts: BlogPost[] = [
     outline: ['Cleanup-first packing', 'Manage sand', 'Help dogs settle', 'Build a beach kit'],
     sections: longBeachSections,
   },
-  ...[
-    ['help-older-dog-get-into-suv', 'How to Help an Older Dog Get Into an SUV', 'Senior dog travel support, ramps, mats and calmer loading routines.', 'Senior dog SUV loading outline', 'foldable-dog-ramp-for-cars-and-suvs', 'senior-dog-travel-kit', 'Travel'],
-    ['best-toys-dogs-bored-easily', 'Best Toys for Dogs Who Get Bored Easily', 'Toy types that support chewing, sniffing, licking and calmer indoor energy.', 'Dog boredom toy outline', 'boredom-buster-toy-kit', 'treat-dispensing-chew-toy', 'Toys'],
-    ['lick-mats-vs-snuffle-mats', 'Lick Mats vs Snuffle Mats: Which Is Better?', 'Compare licking, sniffing and feeding enrichment for different dog routines.', 'Lick mat snuffle mat outline', 'lick-mat', 'snuffle-mat', 'Toys'],
-    ['best-puppy-starter-essentials-south-africa', 'Best Puppy Starter Essentials in South Africa', 'A focused puppy starter checklist for feeding, training, chewing and play.', 'Puppy starter essentials outline', 'puppy-starter-kit', 'puppy-chew-starter-set', 'Puppy Essentials'],
-    ['slow-feeder-bowls-why-dogs-need-them', 'Slow Feeder Bowls: Why Some Dogs Need Them', 'Why fast eaters may benefit from a slower, more structured mealtime.', 'Slow feeder bowl outline', 'slow-feeder-bowl', 'silicone-feeding-mat', 'Feeding'],
-    ['best-dog-grooming-tools-shedding', 'Best Dog Grooming Tools for Shedding', 'Brushes, gloves and towels that help manage shedding at home.', 'Dog grooming tools outline', 'deshedding-grooming-brush', 'grooming-starter-kit', 'Grooming'],
-    ['keep-car-clean-when-own-dog', 'How to Keep Your Car Clean When You Own a Dog', 'A simple clean-car routine for dog owners who travel often.', 'Clean car dog owner outline', 'clean-car-kit', 'waterproof-dog-car-seat-cover', 'Car Protection'],
-    ['best-dog-walking-essentials-early-morning', 'Best Dog Walking Essentials for Early Morning Walks', 'Visibility, control and treat-carrying basics for quiet morning routes.', 'Dog walking essentials outline', 'reflective-dog-leash', 'led-collar-safety-light', 'Walking Gear'],
-    ['choose-right-dog-harness', 'How to Choose the Right Dog Harness', 'Fit, comfort and control considerations for everyday dog harness shopping.', 'Dog harness buying outline', 'adjustable-dog-harness', 'reflective-dog-leash', 'Walking Gear'],
-    ['best-treats-puppy-training', 'Best Treats for Puppy Training', 'How to choose training treats that support early puppy routines.', 'Puppy training treats outline', 'training-treats', 'training-treat-pouch', 'Treats'],
-    ['build-dog-road-trip-kit', 'How to Build a Dog Road Trip Kit', 'A lean product-by-product roadmap for building a reusable travel kit.', 'Dog road trip kit outline', 'road-trip-starter-kit', 'travel-treat-jar', 'Travel'],
-    ['dog-ramp-buying-guide-cars-bakkies', 'Dog Ramp Buying Guide for Cars and Bakkies', 'What to consider when shopping for a dog ramp for cars, SUVs and bakkies.', 'Dog ramp buying guide outline', 'foldable-dog-ramp-for-cars-and-suvs', 'soft-crate-mat', 'Travel'],
-    ['best-pet-products-south-african-summer', 'Best Pet Products for South African Summer', 'Cooling, water, travel and cleanup products for hotter South African months.', 'South African summer pet product outline', 'cooling-pet-mat', 'no-spill-dog-travel-bowl', 'Comfort'],
-    ['reduce-dog-smell-in-car', 'How to Reduce Dog Smell in Your Car', 'Drying, grooming and car protection habits that help reduce dog smell.', 'Reduce dog smell car outline', 'dog-drying-towel', 'pet-hair-removal-brush', 'Grooming'],
-    ['best-dog-gifts-pet-parents-south-africa', 'Best Dog Gifts for Pet Parents in South Africa', 'Practical gift ideas for dog owners who value cleaner cars and happier routines.', 'Dog gifts pet parents outline', 'boredom-buster-toy-kit', 'grooming-starter-kit', 'Gifts'],
-  ].map(([slug, title, excerpt, outlineLabel, productOne, productTwo, category], index) => ({
-    slug,
-    title,
-    excerpt,
-    seoTitle: `${title} | PawTrip SA`,
-    seoDescription: `${excerpt} Read the PawTrip SA outline for practical South African dog product shopping.`,
-    category,
-    date: '2026-05-07',
-    readTime: 'Outline',
-    image:
-      category === 'Car Protection'
-        ? '/blog/car-protection.svg'
-        : category === 'Grooming'
-          ? '/blog/grooming-guide.svg'
-          : category === 'Toys'
-            ? '/blog/toy-guide.svg'
-            : category === 'Feeding'
-              ? '/blog/feeding-guide.svg'
-              : '/blog/travel-guide.svg',
-    relatedProductSlugs: [productOne, productTwo],
-    outline: [
-      `${outlineLabel}: search intent and buyer problem`,
-      'Recommended products to compare',
-      'How to choose without overbuying',
-      'Internal links to related PawTrip SA guides',
-    ],
-    sections: [
-      {
-        heading: 'Outline for expansion',
-        paragraphs: [
-          'This article is planned for expansion. It will become a practical, South African buying guide with product comparisons, use cases, care notes and links to relevant PawTrip SA products.',
-          `Focus keyword theme: ${title.toLowerCase()}.`,
-        ],
-      },
-    ],
-    updatedAt: '2026-05-07',
-  })),
+  ...starterBlogPosts,
 ];
+
+const articleConnections: Record<string, string[]> = {
+  'best-dog-car-seat-covers-south-africa': ['dog-hammock-vs-dog-seat-cover', 'stop-dog-hair-taking-over-car', 'keep-car-clean-when-own-dog'],
+  'dog-road-trip-checklist-south-africa': ['what-to-pack-weekend-away-with-dog', 'best-dog-travel-accessories-beach-trips', 'best-dog-boot-liners-suvs-south-africa'],
+  'dog-hammock-vs-dog-seat-cover': ['best-dog-car-seat-covers-south-africa', 'best-dog-boot-liners-suvs-south-africa', 'stop-dog-hair-taking-over-car'],
+  'stop-dog-hair-taking-over-car': ['best-dog-car-seat-covers-south-africa', 'best-grooming-tools-dogs-that-shed', 'keep-car-clean-when-own-dog'],
+  'best-dog-travel-accessories-beach-trips': ['dog-road-trip-checklist-south-africa', 'stop-dog-hair-taking-over-car', 'what-to-pack-weekend-away-with-dog'],
+};
+
+const blogEnhancements: Record<string, Partial<BlogPost>> = {
+  'best-dog-car-seat-covers-south-africa': {
+    heroSubtitle: 'For dogs who believe the back seat is a spa, snack bar and shedding zone.',
+    quickAnswer:
+      'Most South African dog owners should start with a waterproof rear seat cover if their dog travels on the back seat, a hammock if the dog moves around, and a boot liner if the dog rides in an SUV cargo area.',
+    funnyHook: 'Your dog is not trying to ruin the upholstery. They are simply very committed to texture.',
+    checklist: [
+      'Measure the back seat or boot area before choosing.',
+      'Pick flat cover, hammock or boot liner based on where your dog actually sits.',
+      'Check headrests, anchor points and passenger access.',
+      'Add a pet hair removal brush if shedding is the main battle.',
+    ],
+    commonMistakes: [
+      'Buying a back-seat cover when the dog always rides in the boot.',
+      'Ignoring drying and cleaning after wet trips.',
+      'Choosing the bulkiest option instead of the easiest one to keep fitted.',
+    ],
+    productBlockTitle: 'PawTrip picks for cleaner back seats',
+    pullQuotes: [
+      'The best cover is not the fanciest one. It is the one you leave in the car because it makes life easier.',
+      'Dog hair has a talent for finding fabric seams. Give it a removable surface instead.',
+    ],
+    targetKeywords: ['dog car seat cover South Africa', 'dog hammock car seat cover', 'dog boot liner South Africa'],
+  },
+  'dog-road-trip-checklist-south-africa': {
+    heroSubtitle: 'A no-drama packing guide for long drives, quick weekends and the fuel-station dance of chaos.',
+    quickAnswer:
+      "A useful dog road trip kit starts with water, a travel bowl, restraint support, waste bags, car protection, a towel, treats and one comfort item. Add extras only when they solve your dog's actual travel problem.",
+    funnyHook: 'Pack like your dog will be calm. Prepare like your dog just saw a hadeda at the petrol station.',
+    checklist: [
+      'Water and travel bowl packed where you can reach them.',
+      'Lead, harness, waste bags and treats ready for stops.',
+      'Seat cover, hammock or boot liner fitted before loading.',
+      'Towel, blanket or travel bed packed for cleanup and settling.',
+    ],
+    commonMistakes: [
+      'Burying the dog bowl under luggage.',
+      'Forgetting waste bags until the most public possible moment.',
+      'Packing every product instead of the products that match the route.',
+    ],
+    productBlockTitle: 'PawTrip picks for road trips',
+    pullQuotes: [
+      'A road trip kit should live half-packed, otherwise every weekend outing becomes a tiny admin project.',
+      'The best dog travel accessory is the one you can find before the dog has already jumped in.',
+    ],
+    targetKeywords: ['dog travel checklist South Africa', 'dog road trip kit South Africa', 'dog travel accessories South Africa'],
+  },
+  'dog-hammock-vs-dog-seat-cover': {
+    heroSubtitle: 'A practical comparison for people who love their dog and would like the car to survive.',
+    quickAnswer:
+      'Choose a dog seat cover for back-seat travel, a hammock for more contained back-seat protection, and a boot liner for SUVs or cargo-area dogs. Start with where your dog rides most often.',
+    funnyHook: 'This decision is basically interior design, but with more fur and less mercy.',
+    checklist: [
+      'Confirm whether your dog rides on the back seat or in the cargo area.',
+      'Choose hammock protection if the dog shifts around or slides forward.',
+      'Choose boot protection if the dog jumps into an SUV or bakkie canopy area.',
+      'Add cleanup tools only after the main travel zone is protected.',
+    ],
+    commonMistakes: [
+      'Shopping by product photo instead of vehicle layout.',
+      'Buying both products before knowing which space gets messy.',
+      'Forgetting older dogs may also need access support, not only protection.',
+    ],
+    productBlockTitle: 'PawTrip picks for choosing the right protection',
+    pullQuotes: [
+      'The right product protects the part of the car your dog actually uses. Revolutionary, but somehow easy to forget.',
+      'If the boot is the dog zone, protect the boot. Your back seat cannot help from there.',
+    ],
+    targetKeywords: ['dog seat cover vs boot liner', 'dog boot liner South Africa', 'SUV dog boot liner South Africa'],
+  },
+  'stop-dog-hair-taking-over-car': {
+    heroSubtitle: 'Because "just a quick park walk" can somehow become a full upholstery incident.',
+    quickAnswer:
+      'Protect one consistent dog zone with a cover or liner, keep a towel and hair removal brush in the car, and reset the setup after messy trips before hair and moisture settle in.',
+    funnyHook: 'Mud has never respected your plans. Neither has dog hair. We work with reality here.',
+    checklist: [
+      'Create one protected dog zone in the car.',
+      'Keep a towel and pet hair brush within reach.',
+      'Shake or wipe covers after messy outings.',
+      'Dry damp towels and blankets outside the car.',
+    ],
+    commonMistakes: [
+      'Letting damp fabric sit in a warm car.',
+      'Waiting for a disaster-level clean instead of doing small resets.',
+      'Using fragrance to hide dog smell instead of drying and removing the source.',
+    ],
+    productBlockTitle: 'PawTrip picks for hair, mud and wet paws',
+    pullQuotes: [
+      'A five-minute reset beats a Saturday spent negotiating with embedded hair.',
+      'Dog smell is often a moisture problem wearing a fur coat.',
+    ],
+    targetKeywords: ['protect car from dog hair', 'pet hair removal brush South Africa', 'dog car protection South Africa'],
+  },
+  'best-dog-travel-accessories-beach-trips': {
+    heroSubtitle: 'For sandy paws, salty ears and the proud shake that happens two seconds too late.',
+    quickAnswer:
+      'For beach trips, prioritise a cover or boot liner, a drying towel, fresh water, a travel bowl, waste bags and a removable blanket. Toys are nice; cleanup gear saves the drive home.',
+    funnyHook: 'The beach is magical until your dog brings half of it into the footwell.',
+    checklist: [
+      'Fresh water and bowl packed before leaving.',
+      'Towel ready before the dog reaches the car.',
+      'Cover, hammock or boot liner fitted for the return trip.',
+      'Bag for damp towels and sandy extras.',
+    ],
+    commonMistakes: [
+      'Letting wet sand dry inside car carpets.',
+      'Relying on public taps or nearby shade.',
+      'Packing toys but forgetting cleanup basics.',
+    ],
+    productBlockTitle: 'PawTrip picks for beach-day cleanup',
+    pullQuotes: [
+      'The beach kit is not about perfection. It is about making the ride home less crunchy.',
+      'Dry the dog before the car becomes a mobile dune.',
+    ],
+    targetKeywords: ['dog travel accessories South Africa', 'dog beach trip accessories', 'dog travel bowl South Africa'],
+  },
+};
+
+function defaultChecklist(post: BlogPost) {
+  return [
+    `Match the product to the real problem: ${post.excerpt.toLowerCase()}`,
+    'Check size, fit and cleaning notes before buying.',
+    'Start with one useful product or bundle, then add only what solves the next problem.',
+  ];
+}
+
+function defaultMistakes(post: BlogPost) {
+  return [
+    `Buying for a perfect internet dog instead of your actual dog.`,
+    `Choosing by price alone before checking fit, cleaning and daily use.`,
+    `Skipping the guide links that explain when ${post.category.toLowerCase()} products are worth it.`,
+  ];
+}
+
+function defaultKeywords(post: BlogPost) {
+  return [post.title.toLowerCase(), `${post.category.toLowerCase()} South Africa`, 'dog products South Africa'];
+}
+
+export const blogPosts: BlogPost[] = rawBlogPosts.map((post, index) => {
+  const enhancement = blogEnhancements[post.slug] ?? {};
+  const nextPosts = rawBlogPosts.filter((entry) => entry.slug !== post.slug).slice(index + 1, index + 4);
+  const fallbackRelated = nextPosts.length ? nextPosts.map((entry) => entry.slug) : rawBlogPosts.slice(0, 3).map((entry) => entry.slug);
+
+  return {
+    ...post,
+    heroSubtitle: post.heroSubtitle ?? enhancement.heroSubtitle ?? `A practical PawTrip SA guide for ${post.category.toLowerCase()} decisions that should not need a spreadsheet.`,
+    quickAnswer: post.quickAnswer ?? enhancement.quickAnswer ?? `Start with the product that solves the biggest daily irritation first, then add useful extras only when they make your routine easier.`,
+    funnyHook: post.funnyHook ?? enhancement.funnyHook ?? `Dogs do not read product descriptions. That is why the humans need the useful bits upfront.`,
+    checklist: post.checklist ?? enhancement.checklist ?? defaultChecklist(post),
+    commonMistakes: post.commonMistakes ?? enhancement.commonMistakes ?? defaultMistakes(post),
+    productBlockTitle: post.productBlockTitle ?? enhancement.productBlockTitle ?? 'PawTrip picks for this problem',
+    pullQuotes:
+      post.pullQuotes ??
+      enhancement.pullQuotes ?? [
+        'The goal is not a perfect showroom car. The goal is a setup you can actually live with.',
+        'Useful beats excessive, especially when the dog is already halfway into the car.',
+      ],
+    targetKeywords: post.targetKeywords ?? enhancement.targetKeywords ?? defaultKeywords(post),
+    relatedArticleSlugs: post.relatedArticleSlugs ?? enhancement.relatedArticleSlugs ?? articleConnections[post.slug] ?? fallbackRelated,
+  };
+});

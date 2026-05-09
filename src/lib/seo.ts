@@ -87,25 +87,46 @@ export function websiteSchema() {
 }
 
 export function productSchema(product: Product) {
+  const offer: Record<string, unknown> = {
+    '@type': 'Offer',
+    priceCurrency: 'ZAR',
+    price: product.price.toFixed(2),
+    url: absoluteUrl(`/shop/product/${product.slug}`),
+    itemCondition: 'https://schema.org/NewCondition',
+  };
+
+  if (product.availability === 'in_stock') {
+    offer.availability = 'https://schema.org/InStock';
+  }
+
   return {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.name,
     description: product.fullDescription,
-    image: product.gallery.map(absoluteImageUrl),
+    image: product.galleryImages.map(absoluteImageUrl),
     sku: product.id,
     brand: {
       '@type': 'Brand',
       name: siteName,
     },
     category: product.categoryName,
-    offers: {
-      '@type': 'Offer',
-      priceCurrency: 'ZAR',
-      price: product.price.toFixed(2),
-      url: absoluteUrl(`/shop/product/${product.slug}`),
-      itemCondition: 'https://schema.org/NewCondition',
-    },
+    offers: offer,
+  };
+}
+
+export function faqSchema(items: Array<{ question: string; answer: string }>) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: items.map((item) => ({
+      '@type': 'Question',
+      name: item.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.answer,
+      },
+    })),
   };
 }
 
@@ -123,14 +144,19 @@ export function breadcrumbSchema(items: Array<{ name: string; path: string }>) {
 }
 
 export function blogPostingSchema(post: BlogPost) {
+  const title = post.title || 'PawTrip SA Guide';
+  const description = post.seoDescription || post.excerpt || siteDescription;
+  const publishedDate = post.date || new Date().toISOString();
+  const keywords = Array.isArray(post.targetKeywords) ? post.targetKeywords : [];
+
   return {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
-    headline: post.title,
-    description: post.seoDescription,
-    image: absoluteImageUrl(post.image),
-    datePublished: post.date,
-    dateModified: post.updatedAt ?? post.date,
+    headline: title,
+    description,
+    image: absoluteImageUrl(post.image || defaultOgImage),
+    datePublished: publishedDate,
+    dateModified: post.updatedAt ?? publishedDate,
     author: {
       '@type': 'Organization',
       name: siteName,
@@ -139,8 +165,9 @@ export function blogPostingSchema(post: BlogPost) {
       '@type': 'Organization',
       name: siteName,
     },
-    mainEntityOfPage: absoluteUrl(`/blog/${post.slug}`),
-    articleSection: post.category,
+    mainEntityOfPage: absoluteUrl(`/blog/${post.slug || 'blog'}`),
+    articleSection: post.category || 'PawTrip SA Guides',
+    keywords,
   };
 }
 

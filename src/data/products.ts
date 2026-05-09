@@ -23,13 +23,20 @@ export type Product = {
   categoryName: string;
   image: string;
   gallery: string[];
+  galleryImages: string[];
   shortDescription: string;
   fullDescription: string;
   benefits: string[];
   features: string[];
   bestFor: string[];
+  notIdealFor: string[];
+  qualityNotes: string[];
+  material: string;
+  dimensions: string[];
+  compatibility: string[];
   measurements: string[];
   whatsIncluded: string[];
+  howToUse: string[];
   careInstructions: string[];
   deliveryNote: string;
   returnNote: string;
@@ -38,6 +45,9 @@ export type Product = {
   tags: string[];
   isBundle: boolean;
   relatedProductSlugs: string[];
+  sourcePermissionStatus: 'needs_supplier_images' | 'supplier_permission_confirmed' | 'original_photos_needed';
+  availability: 'in_stock' | 'checking_availability' | 'made_to_order' | 'unavailable';
+  shippingClass: 'standard' | 'bulky' | 'fragile' | 'digital';
   featured?: boolean;
   problemsSolved: string[];
   faqs: Array<{ question: string; answer: string }>;
@@ -52,6 +62,8 @@ export type Product = {
 export type InternalProduct = Product & {
   supplierCostEstimate: number;
   supplierNotes: string;
+  supplierName: string;
+  supplierUrl: string;
 };
 
 export type Category = {
@@ -74,8 +86,67 @@ const categoryMap: Record<string, { slug: CategorySlug; name: string }> = {
   walking: { slug: 'walking-gear', name: 'Walking Gear' },
 };
 
-function makeProduct(entry: Omit<InternalProduct, 'categorySlug' | 'categoryName' | 'longDescription' | 'included' | 'care' | 'returnsNote' | 'keywords' | 'problemsSolved' | 'faqs' | 'benefits'> & {
+function defaultMaterial(entry: { categoryGroup: keyof typeof categoryMap; isBundle: boolean; name: string }) {
+  if (entry.isBundle) return 'Mixed materials across the included products. Check each included item for exact material notes before launch.';
+  if (entry.categoryGroup === 'car' || entry.categoryGroup === 'travel') return 'Water-resistant or easy-clean travel material details to be confirmed with supplier specifications.';
+  if (entry.categoryGroup === 'toys') return 'Dog-safe toy material details to be confirmed with supplier specifications and product samples.';
+  if (entry.categoryGroup === 'grooming') return 'Handle, bristle and cleaning material details to be confirmed with supplier specifications.';
+  if (entry.categoryGroup === 'feeding') return 'Food-contact material details to be confirmed with supplier specifications before launch.';
+  return 'Material details to be confirmed with the supplier before final launch.';
+}
+
+function defaultQualityNotes(entry: { name: string; isBundle: boolean; categoryGroup: keyof typeof categoryMap }) {
+  if (entry.isBundle) {
+    return [
+      `${entry.name} is curated as a practical setup rather than a random multi-pack.`,
+      'Included items should be checked individually for final supplier material and sizing details.',
+      'Supplier-approved photos or original PawTrip SA product photos are still required where placeholders are shown.',
+    ];
+  }
+
+  return [
+    'Selected for practical everyday use rather than decorative novelty.',
+    'Check the product photos, measurements and care notes before ordering.',
+    'Supplier-approved product images are still required where placeholders are shown.',
+  ];
+}
+
+function defaultHowToUse(entry: { name: string; isBundle: boolean; categoryGroup: keyof typeof categoryMap }) {
+  if (entry.isBundle) {
+    return [
+      'Start by setting up the main protection or routine product first.',
+      'Add the smaller included items where they naturally fit into the trip, cleanup or training routine.',
+      'After use, clean and reset the kit so it is ready for the next outing.',
+    ];
+  }
+
+  if (entry.categoryGroup === 'car' || entry.categoryGroup === 'travel') {
+    return [
+      'Check the measurements against your vehicle before ordering.',
+      'Fit the product before your dog gets into the car so straps, anchors or surfaces are secure.',
+      'Shake, wipe or dry the product after messy trips so it is ready for the next drive.',
+    ];
+  }
+
+  return [
+    'Check the measurements and product notes before ordering.',
+    'Introduce the product calmly and let your dog inspect it before the first full use.',
+    'Clean and dry the product after use according to the care notes.',
+  ];
+}
+
+function makeProduct(entry: Omit<InternalProduct, 'categorySlug' | 'categoryName' | 'galleryImages' | 'qualityNotes' | 'material' | 'dimensions' | 'notIdealFor' | 'compatibility' | 'howToUse' | 'sourcePermissionStatus' | 'availability' | 'shippingClass' | 'longDescription' | 'included' | 'care' | 'returnsNote' | 'keywords' | 'problemsSolved' | 'faqs' | 'benefits' | 'supplierName' | 'supplierUrl'> & {
   categoryGroup: keyof typeof categoryMap;
+  galleryImages?: string[];
+  qualityNotes?: string[];
+  material?: string;
+  dimensions?: string[];
+  notIdealFor?: string[];
+  compatibility?: string[];
+  howToUse?: string[];
+  sourcePermissionStatus?: Product['sourcePermissionStatus'];
+  availability?: Product['availability'];
+  shippingClass?: Product['shippingClass'];
   longDescription?: string;
   included?: string[];
   care?: string[];
@@ -90,6 +161,24 @@ function makeProduct(entry: Omit<InternalProduct, 'categorySlug' | 'categoryName
     category: entry.category,
     categorySlug: category.slug,
     categoryName: category.name,
+    galleryImages: entry.galleryImages ?? entry.gallery,
+    qualityNotes: entry.qualityNotes ?? defaultQualityNotes(entry),
+    material: entry.material ?? defaultMaterial(entry),
+    dimensions: entry.dimensions ?? entry.measurements,
+    notIdealFor:
+      entry.notIdealFor ?? [
+        'Owners who need a guaranteed exact vehicle fit without checking measurements first.',
+        'Dogs that chew or damage soft goods aggressively without supervision.',
+      ],
+    compatibility:
+      entry.compatibility ?? [
+        `${entry.name} is best matched to the measurements and use case listed on this page.`,
+        'Universal-fit accessories should be checked against your vehicle, dog size or home setup before ordering.',
+      ],
+    howToUse: entry.howToUse ?? defaultHowToUse(entry),
+    sourcePermissionStatus: entry.sourcePermissionStatus ?? 'needs_supplier_images',
+    availability: entry.availability ?? 'checking_availability',
+    shippingClass: entry.shippingClass ?? (entry.slug.includes('ramp') ? 'bulky' : 'standard'),
     longDescription: entry.longDescription ?? entry.fullDescription,
     included: entry.whatsIncluded,
     care: entry.careInstructions,
@@ -105,8 +194,10 @@ function makeProduct(entry: Omit<InternalProduct, 'categorySlug' | 'categoryName
       entry.faqs ?? [
         { question: `Is ${entry.name.toLowerCase()} suitable for regular use?`, answer: 'Yes, it is intended as a practical everyday product.' },
         { question: 'How should I care for it?', answer: 'Follow the care instructions and keep it clean and dry between uses.' },
-      ],
+    ],
     type: entry.type,
+    supplierName: '',
+    supplierUrl: '',
   };
 }
 

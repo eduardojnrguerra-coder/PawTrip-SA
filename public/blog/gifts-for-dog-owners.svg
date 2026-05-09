@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">Best Gifts for Dog Owners in South Africa</title>
+  <desc id="desc">Premium PawTrip SA gift guide card with wrapped gift, paw and product icons.</desc>
+  <rect width="1200" height="675" fill="#1F4D3A"/>
+  <rect x="82" y="78" width="1036" height="520" rx="44" fill="#143628"/>
+  <rect x="720" y="275" width="300" height="210" rx="34" fill="#FBF8F3"/>
+  <rect x="848" y="275" width="45" height="210" fill="#E8B15A"/>
+  <rect x="720" y="342" width="300" height="45" fill="#E8B15A"/>
+  <path d="M870 275c-48-78-120-68-120-18 0 45 68 34 120 18zm0 0c48-78 120-68 120-18 0 45-68 34-120 18z" fill="#A7C4AE"/>
+  <circle cx="1020" cy="210" r="24" fill="#E8B15A"/><circle cx="988" cy="174" r="13" fill="#E8B15A"/><circle cx="1020" cy="160" r="13" fill="#E8B15A"/><circle cx="1052" cy="174" r="13" fill="#E8B15A"/>
+  <text x="150" y="170" font-family="Sora, Arial, sans-serif" font-size="34" font-weight="800" fill="#E8B15A">GIFT GUIDE</text>
+  <text x="150" y="290" font-family="Sora, Arial, sans-serif" font-size="68" font-weight="900" fill="#FBF8F3">Gifts for Dog</text>
+  <text x="150" y="368" font-family="Sora, Arial, sans-serif" font-size="68" font-weight="900" fill="#FBF8F3">Owners</text>
+  <text x="150" y="448" font-family="Inter, Arial, sans-serif" font-size="31" fill="#DCE7D6">Practical gifts. Fewer novelty mugs.</text>
+  <text x="150" y="525" font-family="Sora, Arial, sans-serif" font-size="30" font-weight="800" fill="#A7C4AE">PawTrip SA</text>
+</svg>

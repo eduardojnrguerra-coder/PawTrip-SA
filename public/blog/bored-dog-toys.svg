@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">Best Toys for Bored Dogs That Destroy Everything</title>
+  <desc id="desc">Premium PawTrip SA toy article card with chew toy, ball and puzzle shapes.</desc>
+  <rect width="1200" height="675" fill="#1F4D3A"/>
+  <rect x="82" y="78" width="1036" height="520" rx="44" fill="#143628"/>
+  <circle cx="1020" cy="144" r="210" fill="#A7C4AE" opacity=".16"/>
+  <circle cx="738" cy="260" r="58" fill="#E8B15A"/><circle cx="738" cy="260" r="22" fill="#143628" opacity=".25"/>
+  <path d="M842 210c44-38 116-19 136 38 58 8 85 76 49 122-31 40-90 41-127 10-43 28-104 16-130-30-33-58 5-124 72-140z" fill="#FBF8F3"/>
+  <path d="M805 435h210v54H805zM858 382h104v107H858z" fill="#A7C4AE"/>
+  <path d="M842 435v54M902 382v107M962 435v54" stroke="#1F4D3A" stroke-width="10" opacity=".5"/>
+  <text x="150" y="170" font-family="Sora, Arial, sans-serif" font-size="34" font-weight="800" fill="#E8B15A">TOYS &amp; ENRICHMENT</text>
+  <text x="150" y="290" font-family="Sora, Arial, sans-serif" font-size="68" font-weight="900" fill="#FBF8F3">Toys for Bored</text>
+  <text x="150" y="368" font-family="Sora, Arial, sans-serif" font-size="68" font-weight="900" fill="#FBF8F3">Dogs</text>
+  <text x="150" y="448" font-family="Inter, Arial, sans-serif" font-size="31" fill="#DCE7D6">Chew, sniff, lick and save the slippers.</text>
+  <text x="150" y="525" font-family="Sora, Arial, sans-serif" font-size="30" font-weight="800" fill="#A7C4AE">PawTrip SA</text>
+</svg>

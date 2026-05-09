@@ -29,7 +29,7 @@ export const collections: Collection[] = [
       'pet-hair-removal-brush',
       'collapsible-dog-travel-bowl',
     ],
-    guideSlug: 'best-puppy-starter-essentials-south-africa',
+    guideSlug: 'puppy-starter-kit-checklist-south-africa',
   },
   {
     slug: 'under-r250',
@@ -54,7 +54,7 @@ export const collections: Collection[] = [
       'dog-shampoo-bar',
       'travel-treat-jar',
     ],
-    guideSlug: 'dog-travel-checklist-south-african-road-trips',
+    guideSlug: 'best-dog-products-under-r250',
   },
   {
     slug: 'car-protection-essentials',
@@ -76,7 +76,7 @@ export const collections: Collection[] = [
       'dog-drying-towel',
       'paw-cleaner-cup',
     ],
-    guideSlug: 'protect-car-from-dog-hair-and-mud',
+    guideSlug: 'stop-dog-hair-taking-over-car',
   },
   {
     slug: 'bored-dog-fixes',
@@ -97,7 +97,7 @@ export const collections: Collection[] = [
       'rubber-chew-ball',
       'boredom-buster-toy-set',
     ],
-    guideSlug: 'best-toys-dogs-bored-easily',
+    guideSlug: 'best-toys-bored-dogs-destroy-everything',
   },
 ];
 

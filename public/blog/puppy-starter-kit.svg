@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">Puppy Starter Kit Checklist South Africa</title>
+  <desc id="desc">Premium PawTrip SA puppy article card with paw prints, treat and small collar icons.</desc>
+  <rect width="1200" height="675" fill="#1F4D3A"/>
+  <rect x="82" y="78" width="1036" height="520" rx="44" fill="#143628"/>
+  <circle cx="1030" cy="130" r="210" fill="#A7C4AE" opacity=".18"/>
+  <path d="M760 270c0-62 50-112 112-112s112 50 112 112" fill="none" stroke="#E8B15A" stroke-width="28" stroke-linecap="round"/>
+  <circle cx="760" cy="270" r="26" fill="#FBF8F3"/><circle cx="984" cy="270" r="26" fill="#FBF8F3"/>
+  <rect x="755" y="340" width="250" height="76" rx="38" fill="#A7C4AE"/>
+  <circle cx="880" cy="378" r="18" fill="#1F4D3A"/>
+  <circle cx="820" cy="475" r="23" fill="#FBF8F3"/><circle cx="788" cy="438" r="12" fill="#FBF8F3"/><circle cx="820" cy="424" r="12" fill="#FBF8F3"/><circle cx="852" cy="438" r="12" fill="#FBF8F3"/>
+  <rect x="935" y="450" width="86" height="50" rx="16" fill="#E8B15A"/>
+  <text x="150" y="170" font-family="Sora, Arial, sans-serif" font-size="34" font-weight="800" fill="#E8B15A">PUPPY GUIDE</text>
+  <text x="150" y="290" font-family="Sora, Arial, sans-serif" font-size="68" font-weight="900" fill="#FBF8F3">Puppy Starter</text>
+  <text x="150" y="368" font-family="Sora, Arial, sans-serif" font-size="68" font-weight="900" fill="#FBF8F3">Kit Checklist</text>
+  <text x="150" y="448" font-family="Inter, Arial, sans-serif" font-size="31" fill="#DCE7D6">Tiny dog. Big admin. Useful basics.</text>
+  <text x="150" y="525" font-family="Sora, Arial, sans-serif" font-size="30" font-weight="800" fill="#A7C4AE">PawTrip SA</text>
+</svg>

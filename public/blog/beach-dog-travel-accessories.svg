@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">Best Dog Travel Accessories for Beach Trips</title>
+  <desc id="desc">Premium PawTrip SA travel article card with road, bowl, towel and beach-sand shapes.</desc>
+  <rect width="1200" height="675" fill="#1F4D3A"/>
+  <rect x="82" y="78" width="1036" height="520" rx="44" fill="#143628"/>
+  <path d="M80 500c170-70 260-25 400-95 164-82 304-25 640-122v315H80z" fill="#E8B15A" opacity=".34"/>
+  <path d="M715 185h170c0 66-38 108-85 108s-85-42-85-108z" fill="#FBF8F3"/>
+  <path d="M725 185h150" stroke="#A7C4AE" stroke-width="18" stroke-linecap="round"/>
+  <rect x="910" y="252" width="116" height="170" rx="26" fill="#A7C4AE"/>
+  <path d="M930 290h76M930 330h76M930 370h76" stroke="#1F4D3A" stroke-width="8" stroke-linecap="round" opacity=".75"/>
+  <path d="M735 430c60-50 111-50 171 0" fill="none" stroke="#FBF8F3" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="700" cy="470" r="14" fill="#FBF8F3"/><circle cx="732" cy="486" r="8" fill="#FBF8F3"/><circle cx="670" cy="488" r="8" fill="#FBF8F3"/>
+  <text x="150" y="170" font-family="Sora, Arial, sans-serif" font-size="34" font-weight="800" fill="#E8B15A">BEACH TRAVEL GUIDE</text>
+  <text x="150" y="290" font-family="Sora, Arial, sans-serif" font-size="68" font-weight="900" fill="#FBF8F3">Beach Trip</text>
+  <text x="150" y="368" font-family="Sora, Arial, sans-serif" font-size="68" font-weight="900" fill="#FBF8F3">Accessories</text>
+  <text x="150" y="448" font-family="Inter, Arial, sans-serif" font-size="31" fill="#DCE7D6">For sandy paws, wet towels and the ride home.</text>
+  <text x="150" y="525" font-family="Sora, Arial, sans-serif" font-size="30" font-weight="800" fill="#A7C4AE">PawTrip SA</text>
+</svg>

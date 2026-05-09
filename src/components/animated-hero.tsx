@@ -8,7 +8,7 @@ import { formatZar } from '@/lib/money';
 import { getProductImageAlt, ProductImage } from '@/components/product-image';
 import { HeroRoute } from '@/components/hero-route';
 
-const floatingBadges = ['Waterproof protection', 'Boredom busters', 'Secure checkout', 'Travel-ready kits'];
+const floatingBadges = ['Waterproof protection', 'Easy clean-up', 'Fast-fit design', 'Comfort-first setup', 'SA-focused picks'];
 
 const copyContainer: Variants = {
   hidden: { opacity: 0 },
@@ -44,20 +44,21 @@ export function AnimatedHero({ products }: { products: Product[] }) {
           <motion.span className="eyebrow" variants={copyItem}>
             South African pet travel & essentials store
           </motion.span>
-          <motion.h1 variants={copyItem}>Cleaner cars. Safer trips. Happier dogs.</motion.h1>
+          <motion.h1 variants={copyItem}>Travel better with your dog.</motion.h1>
           <motion.p variants={copyItem}>
-            Dog travel kits, toys, treats and everyday essentials selected to make life with pets easier.
+            Premium dog travel kits, car protection and practical everyday essentials selected for cleaner cars,
+            calmer routines and happier South African road trips.
           </motion.p>
           <div className="heroActions">
             <motion.div variants={copyItem}>
-              <Link href="/find-my-kit" className="button buttonPrimary buttonSheen">
-                Find My Pet Kit
+              <Link href="/shop" className="button buttonPrimary buttonSheen">
+                Shop Best Sellers
                 <ArrowRight size={16} />
               </Link>
             </motion.div>
             <motion.div variants={copyItem}>
-              <Link href="/shop" className="button buttonSecondary buttonSheen">
-                Shop Best Sellers
+              <Link href="/find-my-kit" className="button buttonSecondary buttonSheen">
+                Find My Kit
               </Link>
             </motion.div>
           </div>
@@ -65,7 +66,7 @@ export function AnimatedHero({ products }: { products: Product[] }) {
           <motion.div className="heroTrustLine" variants={copyItem}>
             <span>Secure checkout</span>
             <span>Clear delivery estimates</span>
-            <span>Practical pet essentials</span>
+            <span>Curated practical essentials</span>
           </motion.div>
         </motion.div>
 
@@ -92,7 +93,7 @@ export function AnimatedHero({ products }: { products: Product[] }) {
               />
               <div className="heroImageOverlay heroPremiumOverlay">
                 <span>
-                  <Truck size={14} /> Built for practical trips
+                  <Truck size={14} /> Featured travel setup
                 </span>
                 <strong>{primary?.name ?? 'Road Trip Starter Kit'}</strong>
                 <small>{primary ? formatZar(primary.price) : 'From travel kits to clean-car add-ons'}</small>

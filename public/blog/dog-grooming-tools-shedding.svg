@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">Best Grooming Tools for Dogs That Shed</title>
+  <desc id="desc">Premium PawTrip SA grooming article card with brush, towel and hair line icons.</desc>
+  <rect width="1200" height="675" fill="#1F4D3A"/>
+  <rect x="82" y="78" width="1036" height="520" rx="44" fill="#143628"/>
+  <rect x="756" y="190" width="132" height="265" rx="34" fill="#FBF8F3"/>
+  <rect x="790" y="140" width="64" height="95" rx="28" fill="#E8B15A"/>
+  <path d="M775 465v64M812 465v64M849 465v64M886 465v64" stroke="#A7C4AE" stroke-width="15" stroke-linecap="round"/>
+  <rect x="930" y="245" width="115" height="190" rx="26" fill="#A7C4AE"/>
+  <path d="M950 285h75M950 325h75M950 365h75" stroke="#1F4D3A" stroke-width="8" opacity=".55" stroke-linecap="round"/>
+  <g stroke="#FBF8F3" stroke-width="6" stroke-linecap="round" opacity=".28">
+    <path d="M690 230c-62 32-62 82 0 112"/><path d="M705 380c-80 38-82 92 0 130"/><path d="M1050 185c-64 34-64 76 0 110"/>
+  </g>
+  <text x="150" y="170" font-family="Sora, Arial, sans-serif" font-size="34" font-weight="800" fill="#E8B15A">GROOMING GUIDE</text>
+  <text x="150" y="290" font-family="Sora, Arial, sans-serif" font-size="68" font-weight="900" fill="#FBF8F3">Grooming Tools</text>
+  <text x="150" y="368" font-family="Sora, Arial, sans-serif" font-size="68" font-weight="900" fill="#FBF8F3">for Shedding</text>
+  <text x="150" y="448" font-family="Inter, Arial, sans-serif" font-size="31" fill="#DCE7D6">Brushes, towels and fewer fur surprises.</text>
+  <text x="150" y="525" font-family="Sora, Arial, sans-serif" font-size="30" font-weight="800" fill="#A7C4AE">PawTrip SA</text>
+</svg>

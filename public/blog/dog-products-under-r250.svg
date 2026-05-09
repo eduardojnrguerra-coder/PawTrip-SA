@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">Best Dog Products Under R250</title>
+  <desc id="desc">Premium PawTrip SA shopping guide card with treat, bowl and toy icons.</desc>
+  <rect width="1200" height="675" fill="#1F4D3A"/>
+  <rect x="82" y="78" width="1036" height="520" rx="44" fill="#143628"/>
+  <circle cx="760" cy="270" r="70" fill="#E8B15A"/>
+  <rect x="870" y="205" width="155" height="115" rx="26" fill="#FBF8F3"/>
+  <path d="M890 380h150c0 48-34 80-75 80s-75-32-75-80z" fill="#A7C4AE"/>
+  <path d="M882 380h164" stroke="#FBF8F3" stroke-width="15" stroke-linecap="round"/>
+  <rect x="718" y="382" width="112" height="74" rx="22" fill="#A7C4AE"/>
+  <path d="M742 404h64M742 432h64" stroke="#1F4D3A" stroke-width="8" stroke-linecap="round" opacity=".55"/>
+  <text x="150" y="170" font-family="Sora, Arial, sans-serif" font-size="34" font-weight="800" fill="#E8B15A">SHOPPING GUIDE</text>
+  <text x="150" y="290" font-family="Sora, Arial, sans-serif" font-size="74" font-weight="900" fill="#FBF8F3">Dog Products</text>
+  <text x="150" y="374" font-family="Sora, Arial, sans-serif" font-size="74" font-weight="900" fill="#FBF8F3">Under R250</text>
+  <text x="150" y="454" font-family="Inter, Arial, sans-serif" font-size="31" fill="#DCE7D6">Useful add-ons without the scroll spiral.</text>
+  <text x="150" y="525" font-family="Sora, Arial, sans-serif" font-size="30" font-weight="800" fill="#A7C4AE">PawTrip SA</text>
+</svg>
