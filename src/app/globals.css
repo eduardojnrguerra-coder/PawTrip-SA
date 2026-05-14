@@ -5818,3 +5818,555 @@ body {
     animation: none !important;
   }
 }
+
+/* Launch visual upgrade: photographic hero, stronger contrast, conversion-forward cards. */
+body {
+  color: #1f2937;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(216, 111, 55, 0.18), transparent 28rem),
+    radial-gradient(circle at 88% 16%, rgba(167, 196, 174, 0.28), transparent 30rem),
+    linear-gradient(180deg, #f4efe7 0%, #fbf8f3 34%, #f4efe7 100%);
+}
+
+p,
+li,
+summary,
+.muted,
+.sectionHeader p,
+.productCardBody p,
+.blogCardBody p,
+.faqHomeItem p,
+.collectionCard p,
+.conversionCategoryLink span {
+  color: #374151;
+}
+
+.eyebrow,
+.chip,
+.blogCategoryPill,
+.filterChip {
+  color: #143628;
+}
+
+.heroVisualFull {
+  position: relative;
+  min-height: clamp(720px, 88vh, 920px);
+  overflow: hidden;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  background: #143628;
+  isolation: isolate;
+}
+
+.heroVisualFull .heroBackdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -3;
+  background:
+    linear-gradient(90deg, rgba(10, 21, 16, 0.92) 0%, rgba(10, 21, 16, 0.76) 35%, rgba(10, 21, 16, 0.18) 68%, rgba(10, 21, 16, 0.5) 100%),
+    linear-gradient(180deg, rgba(10, 21, 16, 0.18), rgba(10, 21, 16, 0.5)),
+    url("/brand-assets/pawtrip-hero-dog-car.png") center / cover no-repeat;
+  transform: scale(1.02);
+}
+
+.heroVisualFull::before,
+.heroVisualFull::after {
+  position: absolute;
+  z-index: -2;
+  border-radius: 999px;
+  content: "";
+  pointer-events: none;
+}
+
+.heroVisualFull::before {
+  right: 12%;
+  bottom: 10%;
+  width: 360px;
+  height: 360px;
+  background: rgba(232, 177, 90, 0.28);
+  filter: blur(40px);
+  animation: ambientFloat 16s ease-in-out infinite;
+}
+
+.heroVisualFull::after {
+  left: -90px;
+  bottom: -120px;
+  width: 360px;
+  height: 360px;
+  background: rgba(216, 111, 55, 0.32);
+  filter: blur(28px);
+}
+
+.heroVisualFull .heroShell {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(320px, 0.78fr) minmax(280px, 1fr);
+  align-items: center;
+  max-width: 1440px;
+  min-height: calc(clamp(720px, 88vh, 920px) - clamp(2.5rem, 6vw, 4rem));
+  border: 0;
+  border-radius: 34px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.heroVisualFull .heroShell::before {
+  display: none;
+}
+
+.heroGlassPanel {
+  max-width: 660px;
+  border: 1px solid rgba(251, 248, 243, 0.18);
+  border-radius: 32px;
+  padding: clamp(1.25rem, 4vw, 2.5rem);
+  background: linear-gradient(145deg, rgba(20, 54, 40, 0.9), rgba(20, 54, 40, 0.68));
+  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(20px);
+}
+
+.heroGlassPanel .eyebrow {
+  width: fit-content;
+  border-color: rgba(232, 177, 90, 0.5);
+  background: rgba(232, 177, 90, 0.16);
+  color: #fff5df;
+}
+
+.heroGlassPanel h1 {
+  margin-top: 1rem;
+  color: #fbf8f3;
+  font-size: clamp(3.25rem, 7vw, 6.8rem);
+  line-height: 0.9;
+  letter-spacing: 0;
+}
+
+.heroGlassPanel p {
+  max-width: 54ch;
+  color: rgba(251, 248, 243, 0.93);
+  font-size: clamp(1.04rem, 1.5vw, 1.24rem);
+  line-height: 1.65;
+}
+
+.heroGlassPanel .buttonPrimary {
+  background: linear-gradient(135deg, #e8b15a, #d86f37);
+  color: #143628;
+}
+
+.heroGlassPanel .buttonSecondary {
+  border-color: rgba(251, 248, 243, 0.34);
+  background: rgba(251, 248, 243, 0.12);
+  color: #fbf8f3;
+}
+
+.heroGlassPanel .heroTrustLine span {
+  border-color: rgba(251, 248, 243, 0.18);
+  background: rgba(251, 248, 243, 0.1);
+  color: #fbf8f3;
+}
+
+.heroVisualScene {
+  position: relative;
+  min-height: 620px;
+}
+
+.heroVisualScene .heroRoute {
+  right: 2%;
+  bottom: 18%;
+  left: 18%;
+  opacity: 0.62;
+  filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.28));
+}
+
+.heroVisualScene .heroLayeredVisual {
+  position: absolute;
+  right: 3%;
+  bottom: 5%;
+  width: min(360px, 45vw);
+  min-height: 300px;
+  opacity: 0.92;
+}
+
+.heroVisualScene .heroVisualCardMain {
+  border-color: rgba(251, 248, 243, 0.28);
+  background: rgba(251, 248, 243, 0.86);
+}
+
+.heroVisualScene .heroStackCard {
+  display: none;
+}
+
+.heroFloatingBadges {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.heroFloatBadge {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid rgba(251, 248, 243, 0.28);
+  border-radius: 999px;
+  padding: 0.78rem 1rem;
+  background: rgba(20, 54, 40, 0.78);
+  color: #fbf8f3;
+  font-size: 0.86rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  box-shadow: 0 18px 52px rgba(0, 0, 0, 0.26);
+  backdrop-filter: blur(14px);
+}
+
+.heroFloatBadge1 { right: 5%; top: 18%; }
+.heroFloatBadge2 { right: 15%; top: 34%; }
+.heroFloatBadge3 { right: 3%; top: 50%; }
+.heroFloatBadge4 { right: 18%; bottom: 22%; }
+.heroFloatBadge5 { right: 5%; bottom: 9%; }
+
+.heroPremiumProof {
+  right: 4%;
+  bottom: 4%;
+  border-color: rgba(251, 248, 243, 0.22);
+  background: rgba(20, 54, 40, 0.76);
+  color: #fbf8f3;
+  backdrop-filter: blur(14px);
+}
+
+.homeTrustBar {
+  margin-top: 0;
+  background: #143628;
+}
+
+.homeTrustBarInner {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.homeTrustBarInner span,
+.homeTrustBarInner a {
+  color: #fbf8f3;
+  font-weight: 850;
+}
+
+.needGrid {
+  grid-template-columns: repeat(7, minmax(170px, 1fr));
+}
+
+.needCard {
+  min-height: 250px;
+  border-color: rgba(31, 77, 58, 0.16);
+  background:
+    radial-gradient(circle at 80% 12%, rgba(232, 177, 90, 0.26), transparent 7rem),
+    linear-gradient(160deg, rgba(251, 248, 243, 0.98), rgba(167, 196, 174, 0.18));
+  box-shadow: 0 18px 48px rgba(31, 41, 55, 0.1);
+}
+
+.needCard span:first-child {
+  color: #d86f37;
+}
+
+.needCard strong {
+  color: #143628;
+}
+
+.cleanCarPanel {
+  position: relative;
+  overflow: hidden;
+  min-height: 560px;
+  background:
+    linear-gradient(90deg, rgba(10, 21, 16, 0.9), rgba(10, 21, 16, 0.62), rgba(10, 21, 16, 0.18)),
+    url("/brand-assets/pawtrip-mess-solution.png") center / cover no-repeat;
+}
+
+.cleanCarPanel::after {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 74% 20%, rgba(232, 177, 90, 0.18), transparent 20rem);
+  content: "";
+  pointer-events: none;
+}
+
+.cleanCarPanel > * {
+  position: relative;
+  z-index: 1;
+}
+
+.beforeAfterCard {
+  background: rgba(20, 54, 40, 0.72);
+}
+
+.productCard {
+  overflow: hidden;
+  border: 1px solid rgba(31, 77, 58, 0.16);
+  background: #fbf8f3;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+.productCard:hover {
+  border-color: rgba(216, 111, 55, 0.38);
+  box-shadow: 0 30px 86px rgba(31, 41, 55, 0.16);
+}
+
+.productCardMedia {
+  min-height: 250px;
+}
+
+.productCardMedia .managedProductImage {
+  transform: scale(1.01);
+  transition: transform 0.32s ease, opacity 0.24s ease;
+}
+
+.productCard:hover .productCardMedia .managedProductImage {
+  transform: scale(1.07);
+}
+
+.productName {
+  color: #143628;
+  font-size: 1.12rem;
+}
+
+.productProblemLine {
+  margin-bottom: -0.2rem;
+  color: #d86f37;
+  font-size: 0.8rem;
+  font-weight: 950;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.productWhyLine {
+  color: #374151;
+}
+
+.bestFor {
+  align-items: flex-start;
+  color: #143628;
+}
+
+.bestForTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.bestForTags span {
+  border-radius: 999px;
+  padding: 0.32rem 0.5rem;
+  background: rgba(167, 196, 174, 0.26);
+  color: #143628;
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.kitFinderPreview,
+.kitQuizShell,
+.kitQuizResult {
+  border: 1px solid rgba(251, 248, 243, 0.14);
+  background:
+    radial-gradient(circle at 86% 15%, rgba(232, 177, 90, 0.24), transparent 18rem),
+    linear-gradient(135deg, #143628, #1f4d3a);
+  color: #fbf8f3;
+  box-shadow: 0 32px 90px rgba(20, 54, 40, 0.22);
+}
+
+.kitFinderPreview h2,
+.kitFinderPreview p,
+.kitFinderPreview span,
+.kitQuizShell h2,
+.kitQuizShell p,
+.kitQuizShell span,
+.kitQuizResult h2,
+.kitQuizResult h3,
+.kitQuizResult p,
+.kitQuizResult span,
+.kitQuizResult li {
+  color: #fbf8f3;
+}
+
+.kitQuizCard,
+.kitQuizResultPanel,
+.kitQuizGuide,
+.kitQuizAddOn,
+.kitQuizAnswerPill,
+.fitmentHelpBox {
+  border-color: rgba(251, 248, 243, 0.16);
+  background: rgba(251, 248, 243, 0.1);
+  color: #fbf8f3;
+}
+
+.kitQuizOption {
+  border-color: rgba(251, 248, 243, 0.18);
+  background: rgba(251, 248, 243, 0.92);
+  color: #143628;
+}
+
+.kitQuizOption span,
+.kitQuizOption svg {
+  color: #143628;
+}
+
+.kitQuizProgress {
+  background: rgba(251, 248, 243, 0.18);
+}
+
+.kitQuizProgress span {
+  background: linear-gradient(90deg, #e8b15a, #d86f37);
+}
+
+.blogHubHero,
+.blogFeaturedCard,
+.blogProblemPanel,
+.blogUsefulPanel {
+  background:
+    radial-gradient(circle at 86% 12%, rgba(232, 177, 90, 0.28), transparent 16rem),
+    linear-gradient(135deg, #143628, #1f4d3a);
+  color: #fbf8f3;
+}
+
+.blogHubHero h1,
+.blogHubHero p,
+.blogFeaturedCard h2,
+.blogFeaturedCard p,
+.blogProblemPanel h2,
+.blogProblemPanel p,
+.blogUsefulPanel h2 {
+  color: #fbf8f3;
+}
+
+.blogCardPremium {
+  border-color: rgba(31, 77, 58, 0.14);
+  background:
+    radial-gradient(circle at 92% 10%, rgba(232, 177, 90, 0.18), transparent 8rem),
+    #fbf8f3;
+  box-shadow: 0 18px 50px rgba(31, 41, 55, 0.1);
+}
+
+.blogCardBody h2,
+.homeGuideCard strong {
+  color: #143628;
+}
+
+.blogFunnyTeaser,
+.homeGuideCard span {
+  color: #d86f37;
+}
+
+.proofGridWrap {
+  border-radius: 32px;
+  padding: clamp(1.25rem, 4vw, 2.25rem);
+  background: #143628;
+}
+
+.proofGridWrap h2,
+.proofGridWrap .eyebrow {
+  color: #fbf8f3;
+}
+
+.proofCard,
+.whyCard {
+  background: rgba(251, 248, 243, 0.12);
+}
+
+.faqHomeItem {
+  background: #fbf8f3;
+}
+
+.faqHomeItem summary {
+  color: #143628;
+}
+
+.premiumFinalCtaInner .buttonSecondary {
+  border-color: rgba(251, 248, 243, 0.24);
+  background: rgba(251, 248, 243, 0.12);
+  color: #fbf8f3;
+}
+
+@media (max-width: 1180px) {
+  .needGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .heroVisualFull .heroShell {
+    grid-template-columns: 1fr;
+    align-content: center;
+  }
+
+  .heroVisualScene {
+    position: absolute;
+    inset: 0;
+    min-height: 0;
+    pointer-events: none;
+  }
+
+  .heroVisualScene .heroLayeredVisual {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .heroVisualFull {
+    min-height: 760px;
+    padding: 0.75rem;
+  }
+
+  .heroVisualFull .heroBackdrop {
+    background:
+      linear-gradient(180deg, rgba(10, 21, 16, 0.92) 0%, rgba(10, 21, 16, 0.7) 52%, rgba(10, 21, 16, 0.5) 100%),
+      url("/brand-assets/pawtrip-hero-dog-car.png") 62% center / cover no-repeat;
+  }
+
+  .heroVisualFull .heroShell {
+    min-height: 730px;
+    padding: 0;
+  }
+
+  .heroGlassPanel {
+    align-self: end;
+    border-radius: 26px;
+    padding: 1.1rem;
+  }
+
+  .heroGlassPanel h1 {
+    font-size: clamp(2.8rem, 15vw, 4.4rem);
+  }
+
+  .heroGlassPanel .heroActions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .heroGlassPanel .button {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .heroFloatBadge {
+    display: none;
+  }
+
+  .heroPremiumProof {
+    display: none;
+  }
+
+  .needGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .cleanCarPanel {
+    min-height: auto;
+    background:
+      linear-gradient(180deg, rgba(10, 21, 16, 0.9), rgba(10, 21, 16, 0.72)),
+      url("/brand-assets/pawtrip-mess-solution.png") center / cover no-repeat;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroVisualFull::before,
+  .heroFloatBadge,
+  .productCardMedia .managedProductImage {
+    animation: none !important;
+    transition: none !important;
+  }
+}

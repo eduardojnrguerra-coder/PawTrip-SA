@@ -26,7 +26,7 @@ export const metadata: Metadata = pageMetadata({
 
 const shopNeeds = [
   {
-    title: 'Dog hair everywhere',
+    title: 'Hair everywhere',
     copy: 'Seat covers, boot liners and hair tools for the fur that somehow reaches the dashboard.',
     href: '/collections/car-protection-essentials',
     icon: <Car size={20} />,
@@ -36,6 +36,12 @@ const shopNeeds = [
     copy: 'Towels, bowls and beach-ready kits for sandy returns and wet-dog logistics.',
     href: '/blog/best-dog-travel-accessories-beach-trips',
     icon: <Waves size={20} />,
+  },
+  {
+    title: 'Seat scratches',
+    copy: 'Protection for claws, loading scuffs and back-seat trips that get a little too enthusiastic.',
+    href: '/shop/category/car-protection',
+    icon: <ShieldCheck size={20} />,
   },
   {
     title: 'Bored chewing',
@@ -50,8 +56,8 @@ const shopNeeds = [
     icon: <Gauge size={20} />,
   },
   {
-    title: 'Puppy training',
-    copy: 'Starter-kit basics for tiny teeth, treats and everyday puppy admin.',
+    title: 'Puppy mess',
+    copy: 'Starter-kit basics for tiny teeth, training treats and everyday puppy admin.',
     href: '/collections/top-picks-new-dog-owners',
     icon: <Dog size={20} />,
   },
@@ -132,6 +138,30 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section className="section premiumHomeSection sectionTight">
+        <div className="container">
+          <Reveal>
+            <div className="sectionHeader sectionHeaderInline">
+              <div>
+                <span className="eyebrow">Best sellers</span>
+                <h2>Popular launch picks.</h2>
+                <p>Strong starting points for travel, cleaner cars, enrichment and puppy routines.</p>
+              </div>
+              <Link href="/shop" className="button buttonSecondary buttonSheen">
+                Shop best sellers
+              </Link>
+            </div>
+          </Reveal>
+          <div className="productGrid premiumProductGrid">
+            {bestSellers.map((product, index) => (
+              <Reveal key={product.slug} delay={index * 0.04}>
+                <ProductCard product={product} />
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="section premiumHomeSection cleanCarStory">
         <div className="container cleanCarPanel">
           <Reveal>
@@ -166,6 +196,8 @@ export default function HomePage() {
         </div>
       </section>
 
+      <KitFinderPreview products={featured} />
+
       <section className="section premiumHomeSection sectionTight">
         <div className="container">
           <Reveal>
@@ -182,30 +214,6 @@ export default function HomePage() {
           </Reveal>
           <div className="productGrid premiumProductGrid">
             {starterKits.map((product, index) => (
-              <Reveal key={product.slug} delay={index * 0.04}>
-                <ProductCard product={product} />
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section premiumHomeSection sectionTight">
-        <div className="container">
-          <Reveal>
-            <div className="sectionHeader sectionHeaderInline">
-              <div>
-                <span className="eyebrow">Best sellers</span>
-                <h2>Popular launch picks.</h2>
-                <p>Strong starting points for travel, cleaner cars, enrichment and puppy routines.</p>
-              </div>
-              <Link href="/shop" className="button buttonSecondary buttonSheen">
-                Shop best sellers
-              </Link>
-            </div>
-          </Reveal>
-          <div className="productGrid premiumProductGrid">
-            {bestSellers.map((product, index) => (
               <Reveal key={product.slug} delay={index * 0.04}>
                 <ProductCard product={product} />
               </Reveal>
@@ -267,8 +275,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      <KitFinderPreview products={featured} />
 
       <section className="section premiumHomeSection">
         <div className="container">

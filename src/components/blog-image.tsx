@@ -24,5 +24,5 @@ export function BlogImage({ src, alt, category = 'PawTrip SA guide', className =
     );
   }
 
-  return <img src={src} alt={alt} loading={loading} onError={() => setFailed(true)} />;
+  return <img src={src} alt={alt} loading={loading} className={className} onError={() => setFailed(true)} />;
 }

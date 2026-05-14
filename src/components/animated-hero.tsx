@@ -2,13 +2,13 @@
 
 import Link from 'next/link';
 import { motion, useReducedMotion, type Variants } from 'framer-motion';
-import { ArrowRight, CheckCircle2, ShieldCheck, Sparkles, Truck } from 'lucide-react';
+import { ArrowRight, CheckCircle2, ShieldCheck, Sparkles } from 'lucide-react';
 import type { Product } from '@/data/products';
 import { formatZar } from '@/lib/money';
 import { getProductImageAlt, ProductImage } from '@/components/product-image';
 import { HeroRoute } from '@/components/hero-route';
 
-const floatingBadges = ['Mud-proof car setup', 'Best for beach dogs', 'Boredom buster picks', 'Secure checkout', 'No fake reviews'];
+const floatingBadges = ['Waterproof protection', 'Beach ready', 'Easy clean', 'Secure checkout', 'No fake reviews'];
 
 const copyContainer: Variants = {
   hidden: { opacity: 0 },
@@ -33,10 +33,11 @@ export function AnimatedHero({ products }: { products: Product[] }) {
   const tertiary = heroProducts[2];
 
   return (
-    <section className="hero heroAlive heroPremium">
+    <section className="hero heroAlive heroPremium heroVisualFull">
+      <div className="heroBackdrop" aria-hidden="true" />
       <div className="container heroShell">
         <motion.div
-          className="heroCopy heroCopyAlive heroPremiumCopy"
+          className="heroCopy heroCopyAlive heroPremiumCopy heroGlassPanel"
           variants={copyContainer}
           initial={reduceMotion ? false : 'hidden'}
           animate={reduceMotion ? undefined : 'show'}
@@ -44,13 +45,16 @@ export function AnimatedHero({ products }: { products: Product[] }) {
           <motion.span className="eyebrow" variants={copyItem}>
             South African pet travel & essentials store
           </motion.span>
-          <motion.div className="saStoreBadge" variants={copyItem}>
-            South African store
-          </motion.div>
-          <motion.h1 variants={copyItem}>Cleaner cars. Calmer dogs. Better trips.</motion.h1>
+          <motion.h1 variants={copyItem}>
+            Cleaner cars.
+            <br />
+            Calmer dogs.
+            <br />
+            Better trips.
+          </motion.h1>
           <motion.p variants={copyItem}>
-            Dog travel kits, car protection and everyday essentials for South African pet owners dealing with hair,
-            mud, sand, boredom and road-trip chaos.
+            Dog travel kits, car protection and everyday essentials for South African pet owners dealing with hair, mud,
+            sand and road-trip chaos.
           </motion.p>
           <div className="heroActions">
             <motion.div variants={copyItem}>
@@ -69,12 +73,12 @@ export function AnimatedHero({ products }: { products: Product[] }) {
           <motion.div className="heroTrustLine" variants={copyItem}>
             <span>Secure checkout</span>
             <span>Clear delivery estimates</span>
-            <span>Curated practical essentials</span>
+            <span>Practical products only</span>
           </motion.div>
         </motion.div>
 
         <motion.div
-          className="heroShowcase heroPremiumShowcase"
+          className="heroShowcase heroPremiumShowcase heroVisualScene"
           initial={reduceMotion ? false : { opacity: 0, scale: 0.96, y: 18 }}
           animate={reduceMotion ? undefined : { opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.7, ease: 'easeOut' }}
@@ -86,18 +90,16 @@ export function AnimatedHero({ products }: { products: Product[] }) {
             animate={reduceMotion ? undefined : { y: [0, -10, 0], rotate: [0, 0.4, 0] }}
             transition={{ duration: 7.2, repeat: Infinity, ease: 'easeInOut' }}
           >
-            <div className="heroVisualCard heroVisualCardMain">
+            <div className="heroVisualCard heroVisualCardMain heroProductSpotlight">
               <ProductImage
-                src={primary?.image ?? '/products/road-trip-starter-kit-1.jpg'}
+                src={primary?.image ?? '/products/road-trip-starter-kit.svg'}
                 alt={getProductImageAlt(primary?.name ?? 'Road Trip Starter Kit', primary?.category ?? 'Travel Kits', 'hero')}
                 productName={primary?.name ?? 'Road Trip Starter Kit'}
                 category={primary?.category ?? 'Travel Kits'}
                 className="heroMainImage"
               />
               <div className="heroImageOverlay heroPremiumOverlay">
-                <span>
-                  <Truck size={14} /> Featured travel setup
-                </span>
+                <span>Featured travel setup</span>
                 <strong>{primary?.name ?? 'Road Trip Starter Kit'}</strong>
                 <small>{primary ? formatZar(primary.price) : 'From travel kits to clean-car add-ons'}</small>
               </div>

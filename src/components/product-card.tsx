@@ -38,10 +38,10 @@ export function ProductCard({ product }: { product: Product }) {
             </span>
           ) : null}
         </div>
+        <p className="productProblemLine">{problemHeadline}</p>
         <Link href={`/shop/product/${product.slug}`} className="productName">
           {product.name}
         </Link>
-        <p className="productProblemLine">{problemHeadline}</p>
         <p className="productWhyLine">
           <strong>Why it helps:</strong> {whyItHelps}
         </p>
@@ -56,7 +56,11 @@ export function ProductCard({ product }: { product: Product }) {
         ) : null}
         <div className="bestFor">
           <Star size={14} />
-          <span>Best for: {product.bestFor.slice(0, 2).join(' | ')}</span>
+          <div className="bestForTags" aria-label={`${product.name} best for`}>
+            {product.bestFor.slice(0, 2).map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
         </div>
         <div className="cardActions">
           <button type="button" className="button buttonPrimary buttonSmall" onClick={() => addItem(product.slug)}>
