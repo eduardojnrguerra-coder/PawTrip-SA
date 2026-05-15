@@ -1,8 +1,9 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ChangeEvent } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
-import type { DbCategory, DbProduct, DbProductFaq } from '@/lib/supabase/admin';
+import type { DbCategory, DbProductFaq } from '@/lib/supabase/admin';
+import { uploadAdminProductImage } from '@/lib/supabase/client';
 
 type ProductFormData = {
   id?: string;
@@ -65,24 +66,102 @@ export function AdminProductForm({
       : [{ question: '', answer: '' }],
   );
   const [removeGallery, setRemoveGallery] = useState<string[]>([]);
+  const [mainImageUrl, setMainImageUrl] = useState(initialProduct?.main_image_url ?? '');
+  const [uploadedGalleryUrls, setUploadedGalleryUrls] = useState<string[]>([]);
+  const [uploadError, setUploadError] = useState('');
+  const [uploadNotice, setUploadNotice] = useState('');
+  const [isUploadingMain, setIsUploadingMain] = useState(false);
+  const [isUploadingGallery, setIsUploadingGallery] = useState(false);
 
   const existingGallery = useMemo(() => initialProduct?.gallery_image_urls ?? [], [initialProduct?.gallery_image_urls]);
+  const visibleGallery = useMemo(
+    () => [...existingGallery, ...uploadedGalleryUrls].filter((url) => !removeGallery.includes(url)),
+    [existingGallery, removeGallery, uploadedGalleryUrls],
+  );
+  const currentMainImageUrl = mainImageUrl || initialProduct?.main_image_url || visibleGallery[0] || '';
 
   function onTitleChange(nextTitle: string) {
     setTitle(nextTitle);
     if (!slugTouched) setSlug(slugify(nextTitle));
   }
 
+  async function uploadSingleFile(file: File, kind: 'main' | 'gallery', index = 0) {
+    const uploadSlug = slug || slugify(title);
+    if (!uploadSlug) {
+      throw new Error('Add a product title first so we can generate the image folder path.');
+    }
+
+    return uploadAdminProductImage({
+      slug: uploadSlug,
+      file,
+      kind,
+      index,
+    });
+  }
+
+  async function handleMainImageChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploadError('');
+    setUploadNotice('');
+    setIsUploadingMain(true);
+
+    try {
+      const upload = await uploadSingleFile(file, 'main');
+      setMainImageUrl(upload.publicUrl);
+      setRemoveGallery((current) => current.filter((item) => item !== upload.publicUrl));
+      setUploadNotice('Main image uploaded successfully.');
+    } catch (error) {
+      console.error('image upload failed', error);
+      setUploadError(error instanceof Error ? error.message : 'Image upload failed.');
+    } finally {
+      setIsUploadingMain(false);
+      event.target.value = '';
+    }
+  }
+
+  async function handleGalleryImageChange(event: ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files ?? []);
+    if (!files.length) return;
+
+    setUploadError('');
+    setUploadNotice('');
+    setIsUploadingGallery(true);
+
+    try {
+      const uploads: string[] = [];
+      for (const [index, file] of files.entries()) {
+        const upload = await uploadSingleFile(file, 'gallery', index);
+        uploads.push(upload.publicUrl);
+      }
+      setUploadedGalleryUrls((current) => [...current, ...uploads]);
+      setUploadNotice(uploads.length === 1 ? 'Gallery image uploaded successfully.' : `${uploads.length} gallery images uploaded successfully.`);
+    } catch (error) {
+      console.error('image upload failed', error);
+      setUploadError(error instanceof Error ? error.message : 'Image upload failed.');
+    } finally {
+      setIsUploadingGallery(false);
+      event.target.value = '';
+    }
+  }
+
   return (
-    <form action={action} className="adminProductForm" encType="multipart/form-data">
+    <form action={action} className="adminProductForm">
       {initialProduct?.id ? <input type="hidden" name="id" value={initialProduct.id} /> : null}
-      {initialProduct?.main_image_url ? <input type="hidden" name="existingMainImage" value={initialProduct.main_image_url} /> : null}
-      {existingGallery.map((url) => (
+      {currentMainImageUrl ? <input type="hidden" name="existingMainImage" value={currentMainImageUrl} /> : null}
+      {currentMainImageUrl ? <input type="hidden" name="mainImageUrl" value={currentMainImageUrl} /> : null}
+      {visibleGallery.map((url) => (
         <input key={`gallery-${url}`} type="hidden" name="existingGalleryUrl" value={url} />
+      ))}
+      {visibleGallery.map((url) => (
+        <input key={`gallery-upload-${url}`} type="hidden" name="galleryImageUrl" value={url} />
       ))}
 
       {saved ? <p className="successText">Saved successfully.</p> : null}
       {error ? <p className="errorText">{error}</p> : null}
+      {uploadError ? <p className="errorText">{uploadError}</p> : null}
+      {uploadNotice ? <p className="successText">{uploadNotice}</p> : null}
 
       <div className="adminFormGrid">
         <label className="field fieldFull">
@@ -225,25 +304,27 @@ export function AdminProductForm({
         <div className="adminFormGrid">
           <label className="field fieldFull">
             <span>Main image upload</span>
-            <input className="input" name="mainImage" type="file" accept="image/*" />
+            <input className="input" type="file" accept="image/*" onChange={handleMainImageChange} />
+            <small>{isUploadingMain ? 'Uploading main image...' : 'Images upload to Supabase Storage first, then the product saves with the image URL.'}</small>
           </label>
           <label className="field fieldFull">
             <span>Gallery image upload</span>
-            <input className="input" name="galleryImages" type="file" accept="image/*" multiple />
+            <input className="input" type="file" accept="image/*" multiple onChange={handleGalleryImageChange} />
+            <small>{isUploadingGallery ? 'Uploading gallery images...' : 'Use the product-images bucket. Publish only sends URLs, not raw files.'}</small>
           </label>
         </div>
-        {initialProduct?.main_image_url ? (
+        {currentMainImageUrl ? (
           <div className="adminImagePreviewGrid">
             <div className="adminImagePreview">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={initialProduct.main_image_url} alt={initialProduct.title || 'Product main image'} />
+              <img src={currentMainImageUrl} alt={initialProduct?.title || title || 'Product main image'} />
               <span>Main image</span>
             </div>
           </div>
         ) : null}
-        {existingGallery.length ? (
+        {visibleGallery.length ? (
           <div className="adminImagePreviewGrid">
-            {existingGallery.map((url) => (
+            {visibleGallery.map((url) => (
               <label className="adminImagePreview" key={url}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={url} alt="Gallery image" />
@@ -328,10 +409,10 @@ export function AdminProductForm({
       </div>
 
       <div className="adminFormFooter">
-        <button type="submit" className="button buttonSecondary" name="intent" value="draft">
+        <button type="submit" className="button buttonSecondary" name="intent" value="draft" disabled={isUploadingMain || isUploadingGallery}>
           Save draft
         </button>
-        <button type="submit" className="button buttonPrimary buttonSheen" name="intent" value="publish">
+        <button type="submit" className="button buttonPrimary buttonSheen" name="intent" value="publish" disabled={isUploadingMain || isUploadingGallery}>
           Publish
         </button>
         {deleteAction && initialProduct?.id ? (

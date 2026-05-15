@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { AnimatePresence, motion, useReducedMotion, type Variants } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Car, CheckCircle2, Dog, Gauge, ShieldCheck, ShoppingBag, Sparkles } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useCart } from '@/components/cart-provider';
 import { getProductImageAlt, ProductImage } from '@/components/product-image';
@@ -210,6 +210,7 @@ export function QuizClient({ products }: { products: Product[] }) {
   const [answers, setAnswers] = useState<Partial<Record<AnswerKey, string>>>({});
   const [started, setStarted] = useState(false);
   const [completedTracked, setCompletedTracked] = useState(false);
+  const resultRef = useRef<HTMLDivElement | null>(null);
   const { addItem } = useCart();
   const reduceMotion = useReducedMotion();
 
@@ -244,6 +245,17 @@ export function QuizClient({ products }: { products: Product[] }) {
     setCompletedTracked(true);
   }, [answers.buyerType, answers.problem, complete, completedTracked, result.guide?.slug, result.primary.slug]);
 
+  useEffect(() => {
+    if (!complete || !resultRef.current || typeof window === 'undefined') {
+      return;
+    }
+
+    resultRef.current.scrollIntoView({
+      behavior: reduceMotion ? 'auto' : 'smooth',
+      block: 'start',
+    });
+  }, [complete, reduceMotion]);
+
   function chooseOption(option: string) {
     if (!started) {
       setStarted(true);
@@ -265,6 +277,7 @@ export function QuizClient({ products }: { products: Product[] }) {
   if (complete) {
     return (
       <motion.div
+        ref={resultRef}
         className="kitQuizResult kitQuizResultRich"
         initial={reduceMotion ? false : { opacity: 0, y: 18 }}
         animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}

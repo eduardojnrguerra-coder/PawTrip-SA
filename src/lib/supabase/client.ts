@@ -28,3 +28,58 @@ export function createSupabaseBrowserClient() {
     authRequest,
   };
 }
+
+export async function uploadAdminProductImage(input: {
+  slug: string;
+  file: File;
+  kind: 'main' | 'gallery';
+  index?: number;
+}) {
+  const signResponse = await fetch('/api/admin/product-images/sign', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      slug: input.slug,
+      filename: input.file.name,
+      contentType: input.file.type,
+      kind: input.kind,
+      index: input.index ?? 0,
+    }),
+  });
+
+  const signPayload = (await signResponse.json().catch(() => null)) as
+    | {
+        error?: string;
+        signedUrl?: string;
+        publicUrl?: string;
+      }
+    | null;
+
+  if (!signResponse.ok || !signPayload?.signedUrl || !signPayload.publicUrl) {
+    throw new Error(signPayload?.error || 'Could not prepare the image upload.');
+  }
+
+  const uploadResponse = await fetch(signPayload.signedUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': input.file.type || 'application/octet-stream',
+      'x-upsert': 'true',
+    },
+    body: input.file,
+  });
+
+  if (!uploadResponse.ok) {
+    const errorText = await uploadResponse.text();
+    console.error('image upload failed', errorText);
+    if (errorText.toLowerCase().includes('bucket')) {
+      throw new Error('Supabase Storage bucket product-images was not found.');
+    }
+    throw new Error('Image upload failed.');
+  }
+
+  return {
+    publicUrl: signPayload.publicUrl,
+  };
+}

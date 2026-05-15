@@ -78,6 +78,7 @@ export type DbOrderItem = {
 };
 
 type RestResult<T> = { data: T | null; error: string | null; configured: boolean };
+const PRODUCT_IMAGES_BUCKET = 'product-images';
 
 function serviceHeaders(extra?: HeadersInit) {
   const serviceRoleKey = getSupabaseServiceRoleKey();
@@ -86,6 +87,10 @@ function serviceHeaders(extra?: HeadersInit) {
     Authorization: `Bearer ${serviceRoleKey}`,
     ...(extra ?? {}),
   };
+}
+
+function buildProductImagePublicUrl(objectPath: string) {
+  return `${getSupabaseUrl()}/storage/v1/object/public/${PRODUCT_IMAGES_BUCKET}/${objectPath}`;
 }
 
 export async function supabaseAdminRequest<T>(path: string, init?: RequestInit): Promise<RestResult<T>> {
@@ -267,6 +272,116 @@ export async function replaceProductFaqs(productId: string, faqs: Array<{ questi
 
 export async function deleteProductById(id: string) {
   return supabaseAdminRequest<null>(`products?id=eq.${id}`, { method: 'DELETE' });
+}
+
+export async function ensureProductImagesBucket() {
+  const url = getSupabaseUrl();
+  const serviceRoleKey = getSupabaseServiceRoleKey();
+  if (!url || !serviceRoleKey) {
+    return { data: null, error: 'Supabase storage is not configured.', configured: false };
+  }
+
+  const response = await fetch(`${url}/storage/v1/bucket/${PRODUCT_IMAGES_BUCKET}`, {
+    method: 'GET',
+    headers: serviceHeaders(),
+    cache: 'no-store',
+  });
+
+  if (response.status === 404) {
+    return {
+      data: null,
+      error: `Supabase Storage bucket ${PRODUCT_IMAGES_BUCKET} was not found.`,
+      configured: true,
+    };
+  }
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('ensureProductImagesBucket failed', response.status, errorText);
+    return { data: null, error: 'Unable to verify the Supabase Storage bucket.', configured: true };
+  }
+
+  return { data: (await response.json()) as { id: string; public: boolean }, error: null, configured: true };
+}
+
+export async function createSignedProductImageUpload(input: {
+  slug: string;
+  filename: string;
+  contentType: string;
+  kind: 'main' | 'gallery';
+  index?: number;
+}) {
+  const url = getSupabaseUrl();
+  const serviceRoleKey = getSupabaseServiceRoleKey();
+  if (!url || !serviceRoleKey) {
+    return { data: null, error: 'Supabase storage is not configured.', configured: false };
+  }
+
+  const bucketCheck = await ensureProductImagesBucket();
+  if (bucketCheck.error) {
+    return { data: null, error: bucketCheck.error, configured: bucketCheck.configured };
+  }
+
+  const safeSlug = input.slug.replace(/[^a-z0-9-]/gi, '-').toLowerCase();
+  const extension = input.filename.split('.').pop()?.toLowerCase() || 'jpg';
+  const safeKind = input.kind === 'main' ? 'main' : 'gallery';
+  const filename = `${safeKind}-${Date.now()}-${input.index ?? 0}.${extension}`;
+  const objectPath = `products/${safeSlug}/${filename}`;
+
+  const response = await fetch(`${url}/storage/v1/object/upload/sign/${PRODUCT_IMAGES_BUCKET}/${objectPath}`, {
+    method: 'POST',
+    headers: {
+      ...serviceHeaders(),
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ upsert: true }),
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('createSignedProductImageUpload failed', response.status, errorText);
+    if (response.status === 404 || errorText.toLowerCase().includes('bucket')) {
+      return {
+        data: null,
+        error: `Supabase Storage bucket ${PRODUCT_IMAGES_BUCKET} was not found.`,
+        configured: true,
+      };
+    }
+    return { data: null, error: 'Could not prepare the image upload.', configured: true };
+  }
+
+  const payload = (await response.json()) as {
+    signedURL?: string;
+    signedUrl?: string;
+    url?: string;
+    token?: string;
+  };
+
+  const rawSignedUrl = payload.signedURL || payload.signedUrl || payload.url || null;
+  const signedUrl = rawSignedUrl
+    ? rawSignedUrl.startsWith('http')
+      ? rawSignedUrl
+      : `${url}${rawSignedUrl}`
+    : payload.token
+      ? `${url}/storage/v1/object/upload/sign/${PRODUCT_IMAGES_BUCKET}/${objectPath}?token=${payload.token}`
+      : null;
+
+  if (!signedUrl) {
+    return { data: null, error: 'Supabase did not return a signed upload URL.', configured: true };
+  }
+
+  return {
+    data: {
+      bucket: PRODUCT_IMAGES_BUCKET,
+      objectPath,
+      signedUrl,
+      publicUrl: buildProductImagePublicUrl(objectPath),
+      contentType: input.contentType,
+    },
+    error: null,
+    configured: true,
+  };
 }
 
 export async function uploadProductImage(file: File, slug: string, kind: 'main' | 'gallery', index = 0) {

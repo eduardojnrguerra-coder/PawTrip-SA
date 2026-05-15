@@ -7827,16 +7827,17 @@ li,
 }
 
 .heroClean {
-  padding: clamp(1.5rem, 4vw, 2.6rem) 0 clamp(2.25rem, 6vw, 4.4rem);
+  padding: clamp(2rem, 5vw, 3.2rem) 0 clamp(2.8rem, 7vw, 5rem);
   min-height: auto;
 }
 
 .heroClean .heroShell {
   position: relative;
   grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
-  gap: clamp(1.4rem, 4vw, 3rem);
+  gap: clamp(1.8rem, 5vw, 3.6rem);
   align-items: center;
-  padding: clamp(1.4rem, 4vw, 2.6rem);
+  min-height: clamp(580px, 74vh, 720px);
+  padding: clamp(1.8rem, 4.5vw, 3.1rem);
   border: 1px solid rgba(31, 77, 58, 0.1);
   border-radius: 34px;
   background:
@@ -7862,7 +7863,7 @@ li,
 
 .heroCopyClean {
   gap: 1.05rem;
-  max-width: 590px;
+  max-width: 610px;
   padding-right: clamp(0rem, 1vw, 1rem);
 }
 
@@ -7914,25 +7915,25 @@ li,
 .heroClean .heroImageCard {
   position: relative;
   margin: 0;
-  padding: 0.7rem;
+  padding: 0.8rem;
   border: 1px solid rgba(31, 77, 58, 0.1);
-  border-radius: 28px;
+  border-radius: 30px;
   background: linear-gradient(180deg, rgba(251, 248, 243, 0.98), rgba(244, 239, 231, 0.95));
   box-shadow: 0 28px 80px rgba(20, 54, 40, 0.12);
 }
 
 .heroImageCardInner {
   overflow: hidden;
-  border-radius: 22px;
+  border-radius: 24px;
   background: #efe7da;
 }
 
 .heroImageClean {
   display: block;
   width: 100%;
-  aspect-ratio: 1.06 / 1;
+  aspect-ratio: 1.08 / 1;
   object-fit: cover;
-  object-position: center;
+  object-position: center center;
 }
 
 .heroFloatBadge {
@@ -8544,7 +8545,8 @@ select.input:focus {
   }
 
   .heroClean .heroShell {
-    padding: 1.2rem;
+    min-height: auto;
+    padding: 1.35rem;
     border-radius: 28px;
   }
 
@@ -8561,7 +8563,7 @@ select.input:focus {
   }
 
   .heroImageCard {
-    padding: 0.55rem;
+    padding: 0.6rem;
   }
 
   .cleanCarCopyCard,
@@ -8592,4 +8594,637 @@ select.input:focus {
   .footerGrid {
     gap: 1.1rem;
   }
+}
+
+/* ---------- Final car protection section lock-in ---------- */
+.cleanCarStory {
+  position: relative;
+  padding-top: clamp(1.25rem, 3vw, 2rem);
+  padding-bottom: clamp(1.5rem, 4vw, 2.5rem);
+  background: linear-gradient(180deg, rgba(244, 239, 231, 0.78), rgba(251, 248, 243, 0.92));
+}
+
+.cleanCarStory .container {
+  overflow: visible;
+}
+
+.cleanCarPanel {
+  display: grid;
+  grid-template-columns: minmax(0, 0.98fr) minmax(0, 1.02fr);
+  gap: clamp(1.4rem, 4vw, 2.6rem);
+  align-items: stretch;
+  min-height: auto;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.cleanCarCopyCard,
+.cleanCarVisualCard {
+  overflow: hidden;
+  border: 1px solid rgba(31, 77, 58, 0.1);
+  border-radius: 30px;
+  background: rgba(251, 248, 243, 0.96);
+  box-shadow: 0 26px 70px rgba(20, 54, 40, 0.1);
+}
+
+.cleanCarCopyCard {
+  display: grid;
+  align-content: start;
+  gap: 1rem;
+  padding: clamp(1.5rem, 4vw, 2.4rem);
+}
+
+.cleanCarCopyCard .eyebrow {
+  width: fit-content;
+  color: #143628;
+  background: rgba(31, 77, 58, 0.06);
+  border: 1px solid rgba(31, 77, 58, 0.12);
+}
+
+.cleanCarCopyCard h2 {
+  color: #143628;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+.cleanCarCopyCard p,
+.cleanCarLead {
+  color: #3f3f35;
+  line-height: 1.72;
+}
+
+.cleanCarLead {
+  margin: 0;
+  font-size: 1.04rem;
+  font-weight: 700;
+}
+
+.cleanCarVisualCard {
+  display: grid;
+  align-items: stretch;
+  min-height: 100%;
+  padding: 0.85rem;
+  background:
+    radial-gradient(circle at 90% 12%, rgba(232, 177, 90, 0.16), transparent 15rem),
+    linear-gradient(180deg, rgba(251, 248, 243, 0.98), rgba(244, 239, 231, 0.94));
+}
+
+.cleanCarVisualImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 460px;
+  border-radius: 22px;
+  object-fit: cover;
+  object-position: center;
+}
+
+.beforeAfterGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.beforeAfterCard {
+  min-height: 0;
+  display: grid;
+  align-content: start;
+  gap: 0.65rem;
+  padding: 1rem;
+  border: 1px solid rgba(31, 77, 58, 0.1);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: none;
+}
+
+.beforeCard,
+.afterCard {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.beforeAfterCard span {
+  width: fit-content;
+  padding: 0.42rem 0.62rem;
+  border-radius: 999px;
+  background: rgba(31, 77, 58, 0.08);
+  color: #143628;
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.beforeAfterCard strong {
+  color: #143628;
+  font-family: var(--font-sora), sans-serif;
+  font-size: 1.04rem;
+  line-height: 1.35;
+}
+
+.beforeAfterCard p {
+  margin: 0;
+  color: #5b584f;
+  font-size: 0.94rem;
+  line-height: 1.55;
+}
+
+.cleanCarActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.9rem;
+  margin-top: 0.25rem;
+}
+
+.cleanCarTextLink {
+  color: #143628;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.cleanCarTextLink:hover {
+  color: #d86f37;
+}
+
+.cleanCarFeatureRow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.9rem;
+  margin-top: 1rem;
+}
+
+.cleanCarFeatureRow span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60px;
+  padding: 0.95rem 1rem;
+  border: 1px solid rgba(31, 77, 58, 0.1);
+  border-radius: 18px;
+  background: rgba(251, 248, 243, 0.96);
+  color: #143628;
+  font-size: 0.94rem;
+  font-weight: 850;
+  text-align: center;
+  box-shadow: 0 18px 40px rgba(31, 41, 55, 0.06);
+}
+
+@media (max-width: 1024px) {
+  .cleanCarPanel {
+    grid-template-columns: 1fr;
+  }
+
+  .cleanCarFeatureRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .cleanCarCopyCard,
+  .cleanCarVisualCard {
+    border-radius: 22px;
+  }
+
+  .cleanCarVisualImage {
+    min-height: 320px;
+  }
+
+  .beforeAfterGrid,
+  .cleanCarFeatureRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Final public readability sweep ---------- */
+.sectionHeader h1,
+.sectionHeader h2,
+.sectionHeader h3,
+.detailPageHeader h1,
+.detailPageHeader h2,
+.detailPageHeader h3,
+.productCardBody strong,
+.productName,
+.homeGuideCard strong,
+.conversionCategoryLink strong,
+.faqHomeItem summary,
+.kitFinderPreviewCopy h2,
+.kitQuizResultCopy h2,
+.kitQuizResultPanel h3,
+.kitQuizGuide h3,
+.fitmentHelpBox strong {
+  color: #143628;
+}
+
+.sectionHeader p,
+.detailPageHeader p,
+.productCardBody p,
+.homeGuideCard p,
+.conversionCategoryLink span,
+.faqHomeItem p,
+.kitFinderPreviewCopy p,
+.kitQuizResultCopy p,
+.fitmentHelpBox p,
+.beforeAfterCard p {
+  color: #4b4a42;
+}
+
+.chip,
+.heroTrustBadges span,
+.cleanCarFeatureRow span,
+.kitQuizResultBadge,
+.kitQuizPillGrid span,
+.kitQuizIncludedGrid span,
+.kitQuizFloatingBenefits span,
+.bestFor span,
+.bundleSavingsCallout,
+.savingsCallout {
+  color: #143628;
+}
+
+.buttonPrimary,
+.buttonSecondary,
+.buttonGhost,
+.cardActions .buttonPrimary,
+.cardActions .buttonGhost,
+.kitQuizActions .button,
+.kitQuizGuide .button,
+.heroActions .button {
+  color: #143628;
+}
+
+.buttonPrimary:disabled,
+.buttonSecondary:disabled,
+.buttonGhost:disabled,
+.kitQuizFooter .button:disabled {
+  opacity: 1;
+  color: #6b675c;
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(31, 77, 58, 0.16);
+  cursor: not-allowed;
+}
+
+.whyCard,
+.proofCard,
+.faqHomeItem,
+.homeGuideCard,
+.conversionCategoryLink {
+  background: rgba(251, 248, 243, 0.9);
+  border-color: rgba(31, 77, 58, 0.1);
+}
+
+.whyCard strong,
+.whyCard p,
+.proofCard strong,
+.proofCard p,
+.proofCard svg,
+.whyCard svg {
+  color: #143628;
+}
+
+.kitQuizAnswerPill {
+  border-color: rgba(251, 248, 243, 0.24);
+  background: rgba(251, 248, 243, 0.16);
+}
+
+.kitQuizAnswerPill span {
+  color: rgba(251, 248, 243, 0.82);
+}
+
+.kitQuizAnswerPill strong {
+  color: #ffffff;
+}
+
+.kitQuizTopbar > span {
+  color: #f4dfbd;
+}
+
+.kitQuizCard p,
+.kitQuizFooter span {
+  color: rgba(251, 248, 243, 0.92);
+}
+
+.kitQuizResultPanel,
+.kitQuizGuide,
+.kitQuizAddOn {
+  background: rgba(251, 248, 243, 0.94);
+  border-color: rgba(31, 77, 58, 0.12);
+  color: #143628;
+}
+
+.kitQuizResultPanel h3,
+.kitQuizGuide h3,
+.kitQuizAddOn strong {
+  color: #143628;
+}
+
+.kitQuizResultPanel p,
+.kitQuizGuide p,
+.kitQuizFaqGrid p,
+.kitQuizAddOn span {
+  color: #4b4a42;
+}
+
+.kitQuizFaqGrid div {
+  border-color: rgba(31, 77, 58, 0.1);
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.kitQuizFaqGrid strong {
+  color: #143628;
+}
+
+.kitQuizPillGrid span,
+.kitQuizFloatingBenefits span {
+  border-color: rgba(31, 77, 58, 0.12);
+  background: rgba(255, 255, 255, 0.82);
+  color: #143628;
+}
+
+.kitQuizIncluded h3,
+.kitQuizIncluded span,
+.kitQuizPriceLine strong {
+  color: #143628;
+}
+
+.kitQuizPriceLine span {
+  color: #6b675c;
+}
+
+.neutralProductFallback,
+.neutralProductFallback strong,
+.neutralProductFallback .fallbackComingSoon {
+  color: #143628;
+}
+
+.neutralProductFallback span {
+  color: #6b675c;
+}
+
+/* ---------- Scroll dog ---------- */
+.scrollDog {
+  position: fixed;
+  right: max(-0.2rem, env(safe-area-inset-right));
+  bottom: 4.5rem;
+  display: grid;
+  gap: 0.4rem;
+  justify-items: end;
+  pointer-events: none;
+  z-index: 8;
+  opacity: 0.94;
+  will-change: transform;
+}
+
+.scrollDogBadge {
+  padding: 0.32rem 0.62rem;
+  border: 1px solid rgba(31, 77, 58, 0.12);
+  border-radius: 999px;
+  background: rgba(251, 248, 243, 0.84);
+  color: #143628;
+  box-shadow: 0 14px 30px rgba(20, 54, 40, 0.1);
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  backdrop-filter: blur(10px);
+}
+
+.scrollDogFigure {
+  position: relative;
+  width: 72px;
+  height: 68px;
+  filter: drop-shadow(0 16px 26px rgba(20, 54, 40, 0.12));
+  animation: scrollDogBob 3.6s ease-in-out infinite;
+}
+
+.scrollDogGlow {
+  position: absolute;
+  left: 14px;
+  right: 7px;
+  bottom: 2px;
+  height: 14px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(232, 177, 90, 0.24), rgba(232, 177, 90, 0));
+}
+
+.scrollDogBody {
+  position: absolute;
+  right: 10px;
+  bottom: 18px;
+  width: 38px;
+  height: 24px;
+  border: 2px solid rgba(20, 54, 40, 0.16);
+  border-radius: 48% 52% 44% 42%;
+  background: linear-gradient(135deg, #fbf8f3 0%, #ecd8af 100%);
+}
+
+.scrollDogHead {
+  position: absolute;
+  left: 14px;
+  bottom: 28px;
+  width: 24px;
+  height: 20px;
+  border: 2px solid rgba(20, 54, 40, 0.16);
+  border-radius: 48% 48% 42% 42%;
+  background: linear-gradient(135deg, #fbf8f3 0%, #f0e1ba 100%);
+}
+
+.scrollDogEar {
+  position: absolute;
+  top: -5px;
+  width: 11px;
+  height: 14px;
+  border-radius: 70% 70% 35% 35%;
+  background: #1f4d3a;
+}
+
+.scrollDogEarBack {
+  left: 2px;
+  transform: rotate(-12deg);
+  opacity: 0.92;
+}
+
+.scrollDogEarFront {
+  right: 3px;
+  transform: rotate(14deg);
+}
+
+.scrollDogMuzzle {
+  position: absolute;
+  right: -2px;
+  bottom: 2px;
+  width: 13px;
+  height: 11px;
+  border-radius: 999px;
+  background: #fbf8f3;
+}
+
+.scrollDogNose {
+  position: absolute;
+  right: -3px;
+  bottom: 6px;
+  width: 6px;
+  height: 5px;
+  border-radius: 999px;
+  background: #143628;
+}
+
+.scrollDogEye {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: #143628;
+}
+
+.scrollDogTail {
+  position: absolute;
+  right: 4px;
+  bottom: 44px;
+  width: 22px;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #1f4d3a 0%, #a7c4ae 100%);
+  transform-origin: left center;
+  animation: scrollDogTailWag 1.1s ease-in-out infinite;
+}
+
+.scrollDogLegs {
+  position: absolute;
+  left: 20px;
+  right: 8px;
+  bottom: 6px;
+  height: 20px;
+}
+
+.scrollDogLeg {
+  position: absolute;
+  bottom: 0;
+  width: 7px;
+  height: 18px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #1f4d3a 0%, #153426 100%);
+  transform-origin: top center;
+  animation: scrollDogRun 0.8s ease-in-out infinite;
+}
+
+.scrollDogLegFront {
+  left: 5px;
+}
+
+.scrollDogLegFrontBack {
+  left: 18px;
+  animation-delay: -0.38s;
+}
+
+.scrollDogLegBackFront {
+  left: 31px;
+  animation-delay: -0.16s;
+}
+
+.scrollDogLegBack {
+  left: 44px;
+  animation-delay: -0.54s;
+}
+
+.scrollDogSpot {
+  position: absolute;
+  border-radius: 999px;
+  background: rgba(31, 77, 58, 0.24);
+}
+
+.scrollDogSpotOne {
+  left: 8px;
+  top: 7px;
+  width: 12px;
+  height: 8px;
+}
+
+.scrollDogSpotTwo {
+  right: 6px;
+  bottom: 5px;
+  width: 9px;
+  height: 7px;
+}
+
+.scrollDogStatic .scrollDogFigure,
+.scrollDogStatic .scrollDogTail,
+.scrollDogStatic .scrollDogLeg {
+  animation: none;
+}
+
+@keyframes scrollDogBob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes scrollDogTailWag {
+  0%,
+  100% {
+    transform: rotate(18deg);
+  }
+
+  50% {
+    transform: rotate(-10deg);
+  }
+}
+
+@keyframes scrollDogRun {
+  0%,
+  100% {
+    transform: rotate(14deg) translateY(0);
+  }
+
+  50% {
+    transform: rotate(-12deg) translateY(2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrollDog {
+    transform: none !important;
+  }
+
+  .scrollDogFigure,
+  .scrollDogTail,
+  .scrollDogLeg {
+    animation: none !important;
+  }
+}
+
+@media (max-width: 1100px) {
+  .scrollDog {
+    display: none;
+  }
+}
+
+/* ---------- Final QA refinements ---------- */
+.detailPageHeader {
+  max-width: min(100%, 920px);
+  gap: 0.85rem;
+  margin-bottom: 1.6rem;
+}
+
+.detailPageHeader h1 {
+  max-width: 11ch;
+  font-size: clamp(2.8rem, 5.8vw, 5.3rem);
+  line-height: 0.94;
+}
+
+.detailPageHeader p {
+  max-width: 62ch;
+}
+
+.kitQuizResult {
+  scroll-margin-top: 126px;
 }

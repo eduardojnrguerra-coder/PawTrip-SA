@@ -86,8 +86,8 @@ export function AnimatedHero({ products }: { products: Product[] }) {
         >
           <div className="heroImageCardInner">
             <img
-              src="/brand-assets/pawtrip-mess-solution.png"
-              alt="Dog sitting on waterproof car seat hammock in a PawTrip SA travel setup"
+              src="/brand-assets/pawtrip-hero-dog-car.png"
+              alt="Dog relaxing in a PawTrip SA car travel setup"
               className="heroImageClean"
               loading="eager"
               decoding="async"

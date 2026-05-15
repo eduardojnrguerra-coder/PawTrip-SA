@@ -165,28 +165,28 @@ export default async function HomePage() {
       <section className="section premiumHomeSection cleanCarStory">
         <div className="container cleanCarPanel">
           <Reveal>
-            <div className="cleanCarCopyCard">
-              <span className="eyebrow">Car protection</span>
-              <h2>Protect your car from the chaos dogs bring with them.</h2>
-              <p className="cleanCarLead">
-                Seat covers, boot liners and travel accessories that help keep hair, sand, mud and scratches under control.
-              </p>
-              <p>
-                Create a protected travel zone for your dog and keep your back seats easier to clean after parks, beaches
-                and road trips.
-              </p>
-              <div className="beforeAfterGrid">
-                <div className="beforeAfterCard beforeCard">
-                  <span>Before</span>
-                  <strong>Hair, sand and muddy paws after every trip.</strong>
-                  <p>Back seats and boot areas that feel like they need a full reset after every outing.</p>
+              <div className="cleanCarCopyCard">
+                <span className="eyebrow">Car protection</span>
+                <h2>Protect your car from the chaos dogs bring with them.</h2>
+                <p className="cleanCarLead">
+                  Seat covers, boot liners and travel accessories that help keep hair, sand, mud and scratches under control.
+                </p>
+                <p>
+                  Create a protected travel zone for your dog and keep your back seats easier to clean after parks, beaches
+                  and road trips.
+                </p>
+                <div className="beforeAfterGrid">
+                  <div className="beforeAfterCard beforeCard">
+                    <span>Before</span>
+                    <strong>Hair, sand and muddy paws after every trip.</strong>
+                    <p>Hair, sand and muddy paws after every trip.</p>
+                  </div>
+                  <div className="beforeAfterCard afterCard">
+                    <span>After</span>
+                    <strong>Protected seats and easier clean-up.</strong>
+                    <p>Protected seats and easier clean-up.</p>
+                  </div>
                 </div>
-                <div className="beforeAfterCard afterCard">
-                  <span>After</span>
-                  <strong>Protected seats and easier clean-up.</strong>
-                  <p>A more contained setup that is simpler to wipe down and easier to live with.</p>
-                </div>
-              </div>
               <div className="cleanCarActions">
                 <Link href="/shop/category/car-protection" className="button buttonPrimary buttonSheen">
                   Shop Car Protection <ArrowRight size={15} />

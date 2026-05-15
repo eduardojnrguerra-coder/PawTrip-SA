@@ -16,7 +16,6 @@ import {
   saveCategory,
   supabaseAdminRequest,
   updateOrderFulfillment,
-  uploadProductImage,
   upsertProduct,
 } from '@/lib/supabase/admin';
 
@@ -101,43 +100,12 @@ async function validateProductPayload(formData: FormData, productId?: string) {
       isActive: intent === 'publish' ? true : intent === 'draft' ? false : clean(formData.get('isActive')) === 'on',
       isFeatured: clean(formData.get('isFeatured')) === 'on',
       isBundle: clean(formData.get('isBundle')) === 'on',
+      mainImageUrl: clean(formData.get('mainImageUrl')) || null,
+      galleryImageUrls: parseStringArray(formData, 'galleryImageUrl'),
       removeGalleryUrls: parseStringArray(formData, 'removeGalleryUrl'),
       faqs: parseFaqs(formData),
     },
   };
-}
-
-async function handleImageUploads(formData: FormData, slug: string, existingGallery: string[] = [], existingMainImage?: string | null) {
-  const mainImageFile = formData.get('mainImage');
-  const galleryFiles = formData.getAll('galleryImages').filter((value): value is File => value instanceof File && value.size > 0);
-  let mainImageUrl = existingMainImage ?? null;
-  let galleryImageUrls = existingGallery;
-
-  if (mainImageFile instanceof File && mainImageFile.size > 0) {
-    const uploaded = await uploadProductImage(mainImageFile, slug, 'main');
-    if (uploaded.error) return { error: uploaded.error, mainImageUrl, galleryImageUrls };
-    mainImageUrl = uploaded.url;
-  }
-
-  if (galleryFiles.length) {
-    const uploadedUrls: string[] = [];
-    for (const [index, file] of galleryFiles.entries()) {
-      const uploaded = await uploadProductImage(file, slug, 'gallery', index);
-      if (uploaded.error) return { error: uploaded.error, mainImageUrl, galleryImageUrls };
-      if (uploaded.url) uploadedUrls.push(uploaded.url);
-    }
-    galleryImageUrls = [...galleryImageUrls, ...uploadedUrls];
-  }
-
-  if (!mainImageUrl && galleryImageUrls[0]) {
-    mainImageUrl = galleryImageUrls[0];
-  }
-
-  if (mainImageUrl && !galleryImageUrls.includes(mainImageUrl)) {
-    galleryImageUrls = [mainImageUrl, ...galleryImageUrls];
-  }
-
-  return { error: null, mainImageUrl, galleryImageUrls };
 }
 
 export async function loginAdminAction(formData: FormData) {
@@ -228,18 +196,13 @@ export async function createProductAction(formData: FormData) {
     redirect(`/admin/products/new?error=${encodeURIComponent(validation.error || 'validation')}`);
   }
 
-  let uploads;
-  try {
-    uploads = await handleImageUploads(formData, validation.values.slug);
-  } catch (error) {
-    console.error('createProductAction image upload crashed', error);
-    redirect(`/admin/products/new?error=${encodeURIComponent('image upload failed')}`);
-  }
-
-  if (uploads.error) {
-    console.error('createProductAction image upload failed', uploads.error);
-    redirect(`/admin/products/new?error=${encodeURIComponent('image upload failed')}`);
-  }
+  const galleryImageUrls = Array.from(
+    new Set(
+      [validation.values.mainImageUrl, ...validation.values.galleryImageUrls]
+        .filter((value): value is string => Boolean(value && value.trim().length)),
+    ),
+  );
+  const mainImageUrl = validation.values.mainImageUrl || galleryImageUrls[0] || null;
 
   let productResult;
   try {
@@ -258,8 +221,8 @@ export async function createProductAction(formData: FormData) {
       tags: validation.values.tags,
       seo_title: validation.values.seoTitle || null,
       seo_description: validation.values.seoDescription || null,
-      main_image_url: uploads.mainImageUrl || null,
-      gallery_image_urls: uploads.galleryImageUrls,
+      main_image_url: mainImageUrl,
+      gallery_image_urls: galleryImageUrls,
       is_active: validation.values.isActive,
       is_featured: validation.values.isFeatured,
       is_bundle: validation.values.isBundle,
@@ -311,19 +274,19 @@ export async function updateProductAction(formData: FormData) {
   }
 
   const nextGallery = existingGallery.filter((url) => !validation.values.removeGalleryUrls.includes(url));
-
-  let uploads;
-  try {
-    uploads = await handleImageUploads(formData, validation.values.slug, nextGallery, existingMainImage);
-  } catch (error) {
-    console.error('updateProductAction image upload crashed', error);
-    redirect(`/admin/products/${productId}/edit?error=${encodeURIComponent('image upload failed')}`);
-  }
-
-  if (uploads.error) {
-    console.error('updateProductAction image upload failed', uploads.error);
-    redirect(`/admin/products/${productId}/edit?error=${encodeURIComponent('image upload failed')}`);
-  }
+  const uploadedGallery = validation.values.galleryImageUrls.filter((url) => !validation.values.removeGalleryUrls.includes(url));
+  const galleryImageUrls = Array.from(
+    new Set(
+      [validation.values.mainImageUrl || existingMainImage, ...nextGallery, ...uploadedGallery]
+        .filter((value): value is string => Boolean(value && value.trim().length)),
+    ),
+  );
+  const mainImageUrl =
+    (validation.values.mainImageUrl && !validation.values.removeGalleryUrls.includes(validation.values.mainImageUrl)
+      ? validation.values.mainImageUrl
+      : existingMainImage && !validation.values.removeGalleryUrls.includes(existingMainImage)
+        ? existingMainImage
+        : galleryImageUrls[0]) || null;
 
   let productResult;
   try {
@@ -343,20 +306,20 @@ export async function updateProductAction(formData: FormData) {
       tags: validation.values.tags,
       seo_title: validation.values.seoTitle || null,
       seo_description: validation.values.seoDescription || null,
-      main_image_url: uploads.mainImageUrl || null,
-      gallery_image_urls: uploads.galleryImageUrls,
+      main_image_url: mainImageUrl,
+      gallery_image_urls: galleryImageUrls,
       is_active: validation.values.isActive,
       is_featured: validation.values.isFeatured,
       is_bundle: validation.values.isBundle,
     });
   } catch (error) {
-    console.error('updateProductAction upsert crashed', error);
+    console.error('updateProductAction failed', error);
     redirect(`/admin/products/${productId}/edit?error=save`);
   }
 
   const product = productResult.data?.[0];
   if (!product || productResult.error) {
-    console.error('updateProductAction upsert failed', productResult.error || 'no data returned');
+    console.error('updateProductAction failed', productResult.error || 'no data returned');
     redirect(`/admin/products/${productId}/edit?error=save`);
   }
 
