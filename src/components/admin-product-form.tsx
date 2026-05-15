@@ -85,12 +85,31 @@ export function AdminProductForm({
     if (!slugTouched) setSlug(slugify(nextTitle));
   }
 
+  const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+
+  function validateFile(file: File): string | null {
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      return `Invalid file type "${file.type}". Allowed: JPG, PNG, WebP.`;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      return `File too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Max: 5 MB.`;
+    }
+    return null;
+  }
+
   async function uploadSingleFile(file: File, kind: 'main' | 'gallery', index = 0) {
     const uploadSlug = slug || slugify(title);
     if (!uploadSlug) {
       throw new Error('Add a product title first so we can generate the image folder path.');
     }
 
+    const validationError = validateFile(file);
+    if (validationError) {
+      throw new Error(validationError);
+    }
+
+    console.log(`Uploading ${kind} image`, file.name, file.size, file.type);
     return uploadAdminProductImage({
       slug: uploadSlug,
       file,
@@ -109,6 +128,7 @@ export function AdminProductForm({
 
     try {
       const upload = await uploadSingleFile(file, 'main');
+      console.log('main image uploaded successfully, URL:', upload.publicUrl);
       setMainImageUrl(upload.publicUrl);
       setRemoveGallery((current) => current.filter((item) => item !== upload.publicUrl));
       setUploadNotice('Main image uploaded successfully.');
@@ -132,6 +152,7 @@ export function AdminProductForm({
     try {
       const uploads: string[] = [];
       for (const [index, file] of files.entries()) {
+        console.log(`Uploading gallery image ${index + 1}/${files.length}`, file.name);
         const upload = await uploadSingleFile(file, 'gallery', index);
         uploads.push(upload.publicUrl);
       }

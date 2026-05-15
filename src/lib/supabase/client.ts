@@ -35,6 +35,9 @@ export async function uploadAdminProductImage(input: {
   kind: 'main' | 'gallery';
   index?: number;
 }) {
+  console.log('uploading main image', input.file.name, input.file.size, input.file.type);
+  console.log('uploading to bucket', 'product-images');
+
   const signResponse = await fetch('/api/admin/product-images/sign', {
     method: 'POST',
     headers: {
@@ -61,8 +64,10 @@ export async function uploadAdminProductImage(input: {
     throw new Error(signPayload?.error || 'Could not prepare the image upload.');
   }
 
+  console.log('uploading to signed URL', signPayload.signedUrl);
+
   const uploadResponse = await fetch(signPayload.signedUrl, {
-    method: 'POST',
+    method: 'PUT',
     headers: {
       'Content-Type': input.file.type || 'application/octet-stream',
       'x-upsert': 'true',
@@ -72,12 +77,14 @@ export async function uploadAdminProductImage(input: {
 
   if (!uploadResponse.ok) {
     const errorText = await uploadResponse.text();
-    console.error('image upload failed', errorText);
+    console.error('main image upload failed', errorText);
     if (errorText.toLowerCase().includes('bucket')) {
       throw new Error('Supabase Storage bucket product-images was not found.');
     }
     throw new Error('Image upload failed.');
   }
+
+  console.log('main image uploaded URL', signPayload.publicUrl);
 
   return {
     publicUrl: signPayload.publicUrl,
