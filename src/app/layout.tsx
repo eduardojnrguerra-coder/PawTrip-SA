@@ -10,8 +10,8 @@ import { Toasts } from '@/components/toasts';
 import { AnalyticsPlaceholder } from '@/components/analytics-placeholder';
 import { JsonLd } from '@/components/json-ld';
 import { siteDescription, siteName, siteTagline, getSiteUrl } from '@/lib/site';
-import { categories, publicProducts } from '@/data/products';
 import { defaultOgImage, organizationSchema, websiteSchema } from '@/lib/seo';
+import { getPublicCatalogSnapshot } from '@/lib/storefront';
 
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
@@ -53,11 +53,15 @@ export const viewport: Viewport = {
   themeColor: '#174132',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export const dynamic = 'force-dynamic';
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const { categories, products } = await getPublicCatalogSnapshot();
+
   return (
     <html lang="en">
       <body>
-        <CartProvider products={publicProducts}>
+        <CartProvider products={products}>
           <SiteHeader categories={categories} />
           <main className="siteMain">{children}</main>
           <SiteFooter />

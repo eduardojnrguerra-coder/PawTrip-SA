@@ -18,19 +18,114 @@ export function ProductDetailClient({ product, related }: { product: Product; re
   const [quantity, setQuantity] = useState(1);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const { addItem, products } = useCart();
-  const galleryImages = product.galleryImages.length ? product.galleryImages : product.gallery;
-  const image = galleryImages[selected] ?? product.image;
-  const savings = Math.max(0, product.compareAtPrice - product.price);
-  const needsSupplierImages = product.sourcePermissionStatus !== 'supplier_permission_confirmed';
+  const productRecord = product as Partial<Product>;
+  const asList = (value: unknown) =>
+    Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0) : [];
+  const asFaqList = (value: unknown) =>
+    Array.isArray(value)
+      ? value.filter(
+          (item): item is { question: string; answer: string } =>
+            Boolean(item) &&
+            typeof item === 'object' &&
+            typeof (item as { question?: string }).question === 'string' &&
+            typeof (item as { answer?: string }).answer === 'string' &&
+            (item as { question: string }).question.trim().length > 0 &&
+            (item as { answer: string }).answer.trim().length > 0,
+        )
+      : [];
+  const fallbackImage = typeof productRecord.image === 'string' && productRecord.image.trim().length > 0 ? productRecord.image : '';
+  const galleryImages = asList(productRecord.galleryImages).length
+    ? asList(productRecord.galleryImages)
+    : asList(productRecord.gallery).length
+      ? asList(productRecord.gallery)
+      : fallbackImage
+        ? [fallbackImage]
+        : [];
+  const safeBestFor = asList(productRecord.bestFor);
+  const safeBenefits = asList(productRecord.benefits);
+  const safeFeatures = asList(productRecord.features);
+  const safeProblemsSolved = asList(productRecord.problemsSolved);
+  const safeQualityNotes = asList(productRecord.qualityNotes);
+  const safeDimensions = asList(productRecord.dimensions);
+  const safeCompatibility = asList(productRecord.compatibility);
+  const safeNotIdealFor = asList(productRecord.notIdealFor);
+  const safeHowToUse = asList(productRecord.howToUse);
+  const safeMeasurements = asList(productRecord.measurements);
+  const safeIncluded = asList(productRecord.whatsIncluded);
+  const safeCareInstructions = asList(productRecord.careInstructions);
+  const safeFaqs = asFaqList(productRecord.faqs);
+  const productName = typeof productRecord.name === 'string' && productRecord.name.trim().length > 0 ? productRecord.name : 'PawTrip SA product';
+  const categoryLabel =
+    typeof productRecord.categoryName === 'string' && productRecord.categoryName.trim().length > 0
+      ? productRecord.categoryName
+      : typeof productRecord.category === 'string' && productRecord.category.trim().length > 0
+        ? productRecord.category
+        : 'Dog essentials';
+  const categoryValue =
+    typeof productRecord.category === 'string' && productRecord.category.trim().length > 0 ? productRecord.category : categoryLabel;
+  const categorySlug =
+    typeof productRecord.categorySlug === 'string' && productRecord.categorySlug.trim().length > 0 ? productRecord.categorySlug : null;
+  const shortDescription =
+    typeof productRecord.shortDescription === 'string' && productRecord.shortDescription.trim().length > 0
+      ? productRecord.shortDescription
+      : 'Practical dog travel and everyday pet gear for South African pet owners.';
+  const fullDescription =
+    typeof productRecord.longDescription === 'string' && productRecord.longDescription.trim().length > 0
+      ? productRecord.longDescription
+      : typeof productRecord.fullDescription === 'string' && productRecord.fullDescription.trim().length > 0
+        ? productRecord.fullDescription
+        : shortDescription;
+  const material =
+    typeof productRecord.material === 'string' && productRecord.material.trim().length > 0
+      ? productRecord.material
+      : 'Material details are being confirmed with the supplier.';
+  const deliveryNote =
+    typeof productRecord.deliveryNote === 'string' && productRecord.deliveryNote.trim().length > 0
+      ? productRecord.deliveryNote
+      : 'Delivery estimates depend on product availability and customer location.';
+  const returnNote =
+    typeof productRecord.returnNote === 'string' && productRecord.returnNote.trim().length > 0
+      ? productRecord.returnNote
+      : 'Unused items can be returned in line with our returns policy.';
+  const availability =
+    typeof productRecord.availability === 'string' && productRecord.availability.trim().length > 0
+      ? productRecord.availability
+      : 'checking_availability';
+  const stockQuantity = typeof productRecord.stockQuantity === 'number' && Number.isFinite(productRecord.stockQuantity) ? productRecord.stockQuantity : null;
+  const shippingClass =
+    typeof productRecord.shippingClass === 'string' && productRecord.shippingClass.trim().length > 0
+      ? productRecord.shippingClass
+      : 'standard';
+  const price = typeof productRecord.price === 'number' && Number.isFinite(productRecord.price) ? productRecord.price : 0;
+  const compareAtPrice =
+    typeof productRecord.compareAtPrice === 'number' && Number.isFinite(productRecord.compareAtPrice) && productRecord.compareAtPrice > 0
+      ? productRecord.compareAtPrice
+      : price;
+  const image = galleryImages[selected] ?? fallbackImage;
+  const savings = Math.max(0, compareAtPrice - price);
+  const needsSupplierImages = process.env.NODE_ENV === 'development' && product.sourcePermissionStatus !== 'supplier_permission_confirmed';
+  const faqItems =
+    safeFaqs.length > 0
+      ? safeFaqs
+      : [
+          {
+            question: `What should I check before ordering ${productName.toLowerCase()}?`,
+            answer: 'Review the product description, measurements and delivery note to make sure the setup matches your dog and vehicle or home routine.',
+          },
+          {
+            question: 'How are delivery timelines handled?',
+            answer: 'Delivery estimates depend on product availability and customer location.',
+          },
+        ];
 
   useEffect(() => {
     rememberRecentlyViewed(product.slug);
     trackEvent('view_item', {
       currency: 'ZAR',
-      value: product.price,
+      value: price,
       items: [gaItem(product)],
     });
-  }, [product]);
+  }, [price, product]);
 
   function showPreviousImage() {
     setSelected((current) => (current === 0 ? galleryImages.length - 1 : current - 1));
@@ -61,10 +156,10 @@ export function ProductDetailClient({ product, related }: { product: Product; re
   );
   const includedProductLinks = useMemo(
     () =>
-      product.whatsIncluded
+      safeIncluded
         .map((included) => products.find((entry) => entry.name.toLowerCase() === included.toLowerCase()))
         .filter(Boolean) as Product[],
-    [product.whatsIncluded, products],
+    [products, safeIncluded],
   );
 
   return (
@@ -81,9 +176,9 @@ export function ProductDetailClient({ product, related }: { product: Product; re
         >
           <ProductImage
             src={image}
-            alt={getProductImageAlt(product.name, product.category, `gallery image ${selected + 1}`)}
-            productName={product.name}
-            category={product.category}
+            alt={getProductImageAlt(productName, categoryValue, `gallery image ${selected + 1}`)}
+            productName={productName}
+            category={categoryValue}
           />
         </motion.div>
         <div className="thumbRow">
@@ -93,26 +188,25 @@ export function ProductDetailClient({ product, related }: { product: Product; re
               key={thumb}
               className={selected === index ? 'thumbButton thumbButtonActive' : 'thumbButton'}
               onClick={() => setSelected(index)}
-              aria-label={`Show ${product.name} image ${index + 1}`}
+              aria-label={`Show ${productName} image ${index + 1}`}
             >
               <ProductImage
                 src={thumb}
-                alt={getProductImageAlt(product.name, product.category, `thumbnail ${index + 1}`)}
-                productName={product.name}
-                category={product.category}
+                alt={getProductImageAlt(productName, categoryValue, `thumbnail ${index + 1}`)}
+                productName={productName}
+                category={categoryValue}
               />
             </button>
           ))}
         </div>
         {needsSupplierImages ? (
           <div className="imagePermissionNote">
-            Supplier-approved product photos are still needed for this product. Placeholder images may appear until
-            permission or original photos are confirmed.
+            Internal note: supplier-approved or original product photos are still needed before final public launch.
           </div>
         ) : null}
         <div className="contentCard detailBlock">
           <h2>Product overview</h2>
-          <p>{product.longDescription ?? product.fullDescription}</p>
+          <p>{fullDescription}</p>
         </div>
         <div className="contentCard detailBlock">
           <div className="fitmentHelpBox">
@@ -123,96 +217,130 @@ export function ProductDetailClient({ product, related }: { product: Product; re
             </p>
           </div>
           <h2>What problem it solves</h2>
-          <ul className="bulletList">
-            {(product.problemsSolved ?? []).map((item) => (
-              <li key={item}>
-                <Info size={16} /> <span>{item}</span>
-              </li>
-            ))}
-          </ul>
+          {safeProblemsSolved.length ? (
+            <ul className="bulletList">
+              {safeProblemsSolved.map((item) => (
+                <li key={item}>
+                  <Info size={16} /> <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>{shortDescription}</p>
+          )}
         </div>
         <div className="contentCard detailBlock">
           <h2>Quality and material notes</h2>
           <p>
-            <strong>Material:</strong> {product.material}
+            <strong>Material:</strong> {material}
           </p>
-          <ul className="bulletList">
-            {product.qualityNotes.map((item) => (
-              <li key={item}>
-                <BadgeCheck size={16} /> <span>{item}</span>
-              </li>
-            ))}
-          </ul>
+          {safeQualityNotes.length ? (
+            <ul className="bulletList">
+              {safeQualityNotes.map((item) => (
+                <li key={item}>
+                  <BadgeCheck size={16} /> <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>Supplier-approved material and finish notes are still being finalised for this listing.</p>
+          )}
         </div>
         <div className="contentCard detailBlock">
           <h2>Size, fit and compatibility</h2>
-          <ul className="bulletList">
-            {[...product.dimensions, ...product.compatibility].map((item) => (
-              <li key={item}>
-                <Truck size={16} /> <span>{item}</span>
-              </li>
-            ))}
-          </ul>
+          {safeDimensions.length || safeCompatibility.length ? (
+            <ul className="bulletList">
+              {[...safeDimensions, ...safeCompatibility].map((item) => (
+                <li key={item}>
+                  <Truck size={16} /> <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>Check the measurements section below and compare them to your car or setup before ordering.</p>
+          )}
         </div>
         <div className="contentCard detailBlock">
           <h2>Best for</h2>
-          <ul className="bulletList">
-            {product.bestFor.map((item) => (
-              <li key={item}>
-                <ShieldCheck size={16} /> <span>{item}</span>
-              </li>
-            ))}
-          </ul>
+          {safeBestFor.length ? (
+            <ul className="bulletList">
+              {safeBestFor.map((item) => (
+                <li key={item}>
+                  <ShieldCheck size={16} /> <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>Best suited to dog owners who want a practical, easy-to-understand setup.</p>
+          )}
         </div>
-        <div className="contentCard detailBlock">
-          <h2>Not ideal for</h2>
-          <ul className="bulletList">
-            {product.notIdealFor.map((item) => (
-              <li key={item}>
-                <Info size={16} /> <span>{item}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
+        {safeNotIdealFor.length ? (
+          <div className="contentCard detailBlock">
+            <h2>Not ideal for</h2>
+            <ul className="bulletList">
+              {safeNotIdealFor.map((item) => (
+                <li key={item}>
+                  <Info size={16} /> <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
         <div className="contentCard detailBlock">
           <h2>How to use it</h2>
-          <ul className="bulletList">
-            {product.howToUse.map((item) => (
-              <li key={item}>
-                <BadgeCheck size={16} /> <span>{item}</span>
-              </li>
-            ))}
-          </ul>
+          {safeHowToUse.length ? (
+            <ul className="bulletList">
+              {safeHowToUse.map((item) => (
+                <li key={item}>
+                  <BadgeCheck size={16} /> <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>Set it up calmly, check the fit, and clean or dry the product between uses where needed.</p>
+          )}
         </div>
         <div className="contentCard detailBlock">
           <h2>Features</h2>
-          <ul className="bulletList">
-            {product.features.map((item, index) => (
-              <motion.li key={item} initial={{ opacity: 0, x: -8 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.22, delay: index * 0.04 }}>
-                <BadgeCheck size={16} /> <span>{item}</span>
-              </motion.li>
-            ))}
-          </ul>
+          {safeFeatures.length ? (
+            <ul className="bulletList">
+              {safeFeatures.map((item, index) => (
+                <motion.li key={item} initial={{ opacity: 0, x: -8 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.22, delay: index * 0.04 }}>
+                  <BadgeCheck size={16} /> <span>{item}</span>
+                </motion.li>
+              ))}
+            </ul>
+          ) : (
+            <p>{shortDescription}</p>
+          )}
         </div>
         <div className="contentCard detailBlock">
           <h2>Measurements</h2>
-          <ul className="bulletList">
-            {product.measurements.map((item) => (
-              <li key={item}>
-                <Truck size={16} /> <span>{item}</span>
-              </li>
-            ))}
-          </ul>
+          {safeMeasurements.length ? (
+            <ul className="bulletList">
+              {safeMeasurements.map((item) => (
+                <li key={item}>
+                  <Truck size={16} /> <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>Detailed measurements are still being confirmed for this listing.</p>
+          )}
         </div>
         <div className="contentCard detailBlock">
           <h2>What's included</h2>
-          <ul className="bulletList">
-            {(product.whatsIncluded ?? []).map((item) => (
-              <li key={item}>
-                <ShieldCheck size={16} /> <span>{item}</span>
-              </li>
-            ))}
-          </ul>
+          {safeIncluded.length ? (
+            <ul className="bulletList">
+              {safeIncluded.map((item) => (
+                <li key={item}>
+                  <ShieldCheck size={16} /> <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>This listing covers the main product shown in the gallery and description above.</p>
+          )}
           {product.isBundle && includedProductLinks.length ? (
             <div className="internalLinkList">
               {includedProductLinks.map((item) => (
@@ -226,84 +354,94 @@ export function ProductDetailClient({ product, related }: { product: Product; re
         </div>
         <div className="contentCard detailBlock">
           <h2>Cleaning and care</h2>
-          <ul className="bulletList">
-            {(product.careInstructions ?? []).map((item) => (
-              <li key={item}>
-                <BadgeCheck size={16} /> <span>{item}</span>
-              </li>
-            ))}
-          </ul>
+          {safeCareInstructions.length ? (
+            <ul className="bulletList">
+              {safeCareInstructions.map((item) => (
+                <li key={item}>
+                  <BadgeCheck size={16} /> <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>Wipe clean where needed and allow the product to dry fully before storing.</p>
+          )}
         </div>
         <div className="contentCard detailBlock">
           <h2>Delivery info</h2>
-          <p>{product.deliveryNote}</p>
-          <p>{product.returnNote}</p>
+          <p>{deliveryNote}</p>
+          <p>{returnNote}</p>
           <p>
-            Shipping class: {product.shippingClass}. Availability: {product.availability.replaceAll('_', ' ')}.
+            Shipping class: {shippingClass}. Availability: {availability.replaceAll('_', ' ')}.
           </p>
         </div>
         <div className="contentCard detailBlock">
           <h2>FAQ</h2>
-          <FaqAccordion items={product.faqs ?? []} />
+          <FaqAccordion items={faqItems} />
         </div>
         <div className="contentCard detailBlock">
           <h2>Complete the setup</h2>
-          <div className="relatedCarousel">
-            {related.map((item) => (
-              <a key={item.slug} className="productCard" href={`/shop/product/${item.slug}`}>
-                <div className="productCardMedia">
-                  <ProductImage
-                    src={item.image}
-                    alt={getProductImageAlt(item.name, item.category)}
-                    productName={item.name}
-                    category={item.category}
-                    className="productImage"
-                  />
-                </div>
-                <div className="productCardBody">
-                  <strong>{item.name}</strong>
-                  <p>{item.shortDescription}</p>
-                  <div className="priceRow">
-                    <strong>{formatZar(item.price)}</strong>
-                    <span>{formatZar(item.compareAtPrice)}</span>
+          {related.length ? (
+            <div className="relatedCarousel">
+              {related.map((item) => (
+                <a key={item.slug} className="productCard" href={`/shop/product/${item.slug}`}>
+                  <div className="productCardMedia">
+                    <ProductImage
+                      src={item.image}
+                      alt={getProductImageAlt(item.name, item.category)}
+                      productName={item.name}
+                      category={item.category}
+                      className="productImage"
+                    />
                   </div>
-                </div>
-              </a>
-            ))}
-          </div>
+                  <div className="productCardBody">
+                    <strong>{item.name}</strong>
+                    <p>{item.shortDescription || 'Useful add-on for the same routine.'}</p>
+                    <div className="priceRow">
+                      <strong>{formatZar(item.price)}</strong>
+                      <span>{formatZar(item.compareAtPrice)}</span>
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          ) : (
+            <p>More related products will appear here as the range grows. For now, browse this product&apos;s category for the closest matches.</p>
+          )}
         </div>
       </div>
 
       <aside className="stickyAddToCart">
         <div className="contentCard detailBlock">
           <div className="cardMeta">
-            <span className="chip">{product.categoryName}</span>
-            <Link className="chip" href={`/shop/category/${product.categorySlug}`}>
-              View category
-            </Link>
+            <span className="chip">{categoryLabel}</span>
+            {categorySlug ? (
+              <Link className="chip" href={`/shop/category/${categorySlug}`}>
+                View category
+              </Link>
+            ) : null}
             <span className="chip chipAccent">Best for</span>
           </div>
           <div>
-            <h1>{product.name}</h1>
-          <p>{product.fullDescription}</p>
+            <h1>{productName}</h1>
+            <p>{fullDescription}</p>
           </div>
           <div className="whyProductBox">
             <strong>Why this product?</strong>
             <ul>
-              {product.benefits.slice(0, 3).map((benefit) => (
+              {(safeBenefits.length ? safeBenefits : [shortDescription]).slice(0, 3).map((benefit) => (
                 <li key={benefit}>{benefit}</li>
               ))}
             </ul>
           </div>
           <div className="priceBlock">
-            <strong>{formatZar(product.price)}</strong>
-            <span>{formatZar(product.compareAtPrice)}</span>
+            <strong>{formatZar(price)}</strong>
+            <span>{compareAtPrice > price ? formatZar(compareAtPrice) : ''}</span>
           </div>
           {product.isBundle && savings > 0 ? (
             <div className="bundleSavingsCallout">Save {formatZar(savings)} with this bundle compared with the listed compare-at price.</div>
           ) : null}
           <div className="availabilityNote">
-            Availability: {product.availability.replaceAll('_', ' ')}. Delivery estimates depend on product availability and your location.
+            Availability: {stockQuantity !== null ? (stockQuantity > 0 ? `${stockQuantity} in stock` : 'currently out of stock') : availability.replaceAll('_', ' ')}. Delivery estimates depend on product availability and your location.
           </div>
           <div className="quantityRow">
             <button type="button" className="quantityButton" onClick={() => setQuantity((value) => Math.max(1, value - 1))} aria-label="Decrease quantity">
@@ -336,7 +474,7 @@ export function ProductDetailClient({ product, related }: { product: Product; re
             </span>
           </div>
           <ul className="benefitList">
-            {product.bestFor.map((item, index) => (
+            {(safeBestFor.length ? safeBestFor : badges.slice(0, 3)).map((item, index) => (
               <motion.li key={item} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, delay: index * 0.04 }}>
                 <BadgeCheck size={16} /> <span>{item}</span>
               </motion.li>
@@ -351,22 +489,22 @@ export function ProductDetailClient({ product, related }: { product: Product; re
         <div className="contentCard detailBlock">
           <h2>Best for</h2>
           <ul className="bulletList">
-            {[...product.bestFor.slice(0, 3), ...badges.slice(0, 2)].map((item) => (
+            {[...(safeBestFor.length ? safeBestFor.slice(0, 3) : []), ...badges.slice(0, 2)].map((item) => (
               <li key={item}>
                 <ShieldCheck size={16} /> <span>{item}</span>
               </li>
             ))}
           </ul>
-          <p>{product.deliveryNote}</p>
-          <p>{product.returnNote}</p>
+          <p>{deliveryNote}</p>
+          <p>{returnNote}</p>
           <p>Delivery estimate depends on product availability and your location.</p>
         </div>
       </aside>
 
       <div className="mobileStickyCart">
         <div>
-          <strong>{formatZar(product.price)}</strong>
-          <span>{product.name}</span>
+          <strong>{formatZar(price)}</strong>
+          <span>{productName}</span>
         </div>
         <button type="button" className="button buttonPrimary buttonSheen" onClick={() => addItem(product.slug, quantity)}>
           Add to cart
@@ -392,15 +530,15 @@ export function ProductDetailClient({ product, related }: { product: Product; re
                       className="productImage"
                     />
                   </div>
-                  <div className="productCardBody">
-                    <div className="cardMeta">
-                      <span className="chip">Best for: {item.bestFor[0]}</span>
-                    </div>
-                    <strong>{item.name}</strong>
-                    <p>{item.shortDescription}</p>
-                    <div className="priceRow">
-                      <strong>{formatZar(item.price)}</strong>
-                      <span>{formatZar(item.compareAtPrice)}</span>
+                <div className="productCardBody">
+                  <div className="cardMeta">
+                    <span className="chip">Best for: {item.bestFor?.[0] ?? item.categoryName}</span>
+                  </div>
+                  <strong>{item.name}</strong>
+                  <p>{item.shortDescription || 'Useful companion product for the same setup.'}</p>
+                  <div className="priceRow">
+                    <strong>{formatZar(item.price)}</strong>
+                    <span>{formatZar(item.compareAtPrice)}</span>
                     </div>
                   </div>
                 </a>

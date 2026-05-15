@@ -30,12 +30,82 @@ Required values:
 - `PAYFAST_MERCHANT_KEY`
 - `PAYFAST_PASSPHRASE`
 - `PAYFAST_MODE`
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
 
 Use `PAYFAST_MODE=sandbox` for testing and `PAYFAST_MODE=production` for live payments.
 
 ## Add products
 
-Products live in `src/data/products.ts`.
+## Supabase storefront and admin
+
+PawTrip SA now supports a custom Supabase-backed product system. The public store reads active products and active categories from Supabase when the environment variables are present. If Supabase is not configured yet, the site safely falls back to the existing typed catalogue in `src/data/products.ts`.
+
+### Supabase setup steps
+
+1. Create a Supabase project.
+2. In Supabase, create a public storage bucket named `product-images`.
+3. Open the SQL editor and run:
+
+```sql
+\i supabase/schema.sql
+```
+
+Or paste the full contents of `supabase/schema.sql`.
+
+4. In Supabase Authentication, create the admin user(s) you want to use for the dashboard with email/password sign-in.
+5. Add these environment variables to `.env.local` and Vercel:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+```
+
+Important:
+
+- `SUPABASE_SERVICE_ROLE_KEY` must stay server-side only.
+- Do not expose the service role key in client code or `NEXT_PUBLIC_` variables.
+
+### Admin portal routes
+
+- `/admin/login`
+- `/admin`
+- `/admin/products`
+- `/admin/products/new`
+- `/admin/products/[id]/edit`
+- `/admin/categories`
+- `/admin/orders`
+
+Admin users sign in with Supabase Auth credentials. Protected admin pages redirect to `/admin/login` when there is no valid admin session.
+
+### Manual product workflow
+
+If you want to manage live products without touching code:
+
+1. Sign in at `/admin/login`.
+2. Go to `/admin/products/new`.
+3. Fill in title, slug, category, pricing, stock, descriptions, benefits, tags and SEO fields.
+4. Upload a main image and any gallery images.
+5. Add product FAQs.
+6. Save as draft or publish.
+7. Use `/admin/products` to search, filter, edit and open public product pages.
+
+### Category workflow
+
+Use `/admin/categories` to:
+
+- add categories
+- edit names, slugs and descriptions
+- change sort order
+- activate or deactivate public categories
+
+Only active categories appear in the public category menu.
+
+## Hardcoded product fallback
+
+The original typed product catalogue still lives in `src/data/products.ts`.
 
 Each product includes:
 
@@ -47,7 +117,47 @@ Each product includes:
 - measurements
 - FAQs
 
-Add a new product object, then add its image file under `public/products/`.
+For one-off fallback edits, add a new product object there, then add its image file under `public/products/`.
+
+### CSV product import workflow
+
+For supplier research and batch product setup, use the CSV importer instead of hand-writing every product in TypeScript.
+
+1. Open `src/data/product-imports/supplier-products.csv`.
+2. Add or edit one row per supplier product.
+3. Use `|` to separate list fields such as `benefits`, `features`, `bestFor` and `dimensions`.
+4. Save product photos in `public/products/` and reference them in `image1`, `image2` and `image3`.
+5. Keep `launchVisible=false` until pricing, supplier details, image rights and product copy are checked.
+6. Set `imageReady=true` only after usable product images exist.
+7. Set `sourcePermissionStatus` to one of:
+   - `needs_supplier_images`
+   - `supplier_permission_confirmed`
+   - `original_photos_needed`
+8. Run:
+
+```bash
+npm run import:products
+```
+
+The script converts the CSV into `src/data/product-imports/generated-products.ts`. Review that generated file before copying approved products into `src/data/products.ts`.
+
+Supported CSV fields:
+
+```text
+slug, name, category, price, compareAtPrice, supplierCost, supplierName, supplierUrl,
+image1, image2, image3, shortDescription, fullDescription, benefits, features,
+bestFor, material, dimensions, shippingClass, availability, sourcePermissionStatus,
+imageReady, launchVisible, seoTitle, seoDescription
+```
+
+Public visibility rules:
+
+- `launchVisible` must be `true`.
+- `imageReady` must be `true`.
+- `sourcePermissionStatus` must be `supplier_permission_confirmed` or `original_photos_needed`.
+- Products that fail those checks are excluded from homepage, shop, collections, product lookup, checkout validation and sitemap routes.
+
+Do not expose supplier cost, supplier name, supplier URL or private supplier notes on public pages.
 
 ## Add blog posts
 
@@ -79,7 +189,7 @@ Recommended sizes:
 - Product images: `1200x1200`
 - Hero, banner and lifestyle images: `1600x900`
 
-Compress images before upload so product grids, galleries and mobile pages stay fast. If a referenced image is missing, the storefront shows a premium PawTrip SA placeholder with the product category and the message `Product image coming soon`.
+Compress images before upload so product grids, galleries and mobile pages stay fast. Public catalogue pages should not show `Product image coming soon`; keep products hidden with `imageReady=false` or `launchVisible=false` until they have usable images.
 
 Product image rules:
 
@@ -346,17 +456,16 @@ PAYFAST_MODE=sandbox
 Optional Vercel environment variables:
 
 ```bash
-SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_URL=
 SUPABASE_SERVICE_ROLE_KEY=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
-ADMIN_PASSWORD=
 NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION=
 NEXT_PUBLIC_GA_MEASUREMENT_ID=
 ```
 
 After deployment, update `NEXT_PUBLIC_SITE_URL` to the live Vercel/custom domain. PayFast return, cancel and notify URLs are generated from this value.
 
-The app is already structured to add Supabase or Neon later if you want persistent orders, customers or inventory.
+The app is now structured to use Supabase for products, categories, orders and product images while still keeping a code-based fallback catalogue for safety during setup or migration.
 
 ## Production checklist
 

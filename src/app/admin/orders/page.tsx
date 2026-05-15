@@ -1,184 +1,114 @@
 import type { Metadata } from 'next';
-import { cookies } from 'next/headers';
-import { LockKeyhole, PackageCheck, ShieldCheck } from 'lucide-react';
-import { ADMIN_COOKIE_NAME, isAdminConfigured, isAdminTokenValid } from '@/lib/admin-auth';
-import { listSupabaseOrders, type SupabaseOrder } from '@/lib/supabase';
+import { AdminShell } from '@/components/admin-shell';
+import { requireAdminUser } from '@/lib/supabase/server';
+import { listOrdersAdmin } from '@/lib/supabase/admin';
 import { formatZar } from '@/lib/money';
+import { updateOrderFulfillmentAction } from '@/app/admin/actions';
 
 export const metadata: Metadata = {
   title: 'Admin orders',
-  description: 'Internal PawTrip SA order management.',
-  robots: {
-    index: false,
-    follow: false,
-  },
+  robots: { index: false, follow: false },
 };
 
 export const dynamic = 'force-dynamic';
 
-function deliveryAddress(order: SupabaseOrder) {
+function deliveryAddress(order: { delivery_address: Record<string, unknown> }) {
   const address = order.delivery_address;
-  return [
-    address.address,
-    address.suburb,
-    address.city,
-    address.province,
-    address.postalCode,
-  ]
-    .filter(Boolean)
-    .join(', ');
+  return [address.address, address.suburb, address.city, address.province, address.postalCode].filter(Boolean).join(', ');
 }
 
-function orderItems(order: SupabaseOrder) {
-  return order.items.map((item) => {
-    const name = String(item.name ?? item.productSlug ?? 'Product');
-    const quantity = Number(item.quantity ?? 1);
-    return `${name} x ${quantity}`;
-  });
-}
+export default async function AdminOrdersPage({ searchParams }: { searchParams: Promise<{ updated?: string; error?: string }> }) {
+  await requireAdminUser();
+  const params = await searchParams;
+  const ordersResult = await listOrdersAdmin(100);
+  const orders = ordersResult.data ?? [];
 
-function LoginPanel({ error }: { error?: string }) {
   return (
-    <section className="section">
-      <div className="container narrowContainer">
+    <AdminShell title="Orders" description="Review payment status, customer details and fulfilment progress.">
+      {params.updated ? <p className="successText">Fulfilment status updated.</p> : null}
+      {params.error ? <p className="errorText">The order update could not be completed.</p> : null}
+
+      {!ordersResult.configured ? (
         <div className="contentCard detailBlock">
-          <span className="eyebrow">
-            <LockKeyhole size={14} /> Internal admin
-          </span>
-          <h1>Orders are password protected.</h1>
-          <p>Enter the admin password to view and manage PawTrip SA orders.</p>
-          {error ? <p className="errorText">Password check failed. Please try again.</p> : null}
-          <form className="adminLoginForm" action="/admin/orders/login" method="post">
-            <label className="field">
-              <span>Admin password</span>
-              <input className="input" type="password" name="password" autoComplete="current-password" required />
-            </label>
-            <button className="button buttonPrimary buttonSheen" type="submit">
-              View orders
-            </button>
-          </form>
+          <h2>Supabase is not configured.</h2>
+          <p>Add the Supabase environment variables before using the admin portal.</p>
         </div>
-      </div>
-    </section>
-  );
-}
-
-export default async function AdminOrdersPage({ searchParams }: { searchParams: { error?: string; updated?: string } }) {
-  if (!isAdminConfigured()) {
-    return (
-      <section className="section">
-        <div className="container narrowContainer">
-          <div className="contentCard detailBlock">
-            <span className="eyebrow">
-              <ShieldCheck size={14} /> Locked
-            </span>
-            <h1>Admin is not configured.</h1>
-            <p>Add `ADMIN_PASSWORD` to your environment before using the internal order admin.</p>
-          </div>
+      ) : !orders.length ? (
+        <div className="contentCard detailBlock">
+          <h2>No orders yet.</h2>
+          <p>Orders will appear here after checkout creates them in the database.</p>
         </div>
-      </section>
-    );
-  }
+      ) : (
+        <div className="adminOrdersGrid">
+          {orders.map((order) => (
+            <article className="adminOrderCard" key={order.id}>
+              <div className="adminOrderTop">
+                <div>
+                  <span className="eyebrow">{order.order_reference}</span>
+                  <h2>{order.customer_name}</h2>
+                  <p>
+                    {order.customer_email} · {order.customer_phone}
+                  </p>
+                </div>
+                <div className="adminOrderTotal">
+                  <strong>{formatZar(Number(order.total))}</strong>
+                  <span>{new Date(order.created_at).toLocaleDateString('en-ZA')}</span>
+                </div>
+              </div>
 
-  const cookieStore = await cookies();
-  const authorized = isAdminTokenValid(cookieStore.get(ADMIN_COOKIE_NAME)?.value);
+              <div className="adminStatusRow">
+                <span className={`statusPill status-${order.payment_status}`}>Payment: {order.payment_status}</span>
+                <span className={`statusPill status-${order.fulfillment_status}`}>Fulfilment: {order.fulfillment_status}</span>
+              </div>
 
-  if (!authorized) return <LoginPanel error={searchParams.error} />;
+              <div className="adminOrderDetails">
+                <div>
+                  <strong>Delivery</strong>
+                  <p>{deliveryAddress(order) || 'No delivery address stored'}</p>
+                </div>
+                <div>
+                  <strong>Items</strong>
+                  <ul>
+                    {(order.order_items?.length
+                      ? order.order_items.map((item) => ({ key: item.id, label: `${item.product_title} x ${item.quantity}` }))
+                      : Array.isArray(order.items)
+                        ? order.items.map((item, index) => ({
+                            key: `${order.id}-${index}`,
+                            label: `${String(item.name ?? item.productSlug ?? 'Product')} x ${Number(item.quantity ?? 1)}`,
+                          }))
+                        : []
+                    ).map((item) => (
+                      <li key={item.key}>{item.label}</li>
+                    ))}
+                  </ul>
+                </div>
+                {order.payfast_payment_id ? (
+                  <div>
+                    <strong>PayFast payment ID</strong>
+                    <p>{order.payfast_payment_id}</p>
+                  </div>
+                ) : null}
+              </div>
 
-  const ordersResult = await listSupabaseOrders();
-
-  return (
-    <section className="section adminSection">
-      <div className="container">
-        <div className="sectionHeader">
-          <span className="eyebrow">
-            <PackageCheck size={14} /> Internal admin
-          </span>
-          <h1>Orders</h1>
-          <p>Review PayFast payment status, customer details and fulfilment progress.</p>
-          {searchParams.updated ? <p className="successText">Fulfilment status updated.</p> : null}
-          {searchParams.error && searchParams.error !== '1' ? <p className="errorText">The admin action could not be completed.</p> : null}
+              <form className="adminFulfillmentForm" action={updateOrderFulfillmentAction}>
+                <input type="hidden" name="orderReference" value={order.order_reference} />
+                <label className="field">
+                  <span>Fulfilment status</span>
+                  <select className="input" name="fulfillmentStatus" defaultValue={order.fulfillment_status}>
+                    <option value="unfulfilled">Unfulfilled</option>
+                    <option value="processing">Processing</option>
+                    <option value="shipped">Shipped</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                </label>
+                <button className="button buttonSecondary" type="submit">
+                  Update
+                </button>
+              </form>
+            </article>
+          ))}
         </div>
-
-        {!ordersResult.configured ? (
-          <div className="contentCard detailBlock">
-            <h2>Supabase is not configured.</h2>
-            <p>Add `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` to view stored orders here.</p>
-          </div>
-        ) : ordersResult.error ? (
-          <div className="contentCard detailBlock">
-            <h2>Orders could not be loaded.</h2>
-            <p>{ordersResult.error}</p>
-          </div>
-        ) : !ordersResult.data?.length ? (
-          <div className="contentCard detailBlock">
-            <h2>No orders yet.</h2>
-            <p>Orders will appear here after checkout creates them in Supabase.</p>
-          </div>
-        ) : (
-          <div className="adminOrdersGrid">
-            {ordersResult.data.map((order) => (
-              <article className="adminOrderCard" key={order.id}>
-                <div className="adminOrderTop">
-                  <div>
-                    <span className="eyebrow">{order.order_reference}</span>
-                    <h2>{order.customer_name}</h2>
-                    <p>
-                      {order.customer_email} · {order.customer_phone}
-                    </p>
-                  </div>
-                  <div className="adminOrderTotal">
-                    <strong>{formatZar(order.total)}</strong>
-                    <span>{new Date(order.created_at).toLocaleDateString('en-ZA')}</span>
-                  </div>
-                </div>
-
-                <div className="adminStatusRow">
-                  <span className={`statusPill status-${order.payment_status}`}>Payment: {order.payment_status}</span>
-                  <span className={`statusPill status-${order.fulfillment_status}`}>Fulfilment: {order.fulfillment_status}</span>
-                </div>
-
-                <div className="adminOrderDetails">
-                  <div>
-                    <strong>Delivery</strong>
-                    <p>{deliveryAddress(order) || 'No delivery address stored'}</p>
-                  </div>
-                  <div>
-                    <strong>Items</strong>
-                    <ul>
-                      {orderItems(order).map((item) => (
-                        <li key={item}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                  {order.payfast_payment_id ? (
-                    <div>
-                      <strong>PayFast payment ID</strong>
-                      <p>{order.payfast_payment_id}</p>
-                    </div>
-                  ) : null}
-                </div>
-
-                <form className="adminFulfillmentForm" action="/admin/orders/update-fulfillment" method="post">
-                  <input type="hidden" name="orderReference" value={order.order_reference} />
-                  <label className="field">
-                    <span>Fulfilment status</span>
-                    <select className="input" name="fulfillmentStatus" defaultValue={order.fulfillment_status}>
-                      <option value="unfulfilled">Unfulfilled</option>
-                      <option value="processing">Processing</option>
-                      <option value="shipped">Shipped</option>
-                      <option value="cancelled">Cancelled</option>
-                    </select>
-                  </label>
-                  <button className="button buttonSecondary" type="submit">
-                    Update
-                  </button>
-                </form>
-              </article>
-            ))}
-          </div>
-        )}
-      </div>
-    </section>
+      )}
+    </AdminShell>
   );
 }

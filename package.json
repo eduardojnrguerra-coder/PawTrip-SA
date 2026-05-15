@@ -6,6 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "check:blog": "node scripts/check-blog-data.mjs",
+    "check:products": "node scripts/check-product-data.mjs",
+    "import:products": "node scripts/import-supplier-products.mjs",
+    "import:csv-products": "node scripts/import-products.mjs",
     "start": "next start",
     "lint": "next lint"
   },

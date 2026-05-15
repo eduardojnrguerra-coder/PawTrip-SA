@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { QuizClient } from '@/components/quiz-client';
-import { publicProducts } from '@/data/products';
 import { pageMetadata } from '@/lib/seo';
+import { getPublicProducts } from '@/lib/storefront';
 
 export const metadata: Metadata = pageMetadata({
   title: 'Kit Finder | PawTrip SA',
@@ -9,7 +9,8 @@ export const metadata: Metadata = pageMetadata({
   path: '/find-my-kit',
 });
 
-export default function FindMyKitPage() {
+export default async function FindMyKitPage() {
+  const publicProducts = await getPublicProducts();
   return (
     <section className="section kitFinderPage">
       <div className="container">

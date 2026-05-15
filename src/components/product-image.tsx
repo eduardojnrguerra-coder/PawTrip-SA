@@ -28,11 +28,13 @@ export function ProductImage({ src, alt, productName, category, className, image
 
   if (missing) {
     return (
-      <div className={cn('premiumImagePlaceholder', className)} role="img" aria-label={alt}>
-        <div className="placeholderMark">P</div>
-        <strong>PawTrip SA</strong>
+      <div className={cn('neutralProductFallback', className)} role="img" aria-label={alt}>
+        <div className="neutralProductFallbackMark" aria-hidden="true">
+          {productName.slice(0, 1).toUpperCase()}
+        </div>
+        <strong>{productName}</strong>
         <span>{category}</span>
-        {process.env.NODE_ENV === 'development' ? <p>Product image coming soon</p> : null}
+        <span className="fallbackComingSoon">Product image coming soon</span>
       </div>
     );
   }

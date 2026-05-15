@@ -83,6 +83,188 @@ export function validateBlogPost(post: Partial<BlogPost> | null | undefined): Bl
   };
 }
 
+const requiredArticleLinks = [
+  { label: 'Dog car seat hammock', href: '/shop/product/dog-hammock-back-seat-cover' },
+  { label: 'SUV boot liner', href: '/shop/product/suv-dog-boot-liner' },
+  { label: 'Paw cleaner', href: '/shop/product/paw-cleaner-cup' },
+  { label: 'Travel bowl', href: '/shop/product/collapsible-dog-travel-bowl' },
+  { label: 'Dog seat belt tether', href: '/shop/product/pet-seat-belt-clip' },
+] as const;
+
+function mergeInternalLinks(post: Partial<BlogPost> | null | undefined) {
+  const links = Array.isArray(post?.internalLinks) ? post.internalLinks.filter((link) => link?.label && link?.href) : [];
+  const byHref = new Map(links.map((link) => [link.href, link]));
+  requiredArticleLinks.forEach((link) => {
+    if (!byHref.has(link.href)) {
+      byHref.set(link.href, { ...link });
+    }
+  });
+  return Array.from(byHref.values());
+}
+
+function buildFallbackSections(post: Partial<BlogPost> | null | undefined) {
+  const rawTitle = post?.title;
+  const rawExcerpt = post?.excerpt;
+  const rawCategory = post?.category;
+  const title = typeof rawTitle === 'string' && rawTitle.trim().length > 0 ? rawTitle.trim() : 'PawTrip SA guide';
+  const excerpt = typeof rawExcerpt === 'string' && rawExcerpt.trim().length > 0
+    ? rawExcerpt.trim()
+    : 'This article is being expanded with more practical guidance for South African dog owners.';
+  const category = typeof rawCategory === 'string' && rawCategory.trim().length > 0 ? rawCategory.trim() : 'Dog Guides';
+
+  return [
+    {
+      heading: 'Start with the practical version',
+      paragraphs: [
+        excerpt,
+        `For now, the simplest approach is to use this ${category.toLowerCase()} guide as a starting point, then compare the linked PawTrip SA products and categories for the setup that matches your dog, your car and your daily routine.`,
+      ],
+    },
+    {
+      heading: 'What to compare before you buy',
+      paragraphs: [
+        'Check fit, cleaning effort, material notes and whether the product solves the mess or travel problem you deal with most often.',
+        'Avoid overbuying. Start with one product or bundle that handles the main frustration, then add smaller extras only if they genuinely improve the routine.',
+      ],
+    },
+    {
+      heading: 'Useful next clicks',
+      paragraphs: [
+        `We are still expanding "${title}" into a fuller guide. In the meantime, the internal product and category links on this page point you to the most relevant current options.`,
+      ],
+    },
+  ];
+}
+
+function normaliseSections(post: Partial<BlogPost> | null | undefined) {
+  const safeSections = Array.isArray(post?.sections)
+    ? post.sections
+        .filter((section) => section && (isNonEmptyString(section.heading) || Array.isArray(section.paragraphs)))
+        .map((section) => ({
+          heading: isNonEmptyString(section.heading) ? section.heading.trim() : 'Practical guidance',
+          paragraphs: Array.isArray(section.paragraphs) && section.paragraphs.length
+            ? section.paragraphs.filter(isNonEmptyString).map((paragraph) => paragraph.trim())
+            : [],
+        }))
+        .filter((section) => section.paragraphs.length > 0)
+    : [];
+
+  if (safeSections.length >= 3) return safeSections;
+
+  const fallbacks = buildFallbackSections(post);
+  const combined = [...safeSections];
+
+  for (const fallback of fallbacks) {
+    if (combined.length >= 3) break;
+    combined.push(fallback);
+  }
+
+  return combined;
+}
+
+export function getSafeBlogPost(post: Partial<BlogPost> | null | undefined): BlogPost | null {
+  if (!post || !isNonEmptyString(post.slug)) return null;
+
+  const slug = typeof post.slug === 'string' ? post.slug.trim() : '';
+  if (!slug) return null;
+  const rawTitle = post.title;
+  const rawExcerpt = post.excerpt;
+  const rawSeoTitle = post.seoTitle;
+  const rawSeoDescription = post.seoDescription;
+  const rawCategory = post.category;
+  const rawDate = post.date;
+  const rawUpdatedAt = post.updatedAt;
+  const rawReadTime = post.readTime;
+  const rawImage = post.image;
+  const rawHeroSubtitle = post.heroSubtitle;
+  const rawQuickAnswer = post.quickAnswer;
+  const rawFunnyHook = post.funnyHook;
+  const rawProductBlockTitle = post.productBlockTitle;
+  const rawCtaBundleSlug = post.ctaBundleSlug;
+  const title = typeof rawTitle === 'string' && rawTitle.trim().length > 0 ? rawTitle.trim() : 'PawTrip SA Guide';
+  const excerpt = typeof rawExcerpt === 'string' && rawExcerpt.trim().length > 0
+    ? rawExcerpt.trim()
+    : 'Practical guidance for South African dog owners choosing cleaner travel, calmer routines and useful pet gear.';
+  const sections = normaliseSections(post);
+  const outline = Array.isArray(post.outline) && post.outline.length
+    ? post.outline.filter(isNonEmptyString).map((item) => item.trim())
+    : sections.map((section) => section.heading).filter(Boolean);
+
+  return {
+    slug,
+    title,
+    excerpt,
+    seoTitle: typeof rawSeoTitle === 'string' && rawSeoTitle.trim().length > 0 ? rawSeoTitle.trim() : `${title} | PawTrip SA`,
+    seoDescription: typeof rawSeoDescription === 'string' && rawSeoDescription.trim().length > 0 ? rawSeoDescription.trim() : excerpt,
+    category: typeof rawCategory === 'string' && rawCategory.trim().length > 0 ? rawCategory.trim() : 'Dog Guides',
+    date: typeof rawDate === 'string' && rawDate.trim().length > 0 ? rawDate.trim() : '2026-05-01',
+    updatedAt: typeof rawUpdatedAt === 'string' && rawUpdatedAt.trim().length > 0 ? rawUpdatedAt.trim() : undefined,
+    readTime: typeof rawReadTime === 'string' && rawReadTime.trim().length > 0 ? rawReadTime.trim() : '8 min read',
+    image: typeof rawImage === 'string' && rawImage.trim().length > 0 ? rawImage.trim() : '/blog/pawtrip-guide-fallback.svg',
+    heroSubtitle: typeof rawHeroSubtitle === 'string' && rawHeroSubtitle.trim().length > 0 ? rawHeroSubtitle.trim() : excerpt,
+    quickAnswer: typeof rawQuickAnswer === 'string' && rawQuickAnswer.trim().length > 0
+      ? rawQuickAnswer.trim()
+      : 'Start with the product or guide that solves the biggest daily frustration first, then add only the extras that clearly help.',
+    funnyHook: typeof rawFunnyHook === 'string' && rawFunnyHook.trim().length > 0
+      ? rawFunnyHook.trim()
+      : 'Useful advice first, chaos management second, mystery buying decisions never.',
+    checklist: Array.isArray(post.checklist) && post.checklist.length
+      ? post.checklist.filter(isNonEmptyString).map((item) => item.trim())
+      : ['Check fit and measurements first.', 'Start with the biggest real-life problem.', 'Use the internal links to compare the most relevant products.'],
+    commonMistakes: Array.isArray(post.commonMistakes) && post.commonMistakes.length
+      ? post.commonMistakes.filter(isNonEmptyString).map((item) => item.trim())
+      : ['Buying too many extras before solving the main problem.', 'Skipping size and fit checks.', 'Treating every dog routine like it needs the same setup.'],
+    productBlockTitle:
+      typeof rawProductBlockTitle === 'string' && rawProductBlockTitle.trim().length > 0
+        ? rawProductBlockTitle.trim()
+        : 'PawTrip picks for this problem',
+    pullQuotes: Array.isArray(post.pullQuotes) && post.pullQuotes.length
+      ? post.pullQuotes.filter(isNonEmptyString).map((item) => item.trim())
+      : ['A useful setup beats an overbuilt one almost every time.', 'The best product is usually the one that quietly makes the routine easier.'],
+    targetKeywords: Array.isArray(post.targetKeywords) && post.targetKeywords.length
+      ? post.targetKeywords.filter(isNonEmptyString).map((item) => item.trim())
+      : [title.toLowerCase(), 'dog travel accessories South Africa'],
+    relatedArticleSlugs: Array.isArray(post.relatedArticleSlugs)
+      ? post.relatedArticleSlugs.filter(isNonEmptyString).map((item) => item.trim())
+      : [],
+    relatedProductSlugs: Array.isArray(post.relatedProductSlugs)
+      ? post.relatedProductSlugs.filter(isNonEmptyString).map((item) => item.trim())
+      : [],
+    recommendedProductSlugs: Array.isArray(post.recommendedProductSlugs)
+      ? post.recommendedProductSlugs.filter(isNonEmptyString).map((item) => item.trim())
+      : [],
+    ctaBundleSlug: typeof rawCtaBundleSlug === 'string' && rawCtaBundleSlug.trim().length > 0 ? rawCtaBundleSlug.trim() : undefined,
+    internalLinks: mergeInternalLinks(post),
+    faqs: Array.isArray(post.faqs) && post.faqs.length
+      ? post.faqs.filter((faq) => faq?.question && faq?.answer)
+      : [
+          {
+            question: `Is ${title.toLowerCase()} still useful if the article is short?`,
+            answer: 'Yes. The product links, category links and guide structure still point you to the most relevant next step while the article is being expanded.',
+          },
+          {
+            question: 'How should I choose the right product?',
+            answer: 'Start with your biggest real-life problem first, then compare fit, cleaning effort, and whether the product matches how your dog actually travels or behaves.',
+          },
+        ],
+    outline,
+    sections,
+  };
+}
+
+export function isPublishedBlogPost(post: Partial<BlogPost> | null | undefined) {
+  return Boolean(
+    post &&
+      isNonEmptyString(post.slug) &&
+      isNonEmptyString(post.title) &&
+      isNonEmptyString(post.excerpt) &&
+      isNonEmptyString(post.seoTitle) &&
+      isNonEmptyString(post.seoDescription) &&
+      Array.isArray(post.sections) &&
+      post.sections.length >= 3,
+  );
+}
+
 const longCarSeatCoverSections = [
   {
     heading: 'What makes a good dog car seat cover',
@@ -1096,3 +1278,10 @@ export const blogPosts: BlogPost[] = rawBlogPosts.map((post, index) => {
     relatedArticleSlugs: post.relatedArticleSlugs ?? enhancement.relatedArticleSlugs ?? articleConnections[post.slug] ?? fallbackRelated,
   };
 });
+
+export const publishedBlogPosts: BlogPost[] = blogPosts.filter(isPublishedBlogPost);
+
+export function getSafeBlogPostBySlug(slug: string) {
+  const post = blogPosts.find((entry) => entry.slug === slug);
+  return getSafeBlogPost(post);
+}

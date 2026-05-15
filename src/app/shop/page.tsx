@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import { ShopBrowser } from '@/components/shop-browser';
-import { categories, publicProducts as products } from '@/data/products';
 import { pageMetadata } from '@/lib/seo';
 import { ProductCard } from '@/components/product-card';
 import { Reveal } from '@/components/reveal';
+import { getPublicCategories, getPublicProducts } from '@/lib/storefront';
 
 export const metadata: Metadata = pageMetadata({
   title: 'Shop Dog Travel Accessories, Toys and Treats Online South Africa',
@@ -13,7 +13,8 @@ export const metadata: Metadata = pageMetadata({
   keywords: ['dog toys online South Africa', 'dog treats online South Africa', 'dog travel accessories South Africa'],
 });
 
-export default function ShopPage() {
+export default async function ShopPage() {
+  const [products, categories] = await Promise.all([getPublicProducts(), getPublicCategories()]);
   const starterKits = products.filter((product) => product.isBundle).slice(0, 6);
   const individualProducts = products.filter((product) => !product.isBundle);
 

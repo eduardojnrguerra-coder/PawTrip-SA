@@ -1,15 +1,7 @@
 import { blogPosts } from '@/data/blog';
+import { importedCsvProducts } from '@/data/product-imports/products-generated';
 
-export type CategorySlug =
-  | 'travel-kits'
-  | 'car-protection'
-  | 'toys'
-  | 'treats-chews'
-  | 'grooming'
-  | 'bowls-feeding'
-  | 'beds-comfort'
-  | 'walking-gear'
-  | 'puppy-essentials';
+export type CategorySlug = string;
 
 export type Product = {
   id: string;
@@ -59,6 +51,7 @@ export type Product = {
   care?: string[];
   returnsNote?: string;
   keywords?: string[];
+  stockQuantity?: number;
 };
 
 export type InternalProduct = Product & {
@@ -177,15 +170,19 @@ function makeProduct(entry: Omit<InternalProduct, 'categorySlug' | 'categoryName
   benefits?: string[];
 }): InternalProduct {
   const category = categoryMap[entry.categoryGroup];
-  const publicImage = productImageFor(entry);
+  const fallbackImage = productImageFor(entry);
+  const primaryImage = entry.image?.trim() ? entry.image : fallbackImage;
+  const gallery = entry.gallery?.length ? entry.gallery : [primaryImage];
+  const galleryImages = entry.galleryImages?.length ? entry.galleryImages : gallery;
+
   return {
     ...entry,
-    image: publicImage,
-    gallery: [publicImage],
+    image: primaryImage,
+    gallery,
     category: entry.category,
     categorySlug: category.slug,
     categoryName: category.name,
-    galleryImages: entry.galleryImages ?? [publicImage],
+    galleryImages,
     qualityNotes: entry.qualityNotes ?? defaultQualityNotes(entry),
     material: entry.material ?? defaultMaterial(entry),
     dimensions: entry.dimensions ?? entry.measurements,
@@ -200,7 +197,7 @@ function makeProduct(entry: Omit<InternalProduct, 'categorySlug' | 'categoryName
         'Universal-fit accessories should be checked against your vehicle, dog size or home setup before ordering.',
       ],
     howToUse: entry.howToUse ?? defaultHowToUse(entry),
-    sourcePermissionStatus: entry.sourcePermissionStatus ?? 'needs_supplier_images',
+    sourcePermissionStatus: entry.sourcePermissionStatus ?? 'original_photos_needed',
     availability: entry.availability ?? 'checking_availability',
     shippingClass: entry.shippingClass ?? (entry.slug.includes('ramp') ? 'oversized' : entry.isBundle ? 'bulky' : entry.price < 200 ? 'small' : 'standard'),
     imageReady: entry.imageReady ?? true,
@@ -228,7 +225,12 @@ function makeProduct(entry: Omit<InternalProduct, 'categorySlug' | 'categoryName
 }
 
 export function isPublicProduct(product: Product) {
-  return product.launchVisible && product.imageReady;
+  return (
+    product.launchVisible &&
+    product.imageReady &&
+    (product.sourcePermissionStatus === 'supplier_permission_confirmed' ||
+      product.sourcePermissionStatus === 'original_photos_needed')
+  );
 }
 
 export const categories: Category[] = [
@@ -1846,14 +1848,17 @@ const productsData = [
   }),
 ] as const satisfies readonly InternalProduct[];
 
-export const internalProducts: InternalProduct[] = productsData.map((product) => ({
-  ...product,
-  longDescription: product.longDescription ?? product.fullDescription,
-  included: product.included ?? product.whatsIncluded,
-  care: product.care ?? product.careInstructions,
-  returnsNote: product.returnNote,
-  keywords: product.keywords ?? product.tags,
-}));
+export const internalProducts: InternalProduct[] = [
+  ...productsData.map((product) => ({
+    ...product,
+    longDescription: product.longDescription ?? product.fullDescription,
+    included: product.included ?? product.whatsIncluded,
+    care: product.care ?? product.careInstructions,
+    returnsNote: product.returnNote,
+    keywords: product.keywords ?? product.tags,
+  })),
+  ...importedCsvProducts,
+];
 
 export const products: Product[] = internalProducts.map(({ supplierCostEstimate, supplierNotes, ...product }) => product);
 export const publicProducts = products.filter(isPublicProduct);

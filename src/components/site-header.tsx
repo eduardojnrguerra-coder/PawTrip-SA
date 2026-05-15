@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Menu, Search, ShoppingBag, X } from 'lucide-react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useCart } from '@/components/cart-provider';
 import type { Category } from '@/data/products';
 import { cn } from '@/lib/utils';
@@ -22,12 +22,67 @@ export function SiteHeader({ categories }: { categories: Category[] }) {
   const pathname = usePathname();
   const { itemCount, openDrawer, cartBump } = useCart();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [desktopCategoriesOpen, setDesktopCategoriesOpen] = useState(false);
+  const [mobileCategoriesOpen, setMobileCategoriesOpen] = useState(false);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const desktopDropdownRef = useRef<HTMLDivElement | null>(null);
   const reduceMotion = useReducedMotion();
 
   const isActive = useMemo(
     () => (href: string) => pathname === href || (href !== '/' && pathname.startsWith(href)),
     [pathname],
   );
+
+  function clearCloseTimer() {
+    if (!closeTimerRef.current) return;
+    clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = null;
+  }
+
+  function scheduleDesktopClose() {
+    clearCloseTimer();
+    closeTimerRef.current = setTimeout(() => {
+      setDesktopCategoriesOpen(false);
+      closeTimerRef.current = null;
+    }, 240);
+  }
+
+  function openDesktopCategories() {
+    clearCloseTimer();
+    setDesktopCategoriesOpen(true);
+  }
+
+  function closeAllMenus() {
+    clearCloseTimer();
+    setDesktopCategoriesOpen(false);
+    setMobileCategoriesOpen(false);
+  }
+
+  useEffect(() => {
+    function handlePointerDown(event: MouseEvent | TouchEvent) {
+      if (!desktopDropdownRef.current) return;
+      const target = event.target as Node | null;
+      if (target && desktopDropdownRef.current.contains(target)) return;
+      setDesktopCategoriesOpen(false);
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        closeAllMenus();
+        setMobileOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('touchstart', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('touchstart', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+      clearCloseTimer();
+    };
+  }, []);
 
   return (
     <header className="header">
@@ -46,13 +101,41 @@ export function SiteHeader({ categories }: { categories: Category[] }) {
               {item.label}
             </Link>
           ))}
-          <div className="navDropdown">
-            <span className="navLink">Categories</span>
-            <div className="navDropdownMenu">
+          <div
+            className="navDropdown"
+            ref={desktopDropdownRef}
+            onMouseEnter={openDesktopCategories}
+            onMouseLeave={scheduleDesktopClose}
+          >
+            <button
+              type="button"
+              className="navLink navDropdownTrigger"
+              aria-haspopup="menu"
+              aria-expanded={desktopCategoriesOpen}
+              onClick={() => {
+                clearCloseTimer();
+                setDesktopCategoriesOpen((current) => !current);
+              }}
+              onFocus={openDesktopCategories}
+            >
+              Categories
+            </button>
+            <div
+              className={desktopCategoriesOpen ? 'navDropdownMenu navDropdownMenuOpen' : 'navDropdownMenu'}
+              role="menu"
+              onMouseEnter={openDesktopCategories}
+              onMouseLeave={scheduleDesktopClose}
+            >
               {categories
                 .filter((category) => category.slug !== 'all')
                 .map((category) => (
-                  <Link key={category.slug} href={`/shop/category/${category.slug}`} className="navDropdownItem">
+                  <Link
+                    key={category.slug}
+                    href={`/shop/category/${category.slug}`}
+                    className="navDropdownItem"
+                    role="menuitem"
+                    onClick={() => setDesktopCategoriesOpen(false)}
+                  >
                     {category.name}
                   </Link>
                 ))}
@@ -106,23 +189,43 @@ export function SiteHeader({ categories }: { categories: Category[] }) {
               </div>
               <div className="mobileMenuLinks">
                 {nav.map((item) => (
-                  <Link key={item.href} href={item.href} className="mobileMenuLink" onClick={() => setMobileOpen(false)}>
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="mobileMenuLink"
+                    onClick={() => {
+                      setMobileOpen(false);
+                      setMobileCategoriesOpen(false);
+                    }}
+                  >
                     {item.label}
                   </Link>
                 ))}
-                <div className="mobileMenuGroupTitle">Categories</div>
-                {categories
-                  .filter((category) => category.slug !== 'all')
-                  .map((category) => (
-                    <Link
-                      key={category.slug}
-                      href={`/shop/category/${category.slug}`}
-                      className="mobileMenuLink"
-                      onClick={() => setMobileOpen(false)}
-                    >
-                      {category.name}
-                    </Link>
-                  ))}
+                <button
+                  type="button"
+                  className="mobileMenuGroupTitle mobileMenuCategoryToggle"
+                  aria-expanded={mobileCategoriesOpen}
+                  onClick={() => setMobileCategoriesOpen((current) => !current)}
+                >
+                  Categories
+                </button>
+                {mobileCategoriesOpen
+                  ? categories
+                      .filter((category) => category.slug !== 'all')
+                      .map((category) => (
+                        <Link
+                          key={category.slug}
+                          href={`/shop/category/${category.slug}`}
+                          className="mobileMenuLink"
+                          onClick={() => {
+                            setMobileOpen(false);
+                            setMobileCategoriesOpen(false);
+                          }}
+                        >
+                          {category.name}
+                        </Link>
+                      ))
+                  : null}
               </div>
             </motion.div>
           </motion.div>

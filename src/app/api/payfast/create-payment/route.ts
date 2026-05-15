@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { publicProducts as products } from '@/data/products';
 import { calculateCartTotals, type CartItem, type PendingOrder } from '@/lib/cart';
 import { createPayFastPayment, generateOrderReference } from '@/lib/payfast';
 import { createSupabaseOrder } from '@/lib/supabase';
+import { getPublicProducts } from '@/lib/storefront';
 
 type CustomerInput = PendingOrder['customer'];
 
@@ -53,10 +53,9 @@ function validateCustomer(customer: CreatePaymentRequest['customer']) {
   return cleaned;
 }
 
-function validateCartItems(items: CreatePaymentRequest['items']) {
+function validateCartItems(items: CreatePaymentRequest['items'], productSlugs: Set<string>) {
   if (!Array.isArray(items) || items.length === 0) return null;
 
-  const productSlugs = new Set(products.map((product) => product.slug));
   const merged = new Map<string, number>();
 
   for (const item of items) {
@@ -86,7 +85,8 @@ export async function POST(request: Request) {
   const customer = validateCustomer(body.customer);
   if (!customer) return badRequest('Missing or invalid customer details.');
 
-  const items = validateCartItems(body.items);
+  const products = await getPublicProducts();
+  const items = validateCartItems(body.items, new Set(products.map((product) => product.slug)));
   if (!items) return badRequest('Missing or invalid cart items.');
 
   const totals = calculateCartTotals(items, products);

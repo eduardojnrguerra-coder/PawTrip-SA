@@ -87,16 +87,28 @@ export function websiteSchema() {
 }
 
 export function productSchema(product: Product) {
+  const name = product.name || 'PawTrip SA product';
+  const description = product.fullDescription || product.shortDescription || siteDescription;
+  const galleryImages = Array.isArray(product.galleryImages) && product.galleryImages.length
+    ? product.galleryImages
+    : Array.isArray(product.gallery) && product.gallery.length
+      ? product.gallery
+      : product.image
+        ? [product.image]
+        : [defaultOgImage];
+  const price = typeof product.price === 'number' && Number.isFinite(product.price) ? product.price : 0;
   const offer: Record<string, unknown> = {
     '@type': 'Offer',
     priceCurrency: 'ZAR',
-    price: product.price.toFixed(2),
+    price: price.toFixed(2),
     url: absoluteUrl(`/shop/product/${product.slug}`),
     itemCondition: 'https://schema.org/NewCondition',
   };
 
+  const isInStock = typeof product.stockQuantity === 'number' ? product.stockQuantity > 0 : product.availability === 'in_stock';
+
   offer.availability =
-    product.availability === 'in_stock'
+    isInStock
       ? 'https://schema.org/InStock'
       : product.availability === 'unavailable'
         ? 'https://schema.org/OutOfStock'
@@ -105,15 +117,15 @@ export function productSchema(product: Product) {
   return {
     '@context': 'https://schema.org',
     '@type': 'Product',
-    name: product.name,
-    description: product.fullDescription,
-    image: product.galleryImages.map(absoluteImageUrl),
+    name,
+    description,
+    image: galleryImages.map(absoluteImageUrl),
     sku: product.id,
     brand: {
       '@type': 'Brand',
-      name: siteName,
+      name: 'PawTrip SA',
     },
-    category: product.categoryName,
+    category: product.categoryName || product.category || 'Dog essentials',
     offers: offer,
   };
 }

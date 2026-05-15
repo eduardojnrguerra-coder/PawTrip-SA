@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
 import { ArrowRight, Clock, Filter, Sparkles } from 'lucide-react';
 import { BlogImage } from '@/components/blog-image';
-import { blogPosts, validateBlogPost, type BlogPost } from '@/data/blog';
+import { publishedBlogPosts, validateBlogPost, type BlogPost } from '@/data/blog';
 
 const filterCategories = ['All', 'Car Protection', 'Travel', 'Puppy', 'Toys', 'Feeding', 'Grooming', 'Senior Dogs'];
 
@@ -76,7 +76,7 @@ function BlogCard({ post, featured = false, index = 0 }: { post: BlogPost; featu
 }
 
 export function BlogBrowser() {
-  const validPosts = useMemo(() => blogPosts.filter((post) => validateBlogPost(post).valid), []);
+  const validPosts = useMemo(() => publishedBlogPosts.filter((post) => validateBlogPost(post).valid), []);
   const reduceMotion = useReducedMotion();
   const [activeCategory, setActiveCategory] = useState('All');
   const featuredPost = validPosts[0];

@@ -1,10 +1,12 @@
 import type { MetadataRoute } from 'next';
-import { blogPosts, categories, products } from '@/lib/catalog';
 import { collections } from '@/data/collections';
 import { getSiteUrl } from '@/lib/site';
+import { publishedBlogPosts } from '@/data/blog';
+import { getPublicCategories, getPublicProducts } from '@/lib/storefront';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = getSiteUrl();
+  const [categories, products] = await Promise.all([getPublicCategories(), getPublicProducts()]);
   const staticRoutes = [
     '',
     '/shop',
@@ -41,7 +43,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     }));
 
-  const blogRoutes = blogPosts
+  const blogRoutes = publishedBlogPosts
     .filter((post) => post.slug)
     .map((post) => ({
       url: `${base}/blog/${post.slug}`,

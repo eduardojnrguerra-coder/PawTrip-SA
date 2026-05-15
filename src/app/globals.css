@@ -496,7 +496,7 @@ p {
 .header {
   position: sticky;
   top: 0;
-  z-index: 50;
+  z-index: 180;
   background: rgba(251, 248, 243, 0.76);
   backdrop-filter: blur(22px) saturate(145%);
   border-bottom: 1px solid rgba(31, 77, 58, 0.08);
@@ -561,27 +561,37 @@ p {
   position: relative;
 }
 
+.navDropdownTrigger {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
 .navDropdownMenu {
   position: absolute;
   top: calc(100% + 14px);
   left: 0;
-  width: 240px;
-  padding: 12px;
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  box-shadow: var(--shadow);
+  z-index: 220;
+  width: 262px;
+  padding: 14px;
+  background: rgba(251, 248, 243, 0.98);
+  border: 1px solid rgba(31, 77, 58, 0.14);
+  border-radius: 16px;
+  box-shadow: 0 24px 62px rgba(12, 20, 16, 0.22);
+  backdrop-filter: blur(14px);
   display: none;
 }
 
-.navDropdown:hover .navDropdownMenu {
+.navDropdownMenuOpen {
   display: grid;
 }
 
 .navDropdownItem {
-  padding: 10px 12px;
-  border-radius: 10px;
+  padding: 11px 12px;
+  border-radius: 12px;
   color: var(--text);
+  font-weight: 650;
 }
 
 .navDropdownItem:hover {
@@ -944,6 +954,55 @@ p {
   line-height: 1.4;
 }
 
+.neutralProductFallback {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  aspect-ratio: 1 / 1;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 0.45rem;
+  padding: 1.25rem;
+  text-align: center;
+  background:
+    radial-gradient(circle at 22% 18%, rgba(232, 177, 90, 0.18), transparent 28%),
+    radial-gradient(circle at 82% 14%, rgba(167, 196, 174, 0.16), transparent 30%),
+    linear-gradient(145deg, #fbf8f3, #f4efe7);
+  color: #143628;
+}
+
+.neutralProductFallbackMark {
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.72);
+  color: #143628;
+  font-family: var(--font-sora), system-ui, sans-serif;
+  font-size: 1.35rem;
+  font-weight: 800;
+  box-shadow: 0 10px 24px rgba(31, 41, 55, 0.08);
+}
+
+.neutralProductFallback strong {
+  color: #143628;
+  font-family: var(--font-sora), system-ui, sans-serif;
+  font-size: 1rem;
+}
+
+.neutralProductFallback span {
+  color: #6b675c;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.neutralProductFallback p {
+  color: #6b675c;
+  font-size: 0.82rem;
+}
+
 .productCardBody {
   padding: 18px;
   display: grid;
@@ -1009,6 +1068,16 @@ p {
   align-items: flex-start;
   color: var(--muted);
   font-size: 0.92rem;
+}
+
+.bestForCompact {
+  align-items: center;
+  color: #6b675c;
+  font-size: 0.88rem;
+}
+
+.bestForCompact span {
+  color: inherit;
 }
 
 .cardActions {
@@ -1721,6 +1790,14 @@ p {
   font-size: 0.86rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
+}
+
+.mobileMenuCategoryToggle {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
 }
 
 .mobileMenuLink {
@@ -6185,6 +6262,224 @@ summary,
   color: #fbf8f3;
 }
 
+/* Admin */
+.adminSurface {
+  background:
+    radial-gradient(circle at top right, rgba(232, 177, 90, 0.1), transparent 18rem),
+    #f4efe7;
+}
+
+.adminLayout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.adminSidebar {
+  position: sticky;
+  top: 1.25rem;
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 20px;
+  background: #fbf8f3;
+  box-shadow: 0 16px 40px rgba(20, 54, 40, 0.08);
+}
+
+.adminSidebarBrand strong,
+.adminPageHeader h1 {
+  color: #143628;
+}
+
+.adminSidebarBrand p,
+.adminPageHeader p,
+.adminQuickCard p,
+.adminProductRow p,
+.adminSimpleRow p {
+  color: #6b675c;
+}
+
+.adminNav {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.adminNav a {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.8rem 0.9rem;
+  border-radius: 14px;
+  color: #143628;
+  background: rgba(20, 54, 40, 0.04);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.adminContent {
+  display: grid;
+  gap: 1rem;
+}
+
+.adminPageHeader,
+.adminStatsGrid,
+.adminQuickGrid,
+.adminCategoryGrid {
+  display: grid;
+  gap: 1rem;
+}
+
+.adminStatsGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.adminQuickGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.adminQuickCard {
+  text-decoration: none;
+}
+
+.adminSimpleTable,
+.adminProductTable {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.adminSimpleRow,
+.adminProductRow {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.9rem 0;
+  border-bottom: 1px solid rgba(20, 54, 40, 0.08);
+}
+
+.adminProductRow {
+  grid-template-columns: 72px minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+}
+
+.adminProductThumb,
+.adminImagePreview {
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fbf8f3;
+  border: 1px solid rgba(20, 54, 40, 0.08);
+}
+
+.adminProductThumb img,
+.adminImagePreview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.adminProductThumb {
+  width: 72px;
+  height: 72px;
+}
+
+.adminFilters {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr auto;
+  gap: 0.75rem;
+  align-items: end;
+}
+
+.adminProductForm,
+.adminRepeater,
+.adminFaqCard {
+  display: grid;
+  gap: 1rem;
+}
+
+.adminFormGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.fieldFull {
+  grid-column: 1 / -1;
+}
+
+.adminRepeaterRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.adminFaqCard {
+  padding: 1rem;
+  border: 1px solid rgba(20, 54, 40, 0.08);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.adminImagePreviewGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+.adminImagePreview span {
+  display: block;
+  padding: 0.6rem;
+  color: #6b675c;
+  font-size: 0.88rem;
+}
+
+.adminToggleGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.adminToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: #143628;
+  font-weight: 700;
+}
+
+.adminFormFooter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.adminLogoutButton {
+  width: 100%;
+  justify-content: center;
+}
+
+@media (max-width: 980px) {
+  .adminLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .adminSidebar {
+    position: static;
+  }
+
+  .adminStatsGrid,
+  .adminQuickGrid,
+  .adminFilters,
+  .adminFormGrid,
+  .adminSimpleRow,
+  .adminProductRow {
+    grid-template-columns: 1fr;
+  }
+}
+
 .kitQuizCard,
 .kitQuizResultPanel,
 .kitQuizGuide,
@@ -6369,4 +6664,520 @@ summary,
     animation: none !important;
     transition: none !important;
   }
+}
+
+/* Product quality and sourcing pass. */
+.chaosSection {
+  background:
+    radial-gradient(circle at 10% 20%, rgba(232, 177, 90, 0.18), transparent 18rem),
+    linear-gradient(135deg, #143628, #1f4d3a);
+}
+
+.chaosSection .sectionHeader h2,
+.chaosSection .sectionHeader p,
+.chaosSection .sectionHeader .eyebrow {
+  color: #fbf8f3;
+}
+
+.chaosSection .buttonSecondary {
+  border-color: rgba(251, 248, 243, 0.24);
+  background: rgba(251, 248, 243, 0.12);
+  color: #fbf8f3;
+}
+
+.chaosSection .needCard {
+  border-color: rgba(251, 248, 243, 0.2);
+  background:
+    radial-gradient(circle at 85% 8%, rgba(232, 177, 90, 0.25), transparent 7rem),
+    rgba(251, 248, 243, 0.92);
+}
+
+.sectionTight .premiumProductGrid,
+.productGrid.premiumProductGrid {
+  padding: clamp(0.65rem, 2vw, 1rem);
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at 90% 8%, rgba(232, 177, 90, 0.14), transparent 14rem),
+    rgba(251, 248, 243, 0.72);
+}
+
+.kitFinderPreview {
+  position: relative;
+  overflow: hidden;
+  grid-template-columns: minmax(0, 0.9fr) minmax(320px, 1.1fr);
+}
+
+.kitFinderPreview::before {
+  position: absolute;
+  inset: 0 0 0 48%;
+  background:
+    linear-gradient(90deg, rgba(20, 54, 40, 0.18), rgba(20, 54, 40, 0.62)),
+    url("/brand-assets/pawtrip-hero-dog-car.png") center / cover no-repeat;
+  content: "";
+  opacity: 0.72;
+}
+
+.kitFinderPreview > * {
+  position: relative;
+  z-index: 1;
+}
+
+.kitFinderPreviewCards {
+  min-height: 480px;
+}
+
+.contentCard,
+.detailBlock,
+.checkoutDetailsCard,
+.checkoutSummaryCard,
+.cartSummary,
+.cartItem,
+.shopFiltersPremium,
+.blogFilterPanel {
+  color: #1f2937;
+}
+
+.contentCard p,
+.detailBlock p,
+.checkoutDetailsCard p,
+.checkoutSummaryCard p,
+.cartSummary p,
+.cartItem p,
+.shopFiltersPremium p,
+.blogFilterPanel p {
+  color: #374151;
+}
+
+.imagePermissionNote {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .kitFinderPreview {
+    grid-template-columns: 1fr;
+  }
+
+  .kitFinderPreview::before {
+    inset: 48% 0 0;
+    opacity: 0.34;
+  }
+}
+
+/* Hero cleanup pass */
+.heroClean {
+  padding: 30px 0 24px;
+}
+
+.heroClean .heroShell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(1rem, 3vw, 2rem);
+  align-items: center;
+}
+
+.heroCopyClean {
+  display: grid;
+  gap: 1rem;
+}
+
+.heroCopyClean h1 {
+  color: #143628;
+}
+
+.heroCopyClean p {
+  color: #374151;
+}
+
+.heroCopyClean .buttonPrimary {
+  color: #143628;
+}
+
+.heroCopyClean .buttonSecondary {
+  color: #143628;
+  background: rgba(20, 54, 40, 0.08);
+}
+
+.heroTrustBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.heroTrustBadges span {
+  border: 1px solid rgba(31, 77, 58, 0.18);
+  border-radius: 999px;
+  padding: 0.45rem 0.72rem;
+  background: rgba(167, 196, 174, 0.2);
+  color: #143628;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.heroTrustSentence {
+  color: #374151;
+  font-size: 0.98rem;
+}
+
+.heroImageCard {
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 88% 12%, rgba(232, 177, 90, 0.18), transparent 14rem),
+    #fbf8f3;
+  padding: clamp(0.65rem, 2vw, 1rem);
+  box-shadow: 0 26px 70px rgba(20, 54, 40, 0.14);
+}
+
+.heroImageCardInner {
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.heroImageClean {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (max-width: 900px) {
+  .heroClean .heroShell {
+    grid-template-columns: 1fr;
+  }
+
+  .heroImageCard {
+    margin-top: 0.25rem;
+  }
+
+  .heroCopyClean .heroActions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .heroCopyClean .heroActions .button {
+    justify-content: center;
+    width: 100%;
+  }
+}
+
+/* Contrast audit pass: warm readable defaults with explicit dark-surface exceptions. */
+:root {
+  --text: #143628;
+  --muted: #6b675c;
+}
+
+body {
+  color: #3f3f35;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  color: #143628;
+}
+
+p,
+li,
+.productCardBody p,
+.contentCard p,
+.detailBlock p,
+.blogCardBody p,
+.collectionCard p,
+.faqHomeItem p,
+.mobileMenuLink,
+.navDropdownItem {
+  color: #3f3f35;
+}
+
+.brand small,
+.drawerNote,
+.checkoutSmallPrint,
+.summaryRow span,
+.summaryItem span,
+.shippingClassBox p,
+.kitQuizFooter span,
+.blogMetaRow span {
+  color: #6b675c;
+}
+
+.buttonPrimary {
+  color: #143628;
+}
+
+.buttonSecondary,
+.buttonGhost {
+  color: #143628;
+}
+
+.heroClean .heroCopyClean p,
+.heroTrustSentence,
+.sectionHeader p,
+.shopFiltersPremium p,
+.blogFilterPanel p {
+  color: #3f3f35;
+}
+
+/* Keep white/cream text only on dark or photo-backed sections. */
+.chaosSection h1,
+.chaosSection h2,
+.chaosSection h3,
+.chaosSection p,
+.chaosSection .eyebrow,
+.cleanCarPanel h1,
+.cleanCarPanel h2,
+.cleanCarPanel h3,
+.cleanCarPanel p,
+.cleanCarPanel .eyebrow,
+.whyPawTrip h1,
+.whyPawTrip h2,
+.whyPawTrip h3,
+.whyPawTrip p,
+.whyPawTrip .eyebrow,
+.proofGridWrap h1,
+.proofGridWrap h2,
+.proofGridWrap h3,
+.proofGridWrap p,
+.proofGridWrap .eyebrow,
+.blogHubHero h1,
+.blogHubHero h2,
+.blogHubHero h3,
+.blogHubHero p,
+.blogFeaturedCard h1,
+.blogFeaturedCard h2,
+.blogFeaturedCard h3,
+.blogFeaturedCard p,
+.blogProblemPanel h1,
+.blogProblemPanel h2,
+.blogProblemPanel h3,
+.blogProblemPanel p,
+.blogUsefulPanel h1,
+.blogUsefulPanel h2,
+.blogUsefulPanel h3,
+.blogUsefulPanel p,
+.premiumFinalCtaInner h1,
+.premiumFinalCtaInner h2,
+.premiumFinalCtaInner h3,
+.premiumFinalCtaInner p,
+.premiumFinalCtaInner .eyebrow,
+.kitFinderPreview h1,
+.kitFinderPreview h2,
+.kitFinderPreview h3,
+.kitFinderPreview p,
+.kitFinderPreview span,
+.kitQuizShell h1,
+.kitQuizShell h2,
+.kitQuizShell h3,
+.kitQuizShell p,
+.kitQuizResult h1,
+.kitQuizResult h2,
+.kitQuizResult h3,
+.kitQuizResult p,
+.kitQuizResult span,
+.kitQuizResult li {
+  color: #fbf8f3;
+}
+
+/* =============================================
+   FIX: Homepage hero — more spacious layout
+   ============================================= */
+.heroClean {
+  padding: 44px 0 56px;
+  min-height: clamp(480px, 76vh, 680px);
+  display: flex;
+  align-items: center;
+}
+
+.heroClean .heroShell {
+  gap: clamp(2rem, 5vw, 3.5rem);
+}
+
+.heroCopyClean {
+  gap: 1.35rem;
+}
+
+.heroCopyClean h1 {
+  font-size: clamp(3rem, 6.5vw, 5.8rem);
+  line-height: 0.92;
+}
+
+.heroActions {
+  margin-top: 0.4rem;
+}
+
+.heroTrustBadges {
+  gap: 0.7rem;
+}
+
+.heroTrustBadges span {
+  padding: 0.55rem 0.9rem;
+  font-size: 0.9rem;
+}
+
+.heroImageCard {
+  padding: clamp(0.85rem, 2.5vw, 1.35rem);
+  border-radius: 32px;
+}
+
+/* =============================================
+   FIX: Kit Finder option button readability
+   ============================================= */
+.kitQuizOption {
+  background: #fbf8f3;
+  border-color: rgba(31, 77, 58, 0.22);
+  color: #143628;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.kitQuizOption svg {
+  color: #143628;
+  flex-shrink: 0;
+}
+
+.kitQuizOption:hover {
+  background: #f4efe7;
+  border-color: rgba(216, 111, 55, 0.42);
+  box-shadow: 0 8px 24px rgba(31, 41, 55, 0.08);
+}
+
+.kitQuizOptionActive,
+.kitQuizOptionActive:hover {
+  background: linear-gradient(135deg, #e8b15a, #d86f37);
+  border-color: #d86f37;
+  color: #143628;
+  box-shadow: 0 8px 24px rgba(216, 111, 55, 0.22);
+}
+
+.kitQuizOptionActive svg {
+  color: #143628;
+}
+
+/* =============================================
+   FIX: Kit Finder answer rail contrast
+   ============================================= */
+.kitQuizAnswerPill {
+  background: rgba(251, 248, 243, 0.14);
+}
+
+.kitQuizAnswerPillDone {
+  background: rgba(251, 248, 243, 0.22);
+  border-color: rgba(251, 248, 243, 0.3);
+}
+
+.kitQuizAnswerPill span {
+  color: rgba(251, 248, 243, 0.55);
+}
+
+.kitQuizAnswerPill strong,
+.kitQuizAnswerPillDone strong {
+  color: #fbf8f3;
+}
+
+/* =============================================
+   FIX: Kit Finder result copy — fix white text on
+   light background
+   ============================================= */
+.kitQuizResultCopy {
+  background: rgba(255, 255, 255, 0.9);
+  color: #143628;
+}
+
+.kitQuizResultCopy .eyebrow {
+  color: #d86f37;
+}
+
+.kitQuizResultCopy h2,
+.kitQuizResultCopy p,
+.kitQuizResultCopy li,
+.kitQuizResultCopy strong,
+.kitQuizResultCopy span {
+  color: #143628;
+}
+
+.kitQuizResultCopy .kitQuizPriceLine strong {
+  font-size: 1.5rem;
+}
+
+.kitQuizResultCopy .kitQuizPriceLine span {
+  color: #6b675c;
+}
+
+.kitQuizResultCopy .kitQuizIncluded h3,
+.kitQuizResultCopy .kitQuizIncluded span {
+  color: #143628;
+}
+
+.fitmentHelpBox {
+  background: rgba(251, 248, 243, 0.14);
+  border-color: rgba(251, 248, 243, 0.18);
+  border-radius: 18px;
+  padding: 1rem;
+  color: #fbf8f3;
+}
+
+.fitmentHelpBox strong,
+.fitmentHelpBox p {
+  color: #fbf8f3;
+}
+
+/* =============================================
+   FIX: Product image placeholder
+   ============================================= */
+.neutralProductFallback {
+  gap: 0.65rem;
+  padding: 1.5rem 1.25rem;
+  background:
+    radial-gradient(circle at 22% 18%, rgba(232, 177, 90, 0.22), transparent 28%),
+    radial-gradient(circle at 82% 14%, rgba(167, 196, 174, 0.2), transparent 30%),
+    linear-gradient(160deg, #fbf8f3, #f4efe7);
+}
+
+.neutralProductFallbackMark {
+  width: 62px;
+  height: 62px;
+  border-radius: 20px;
+  font-size: 1.6rem;
+  background: #143628;
+  color: #fbf8f3;
+  box-shadow: 0 14px 30px rgba(20, 54, 40, 0.18);
+}
+
+.neutralProductFallback strong {
+  font-size: 1.1rem;
+}
+
+.neutralProductFallback span {
+  font-size: 0.9rem;
+  color: #6b675c;
+}
+
+.neutralProductFallback .fallbackComingSoon {
+  color: #143628;
+  font-size: 0.82rem;
+  font-weight: 700;
+  opacity: 0.65;
+  margin-top: 0.15rem;
+}
+
+/* =============================================
+   FIX: Kit Finder top bar contrast on dark bg
+   ============================================= */
+.kitQuizTopbar strong {
+  color: #fbf8f3;
+}
+
+.kitQuizTopbar > span {
+  color: #e8b15a;
+}
+
+.kitQuizCard h2 {
+  color: #fbf8f3;
+}
+
+.kitQuizCard p {
+  color: rgba(251, 248, 243, 0.82);
+}
+
+.kitQuizIcon {
+  border-color: rgba(251, 248, 243, 0.18);
+  background: rgba(251, 248, 243, 0.1);
+  color: #fbf8f3;
 }

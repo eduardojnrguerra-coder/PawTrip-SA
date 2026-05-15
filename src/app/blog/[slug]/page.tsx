@@ -5,11 +5,11 @@ import { BlogArticleContent } from '@/components/blog-article-content';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { JsonLd } from '@/components/json-ld';
 import { blogPostingSchema, breadcrumbSchema, faqSchema, pageMetadata } from '@/lib/seo';
-import { blogPosts, validateBlogPost } from '@/data/blog';
+import { blogPosts, getSafeBlogPost, getSafeBlogPostBySlug, publishedBlogPosts, validateBlogPost } from '@/data/blog';
 import type { Product } from '@/data/products';
 
 export function generateStaticParams() {
-  return blogPosts.filter((post) => validateBlogPost(post).valid).map((post) => ({ slug: post.slug }));
+  return blogPosts.filter((post) => post.slug).map((post) => ({ slug: post.slug }));
 }
 
 function warnAboutBrokenBlogData(post: (typeof blogPosts)[number]) {
@@ -50,8 +50,8 @@ function warnAboutBrokenBlogData(post: (typeof blogPosts)[number]) {
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const post = getBlogPostBySlug(slug);
-  if (!post || !validateBlogPost(post).valid) return {};
+  const post = getSafeBlogPostBySlug(slug);
+  if (!post) return {};
   const relatedSlugs = Array.isArray(post.relatedProductSlugs) ? post.relatedProductSlugs : [];
   const targetKeywords = Array.isArray(post.targetKeywords) ? post.targetKeywords : [];
   return pageMetadata({
@@ -66,9 +66,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function BlogArticlePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const post = getBlogPostBySlug(slug);
-  if (!post || !validateBlogPost(post).valid) notFound();
-  warnAboutBrokenBlogData(post);
+  const sourcePost = getBlogPostBySlug(slug);
+  const post = getSafeBlogPost(sourcePost);
+  if (!sourcePost || !post) notFound();
+  warnAboutBrokenBlogData(sourcePost);
   const relatedSlugs = Array.isArray(post.relatedProductSlugs) ? post.relatedProductSlugs : [];
   const recommendedSlugs =
     Array.isArray(post.recommendedProductSlugs) && post.recommendedProductSlugs.length
@@ -82,8 +83,8 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
     .filter((product): product is Product => Boolean(product));
   const relatedArticleSlugs = Array.isArray(post.relatedArticleSlugs) ? post.relatedArticleSlugs : [];
   const relatedArticles = relatedArticleSlugs
-    .map((articleSlug) => blogPosts.find((article) => article.slug === articleSlug && validateBlogPost(article).valid))
-    .filter((article): article is (typeof blogPosts)[number] => Boolean(article));
+    .map((articleSlug) => publishedBlogPosts.find((article) => article.slug === articleSlug))
+    .filter((article): article is (typeof publishedBlogPosts)[number] => Boolean(article));
   const ctaBundle = post.ctaBundleSlug ? products.find((product) => product.slug === post.ctaBundleSlug) : undefined;
   const breadcrumbItems = [
     { name: 'Home', path: '/' },

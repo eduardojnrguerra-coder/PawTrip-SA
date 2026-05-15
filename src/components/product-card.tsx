@@ -11,11 +11,12 @@ import { getProductImageAlt, ProductImage } from '@/components/product-image';
 export function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart();
   const reduceMotion = useReducedMotion();
-  const savings = Math.max(0, product.compareAtPrice - product.price);
-  const problemHeadline = product.problemsSolved?.[0] ?? product.shortDescription;
-  const whyItHelps = product.benefits?.[0] ?? product.shortDescription;
+  const savings = Math.max(0, (product.compareAtPrice ?? product.price ?? 0) - (product.price ?? 0));
+  const problemHeadline = product.problemsSolved?.[0] ?? product.shortDescription ?? 'Practical everyday dog gear.';
+  const whyItHelps = product.benefits?.[0] ?? product.shortDescription ?? 'Useful for cleaner, calmer everyday routines.';
+  const bestForLine = product.bestFor?.slice(0, 2).join(' | ') || product.categoryName || 'Everyday dog-owner routines';
 
-  if (!product.launchVisible || !product.imageReady) return null;
+  if (!product.launchVisible || !product.imageReady || !product.slug) return null;
 
   return (
     <motion.article className="productCard" whileHover={reduceMotion ? undefined : { y: -6 }} transition={{ duration: 0.2 }}>
@@ -54,13 +55,9 @@ export function ProductCard({ product }: { product: Product }) {
             Save {formatZar(savings)}{product.isBundle ? ' with this bundle' : ''}
           </div>
         ) : null}
-        <div className="bestFor">
+        <div className="bestFor bestForCompact">
           <Star size={14} />
-          <div className="bestForTags" aria-label={`${product.name} best for`}>
-            {product.bestFor.slice(0, 2).map((item) => (
-              <span key={item}>{item}</span>
-            ))}
-          </div>
+          <span>Best for: {bestForLine}</span>
         </div>
         <div className="cardActions">
           <button type="button" className="button buttonPrimary buttonSmall" onClick={() => addItem(product.slug)}>

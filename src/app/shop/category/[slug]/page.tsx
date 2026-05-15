@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { blogPosts, categorySeoCopy, getCategoryBySlug, getProductsByCategory } from '@/lib/catalog';
+import { blogPosts, categorySeoCopy } from '@/lib/catalog';
 import { ProductCard } from '@/components/product-card';
 import { Reveal } from '@/components/reveal';
 import { Breadcrumbs } from '@/components/breadcrumbs';
@@ -10,23 +10,36 @@ import { breadcrumbSchema, categoryMetadata } from '@/lib/seo';
 import { EducationBlocks } from '@/components/education-blocks';
 import { getEducationBlocksForCategory } from '@/lib/education';
 import { collections } from '@/data/collections';
+import { getPublicCategories, getProductsByCategoryFromStore } from '@/lib/storefront';
+
+export function generateStaticParams() {
+  return ['travel-kits', 'car-protection', 'toys', 'treats-chews', 'grooming', 'bowls-feeding', 'beds-comfort', 'walking-gear', 'puppy-essentials'].map(
+    (slug) => ({ slug }),
+  );
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const category = getCategoryBySlug(slug);
+  const categories = await getPublicCategories();
+  const category = categories.find((entry) => entry.slug === slug);
   if (!category || category.slug === 'all') return {};
   return categoryMetadata(category);
 }
 
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const category = getCategoryBySlug(slug);
+  const categories = await getPublicCategories();
+  const category = categories.find((entry) => entry.slug === slug);
   if (!category || category.slug === 'all') notFound();
 
-  const products = getProductsByCategory(category.slug);
+  const products = await getProductsByCategoryFromStore(category.slug);
   const bundleProducts = products.filter((product) => product.isBundle);
   const individualProducts = products.filter((product) => !product.isBundle);
-  const seo = categorySeoCopy[category.slug];
+  const seo = categorySeoCopy[category.slug] ?? {
+    title: category.name,
+    intro: category.description,
+    body: 'Browse practical PawTrip SA products chosen for everyday dog-owner problems in South Africa.',
+  };
   const relatedGuides = blogPosts.filter((post) => post.category === category.name || post.category === category.name.replace(' & ', ' ') || post.title.toLowerCase().includes(category.name.toLowerCase().split(' ')[0])).slice(0, 3);
   const buyingIntentCollections = collections.filter((collection) =>
     collection.productSlugs.some((productSlug) => products.some((product) => product.slug === productSlug)),

@@ -8,8 +8,8 @@ import { ProductCard } from '@/components/product-card';
 import { Reveal } from '@/components/reveal';
 import { collections } from '@/data/collections';
 import { blogPosts } from '@/data/blog';
-import { categories, getFeaturedProducts, products } from '@/lib/catalog';
 import { pageMetadata } from '@/lib/seo';
+import { getFeaturedProductsFromStore, getPublicCategories, getPublicProducts } from '@/lib/storefront';
 
 export const metadata: Metadata = pageMetadata({
   title: 'Dog Travel Accessories, Car Protection and Pet Essentials South Africa',
@@ -89,8 +89,8 @@ const faqs = [
   ['Are there real customer reviews yet?', 'Not yet. PawTrip SA does not use fake reviews. Real customer reviews will be added as orders are fulfilled.'],
 ];
 
-export default function HomePage() {
-  const featured = getFeaturedProducts();
+export default async function HomePage() {
+  const [featured, products, categories] = await Promise.all([getFeaturedProductsFromStore(), getPublicProducts(), getPublicCategories()]);
   const starterKits = products.filter((product) => product.isBundle).slice(0, 6);
   const bestSellers = featured.slice(0, 4);
   const coreCategories = categories.filter((category) =>
@@ -111,7 +111,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="section premiumHomeSection">
+      <section className="section premiumHomeSection chaosSection">
         <div className="container">
           <Reveal>
             <div className="sectionHeader sectionHeaderInline">

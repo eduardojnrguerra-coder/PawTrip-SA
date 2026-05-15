@@ -1,4 +1,5 @@
 import type { PendingOrder } from '@/lib/cart';
+import { getSupabaseAnonKey, getSupabaseServiceRoleKey, getSupabaseUrl } from '@/lib/supabase/config';
 
 export type SupabaseOrder = {
   id: string;
@@ -14,6 +15,16 @@ export type SupabaseOrder = {
   payment_status: string;
   fulfillment_status: string;
   payfast_payment_id: string | null;
+  order_items?: Array<{
+    id: string;
+    order_id: string;
+    product_id: string | null;
+    product_title: string;
+    product_slug: string | null;
+    quantity: number;
+    unit_price: number;
+    line_total: number;
+  }>;
   created_at: string;
   updated_at: string;
 };
@@ -27,8 +38,8 @@ type SupabaseOrderUpdate = Partial<
 >;
 
 function getSupabaseServerConfig() {
-  const url = process.env.SUPABASE_URL?.replace(/\/$/, '') ?? '';
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? '';
+  const url = getSupabaseUrl();
+  const serviceRoleKey = getSupabaseServiceRoleKey();
 
   if (!url || !serviceRoleKey) return null;
 
@@ -39,8 +50,8 @@ function getSupabaseServerConfig() {
 }
 
 export function getSupabaseClientConfig() {
-  const url = process.env.SUPABASE_URL?.replace(/\/$/, '') ?? '';
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '';
+  const url = getSupabaseUrl();
+  const anonKey = getSupabaseAnonKey();
 
   if (!url || !anonKey) return null;
 
@@ -123,13 +134,44 @@ export async function createSupabaseOrder(
   detailedItems: Parameters<typeof buildSupabaseOrderInsert>[1],
 ) {
   const payload = buildSupabaseOrderInsert(order, detailedItems);
-  return supabaseRequest<SupabaseOrder[]>('orders', {
+  const orderInsert = await supabaseRequest<SupabaseOrder[]>('orders', {
     method: 'POST',
     headers: {
       Prefer: 'return=representation',
     },
     body: JSON.stringify(payload),
   });
+
+  if (!orderInsert.data?.[0] || orderInsert.error || !orderInsert.configured) return orderInsert;
+
+  const orderId = orderInsert.data[0].id;
+  const orderItems = detailedItems.map((item) => ({
+    order_id: orderId,
+    product_id: null,
+    product_title: item.product.name,
+    product_slug: item.productSlug,
+    quantity: item.quantity,
+    unit_price: item.product.price,
+    line_total: item.lineTotal,
+  }));
+
+  const itemsInsert = await supabaseRequest<Array<Record<string, unknown>>>('order_items', {
+    method: 'POST',
+    headers: {
+      Prefer: 'return=representation',
+    },
+    body: JSON.stringify(orderItems),
+  });
+
+  if (itemsInsert.error) {
+    return {
+      data: orderInsert.data,
+      error: itemsInsert.error,
+      configured: true,
+    };
+  }
+
+  return orderInsert;
 }
 
 export async function getSupabaseOrderByReference(orderReference: string) {
@@ -148,7 +190,7 @@ export async function getSupabaseOrderByReference(orderReference: string) {
 
 export async function listSupabaseOrders() {
   const query = new URLSearchParams({
-    select: '*',
+    select: '*,order_items(*)',
     order: 'created_at.desc',
     limit: '100',
   });
