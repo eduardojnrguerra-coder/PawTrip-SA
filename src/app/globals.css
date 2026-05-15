@@ -6977,65 +6977,314 @@ li,
 }
 
 /* =============================================
-   FIX: Homepage hero — more spacious layout
+   COMPREHENSIVE VISUAL REDESIGN
    ============================================= */
+
+/* ---------- Hero section: premium card panel ---------- */
 .heroClean {
-  padding: 44px 0 56px;
-  min-height: clamp(480px, 76vh, 680px);
+  position: relative;
+  padding: 48px 0 64px;
+  min-height: clamp(520px, 80vh, 720px);
   display: flex;
   align-items: center;
+  overflow: hidden;
 }
 
 .heroClean .heroShell {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: clamp(2rem, 5vw, 3.5rem);
+  align-items: center;
+  background: linear-gradient(170deg, #fffdf8 0%, #fbf4ea 100%);
+  border: 1px solid rgba(31, 77, 58, 0.1);
+  border-radius: 34px;
+  box-shadow: 0 34px 100px rgba(31, 41, 55, 0.1);
+  padding: clamp(2rem, 4vw, 3.5rem);
 }
 
+/* Decorative background shapes behind the hero panel */
+.heroDeco {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.heroDecoOrb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.heroDecoOrb1 {
+  width: min(420px, 50vw);
+  height: min(420px, 50vw);
+  top: -8%;
+  right: -6%;
+  background: radial-gradient(circle, rgba(232, 177, 90, 0.2), transparent 70%);
+  animation: heroOrbFloat 22s ease-in-out infinite;
+}
+
+.heroDecoOrb2 {
+  width: min(340px, 40vw);
+  height: min(340px, 40vw);
+  bottom: -10%;
+  left: -5%;
+  background: radial-gradient(circle, rgba(167, 196, 174, 0.18), transparent 70%);
+  animation: heroOrbFloat 18s ease-in-out infinite reverse;
+}
+
+.heroDecoPaw {
+  position: absolute;
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  opacity: 0.08;
+  pointer-events: none;
+  animation: heroPawFloat 24s ease-in-out infinite;
+}
+
+.heroDecoPaw1 {
+  top: 12%;
+  right: 8%;
+  animation-delay: 0s;
+}
+
+.heroDecoPaw2 {
+  bottom: 18%;
+  left: 4%;
+  animation-delay: -8s;
+  font-size: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+@keyframes heroOrbFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(20px, -18px) scale(1.04); }
+  66% { transform: translate(-12px, 14px) scale(0.97); }
+}
+
+@keyframes heroPawFloat {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(16px, -12px) rotate(6deg); }
+  50% { transform: translate(-8px, 8px) rotate(-3deg); }
+  75% { transform: translate(12px, 6px) rotate(4deg); }
+}
+
+/* ---------- Hero copy (left column) ---------- */
 .heroCopyClean {
+  display: grid;
   gap: 1.35rem;
 }
 
 .heroCopyClean h1 {
+  color: #143628;
   font-size: clamp(3rem, 6.5vw, 5.8rem);
   line-height: 0.92;
+  letter-spacing: -0.02em;
+}
+
+.heroCopyClean p {
+  color: #3f3f35;
+  font-size: clamp(1rem, 1.5vw, 1.2rem);
+  line-height: 1.7;
+  max-width: 540px;
 }
 
 .heroActions {
-  margin-top: 0.4rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 0.5rem;
 }
 
 .heroTrustBadges {
-  gap: 0.7rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
 }
 
 .heroTrustBadges span {
+  border: 1px solid rgba(31, 77, 58, 0.18);
+  border-radius: 999px;
   padding: 0.55rem 0.9rem;
+  background: rgba(167, 196, 174, 0.2);
+  color: #143628;
   font-size: 0.9rem;
+  font-weight: 800;
 }
 
-.heroImageCard {
+.heroTrustSentence {
+  color: #3f3f35;
+  font-size: 1rem;
+  line-height: 1.6;
+  max-width: 480px;
+  margin-top: 0.15rem;
+}
+
+/* ---------- Hero image card (right column) with floating badges ---------- */
+.heroClean .heroImageCard {
+  position: relative;
   padding: clamp(0.85rem, 2.5vw, 1.35rem);
   border-radius: 32px;
+  background:
+    radial-gradient(circle at 88% 12%, rgba(232, 177, 90, 0.18), transparent 14rem),
+    #fbf8f3;
+  box-shadow: 0 26px 70px rgba(20, 54, 40, 0.14);
+  transition: box-shadow 0.35s ease, transform 0.35s ease;
 }
 
-/* =============================================
-   FIX: Kit Finder option button readability
-   ============================================= */
-.kitQuizOption {
-  background: #fbf8f3;
-  border-color: rgba(31, 77, 58, 0.22);
+.heroClean .heroImageCard:hover {
+  box-shadow: 0 34px 90px rgba(20, 54, 40, 0.22);
+}
+
+.heroImageCardInner {
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.heroImageClean {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Floating benefit badges on the hero image */
+.heroFloatBadge {
+  position: absolute;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: 999px;
+  background: rgba(20, 54, 40, 0.9);
+  color: #fbf8f3;
+  font-size: 0.78rem;
+  font-weight: 900;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 8px 24px rgba(20, 54, 40, 0.22);
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+
+.heroFloatBadge1 { top: -14px; left: -10px; }
+.heroFloatBadge2 { top: 50%; right: -20px; transform: translateY(-50%); }
+.heroFloatBadge3 { bottom: -14px; left: 18%; }
+
+/* ---------- Header polish ---------- */
+.navLink {
+  padding: 0.35rem 0;
+  font-size: 0.94rem;
+  font-weight: 750;
+  color: rgba(31, 41, 55, 0.68);
+  position: relative;
+  transition: color 0.2s ease;
+}
+
+.navLink::after {
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--forest);
+  content: '';
+  transition: width 0.22s ease;
+}
+
+.navLink:hover {
+  color: var(--forest);
+}
+
+.navLink:hover::after {
+  width: 100%;
+}
+
+.navLinkActive {
+  color: var(--forest);
+}
+
+.navLinkActive::after {
+  width: 100%;
+}
+
+.desktopNav {
+  gap: 22px;
+}
+
+.iconButton {
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(31, 77, 58, 0.12);
+  border-radius: 14px;
+  background: var(--card);
+  color: var(--text);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.iconButton:hover {
+  background: rgba(31, 77, 58, 0.06);
+  border-color: rgba(31, 77, 58, 0.2);
+  box-shadow: 0 4px 12px rgba(31, 41, 55, 0.06);
+}
+
+.iconButton.subtle {
+  background: transparent;
+}
+
+.cartCount {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #e8b15a, #d86f37);
   color: #143628;
+  font-size: 0.68rem;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  box-shadow: 0 2px 8px rgba(216, 111, 55, 0.3);
+}
+
+/* ---------- Kit Finder: premium guided shopping ---------- */
+/* Question buttons */
+.kitQuizOption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  min-height: 62px;
+  padding: 1rem;
+  border: 1px solid rgba(31, 77, 58, 0.22);
+  border-radius: 18px;
+  background: #fbf8f3;
+  color: #143628;
+  cursor: pointer;
+  font-weight: 900;
+  text-align: left;
   transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .kitQuizOption svg {
+  flex: 0 0 auto;
   color: #143628;
-  flex-shrink: 0;
 }
 
 .kitQuizOption:hover {
   background: #f4efe7;
   border-color: rgba(216, 111, 55, 0.42);
   box-shadow: 0 8px 24px rgba(31, 41, 55, 0.08);
+  transform: translateY(-2px);
 }
 
 .kitQuizOptionActive,
@@ -7044,16 +7293,37 @@ li,
   border-color: #d86f37;
   color: #143628;
   box-shadow: 0 8px 24px rgba(216, 111, 55, 0.22);
+  transform: translateY(-2px);
 }
 
 .kitQuizOptionActive svg {
   color: #143628;
 }
 
-/* =============================================
-   FIX: Kit Finder answer rail contrast
-   ============================================= */
+/* Progress bar */
+.kitQuizProgress {
+  overflow: hidden;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(251, 248, 243, 0.18);
+}
+
+.kitQuizProgress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #e8b15a, #d86f37);
+  box-shadow: 0 4px 14px rgba(216, 111, 55, 0.2);
+}
+
+/* Answer bar */
 .kitQuizAnswerPill {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+  padding: 0.75rem;
+  border: 1px solid rgba(251, 248, 243, 0.16);
+  border-radius: 16px;
   background: rgba(251, 248, 243, 0.14);
 }
 
@@ -7063,19 +7333,69 @@ li,
 }
 
 .kitQuizAnswerPill span {
+  overflow: hidden;
   color: rgba(251, 248, 243, 0.55);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
-.kitQuizAnswerPill strong,
-.kitQuizAnswerPillDone strong {
+.kitQuizAnswerPill strong {
+  overflow: hidden;
+  color: #fbf8f3;
+  font-size: 0.84rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Top bar on dark bg */
+.kitQuizTopbar strong {
+  color: #fbf8f3;
+  font-size: 1.08rem;
+}
+
+.kitQuizTopbar > span {
+  color: #e8b15a;
+  font-weight: 900;
+}
+
+/* Question card */
+.kitQuizCard h2 {
+  max-width: 760px;
+  color: #fbf8f3;
+  font-size: clamp(2rem, 4vw, 3.45rem);
+  letter-spacing: 0;
+  line-height: 1.02;
+}
+
+.kitQuizCard p {
+  max-width: 720px;
+  color: rgba(251, 248, 243, 0.82);
+  font-size: 1.02rem;
+  line-height: 1.7;
+}
+
+.kitQuizIcon {
+  display: grid;
+  width: 54px;
+  height: 54px;
+  place-items: center;
+  border: 1px solid rgba(251, 248, 243, 0.18);
+  border-radius: 18px;
+  background: rgba(251, 248, 243, 0.1);
   color: #fbf8f3;
 }
 
-/* =============================================
-   FIX: Kit Finder result copy — fix white text on
-   light background
-   ============================================= */
+/* ---------- Kit Finder Result: fixed contrast ---------- */
+/* Result copy card (left column) — light background, dark text */
 .kitQuizResultCopy {
+  display: grid;
+  gap: 1rem;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  border: 1px solid rgba(21, 70, 52, 0.08);
+  border-radius: 24px;
   background: rgba(255, 255, 255, 0.9);
   color: #143628;
 }
@@ -7084,69 +7404,236 @@ li,
   color: #d86f37;
 }
 
-.kitQuizResultCopy h2,
-.kitQuizResultCopy p,
+.kitQuizResultCopy h2 {
+  color: #143628;
+  font-size: clamp(2rem, 4vw, 3.6rem);
+  letter-spacing: 0;
+  line-height: 1.02;
+}
+
+.kitQuizResultCopy p {
+  color: #3f3f35;
+  font-size: 1rem;
+  line-height: 1.72;
+}
+
 .kitQuizResultCopy li,
 .kitQuizResultCopy strong,
 .kitQuizResultCopy span {
   color: #143628;
 }
 
-.kitQuizResultCopy .kitQuizPriceLine strong {
+.kitQuizPriceLine strong {
   font-size: 1.5rem;
-}
-
-.kitQuizResultCopy .kitQuizPriceLine span {
-  color: #6b675c;
-}
-
-.kitQuizResultCopy .kitQuizIncluded h3,
-.kitQuizResultCopy .kitQuizIncluded span {
   color: #143628;
 }
 
+.kitQuizPriceLine span {
+  color: #6b675c;
+  font-weight: 800;
+  text-decoration: line-through;
+}
+
+.kitQuizIncluded h3,
+.kitQuizIncluded span {
+  color: #143628;
+}
+
+.kitQuizIncluded span {
+  font-weight: 800;
+}
+
+/* Fitment help box — dark background on light card */
 .fitmentHelpBox {
-  background: rgba(251, 248, 243, 0.14);
-  border-color: rgba(251, 248, 243, 0.18);
-  border-radius: 18px;
+  display: grid;
+  gap: 0.5rem;
   padding: 1rem;
-  color: #fbf8f3;
+  border: 1px solid rgba(251, 248, 243, 0.18);
+  border-radius: 18px;
+  background: rgba(31, 77, 58, 0.08);
+  color: #143628;
 }
 
-.fitmentHelpBox strong,
+.fitmentHelpBox strong {
+  color: #143628;
+  font-size: 1rem;
+}
+
 .fitmentHelpBox p {
+  color: #3f3f35;
+  font-size: 0.94rem;
+  line-height: 1.6;
+}
+
+/* Result detail panels — dark translucent bg, white text */
+.kitQuizResultPanel,
+.kitQuizDetailPanel {
+  background: rgba(251, 248, 243, 0.12);
+  border-color: rgba(251, 248, 243, 0.16);
   color: #fbf8f3;
 }
 
-/* =============================================
-   FIX: Product image placeholder
-   ============================================= */
+.kitQuizResultPanel h3,
+.kitQuizDetailPanel h3 {
+  color: #fbf8f3;
+}
+
+.kitQuizResultPanel p,
+.kitQuizDetailPanel p {
+  color: rgba(251, 248, 243, 0.88);
+}
+
+.kitQuizPillGrid span {
+  color: #fbf8f3;
+  background: rgba(251, 248, 243, 0.1);
+  border: 1px solid rgba(251, 248, 243, 0.14);
+}
+
+.kitQuizFaqGrid div {
+  border-color: rgba(251, 248, 243, 0.12);
+  background: rgba(251, 248, 243, 0.06);
+}
+
+.kitQuizFaqGrid strong {
+  color: #fbf8f3;
+}
+
+.kitQuizFaqGrid p {
+  color: rgba(251, 248, 243, 0.84);
+}
+
+.kitQuizGuide {
+  background: rgba(251, 248, 243, 0.12);
+  border-color: rgba(251, 248, 243, 0.16);
+  color: #fbf8f3;
+}
+
+.kitQuizGuide h3 {
+  color: #fbf8f3;
+}
+
+.kitQuizGuide p {
+  color: rgba(251, 248, 243, 0.84);
+}
+
+.kitQuizAddOn {
+  background: rgba(251, 248, 243, 0.1);
+  border-color: rgba(251, 248, 243, 0.14);
+}
+
+.kitQuizAddOn strong {
+  color: #fbf8f3;
+}
+
+.kitQuizAddOn span {
+  color: #e8b15a;
+  font-weight: 900;
+}
+
+/* Floating benefits on result */
+.kitQuizFloatingBenefits span {
+  background: rgba(20, 54, 40, 0.85);
+  border-color: rgba(251, 248, 243, 0.2);
+  color: #fbf8f3;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* ---------- Product card polish ---------- */
+.productCard:hover {
+  transform: translateY(-6px);
+  border-color: rgba(216, 111, 55, 0.38);
+  box-shadow: 0 30px 86px rgba(31, 41, 55, 0.16);
+}
+
+.productCardMedia {
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(167, 196, 174, 0.14), rgba(232, 177, 90, 0.12));
+}
+
+.productCardMedia img {
+  transition: transform 0.35s ease;
+}
+
+.productCard:hover .productCardMedia img {
+  transform: scale(1.06);
+}
+
+.productCardBody {
+  padding: 18px;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.priceRow strong {
+  color: #143628;
+  font-size: 1.2rem;
+}
+
+.priceRow span {
+  color: #6b675c;
+  font-weight: 700;
+  text-decoration: line-through;
+  font-size: 0.95rem;
+}
+
+.cardActions .buttonPrimary {
+  background: linear-gradient(135deg, #e8b15a, #d86f37);
+  color: #143628;
+  border: none;
+  box-shadow: 0 6px 18px rgba(216, 111, 55, 0.2);
+  font-weight: 900;
+}
+
+.cardActions .buttonPrimary:hover {
+  box-shadow: 0 8px 24px rgba(216, 111, 55, 0.3);
+  transform: translateY(-1px);
+}
+
+/* ---------- Poor image placeholder polish ---------- */
 .neutralProductFallback {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  aspect-ratio: 1 / 1;
+  display: grid;
+  place-items: center;
+  align-content: center;
   gap: 0.65rem;
   padding: 1.5rem 1.25rem;
+  text-align: center;
   background:
     radial-gradient(circle at 22% 18%, rgba(232, 177, 90, 0.22), transparent 28%),
     radial-gradient(circle at 82% 14%, rgba(167, 196, 174, 0.2), transparent 30%),
     linear-gradient(160deg, #fbf8f3, #f4efe7);
+  color: #143628;
 }
 
 .neutralProductFallbackMark {
   width: 62px;
   height: 62px;
   border-radius: 20px;
-  font-size: 1.6rem;
+  display: grid;
+  place-items: center;
   background: #143628;
   color: #fbf8f3;
+  font-family: var(--font-sora), system-ui, sans-serif;
+  font-size: 1.6rem;
+  font-weight: 800;
   box-shadow: 0 14px 30px rgba(20, 54, 40, 0.18);
 }
 
 .neutralProductFallback strong {
+  color: #143628;
+  font-family: var(--font-sora), system-ui, sans-serif;
   font-size: 1.1rem;
 }
 
 .neutralProductFallback span {
-  font-size: 0.9rem;
   color: #6b675c;
+  font-size: 0.9rem;
+  font-weight: 700;
 }
 
 .neutralProductFallback .fallbackComingSoon {
@@ -7157,27 +7644,109 @@ li,
   margin-top: 0.15rem;
 }
 
-/* =============================================
-   FIX: Kit Finder top bar contrast on dark bg
-   ============================================= */
-.kitQuizTopbar strong {
-  color: #fbf8f3;
+/* ---------- Buttons: stronger commercial styling ---------- */
+.buttonPrimary {
+  background: linear-gradient(135deg, #e8b15a, #d86f37);
+  color: #143628;
+  border: none;
+  box-shadow: 0 8px 22px rgba(216, 111, 55, 0.2);
+  font-weight: 900;
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
 }
 
-.kitQuizTopbar > span {
-  color: #e8b15a;
+.buttonPrimary:hover {
+  box-shadow: 0 12px 30px rgba(216, 111, 55, 0.3);
+  transform: translateY(-2px);
 }
 
-.kitQuizCard h2 {
-  color: #fbf8f3;
+.buttonSecondary {
+  background: rgba(251, 248, 243, 0.76);
+  color: var(--forest);
+  border: 1px solid rgba(31, 77, 58, 0.16);
+  font-weight: 900;
+  transition: background 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
 }
 
-.kitQuizCard p {
-  color: rgba(251, 248, 243, 0.82);
+.buttonSecondary:hover {
+  background: rgba(31, 77, 58, 0.06);
+  border-color: rgba(31, 77, 58, 0.28);
+  transform: translateY(-2px);
 }
 
-.kitQuizIcon {
-  border-color: rgba(251, 248, 243, 0.18);
-  background: rgba(251, 248, 243, 0.1);
-  color: #fbf8f3;
+.buttonGhost {
+  background: transparent;
+  border: 1px solid rgba(31, 77, 58, 0.12);
+  color: var(--text);
+  font-weight: 800;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.buttonGhost:hover {
+  background: rgba(31, 77, 58, 0.05);
+  border-color: rgba(31, 77, 58, 0.22);
+}
+
+/* ---------- Global spacing rhythm ---------- */
+.section {
+  padding: clamp(2rem, 5vw, 4rem) 0;
+}
+
+.sectionHeader {
+  margin-bottom: clamp(1.25rem, 3vw, 2.5rem);
+}
+
+/* ---------- Mobile responsive overrides ---------- */
+@media (max-width: 900px) {
+  .heroClean {
+    padding: 24px 0 40px;
+    min-height: auto;
+  }
+
+  .heroClean .heroShell {
+    grid-template-columns: 1fr;
+    padding: clamp(1.25rem, 4vw, 2rem);
+    gap: 1.5rem;
+  }
+
+  .heroActions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .heroActions .button {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .heroImageCard {
+    margin-top: 0.5rem;
+  }
+
+  .heroFloatBadge2 {
+    right: -10px;
+  }
+
+  .desktopNav {
+    display: none;
+  }
+
+  .mobileOnly {
+    display: grid;
+  }
+
+  .kitQuizOptions {
+    grid-template-columns: 1fr;
+  }
+
+  .kitQuizResult {
+    grid-template-columns: 1fr;
+  }
+
+  .kitQuizAnswerRail {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .kitQuizAddOnGrid {
+    grid-template-columns: 1fr;
+  }
 }
