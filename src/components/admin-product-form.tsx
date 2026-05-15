@@ -74,7 +74,7 @@ export function AdminProductForm({
   }
 
   return (
-    <form action={action} className="adminProductForm">
+    <form action={action} className="adminProductForm" encType="multipart/form-data">
       {initialProduct?.id ? <input type="hidden" name="id" value={initialProduct.id} /> : null}
       {initialProduct?.main_image_url ? <input type="hidden" name="existingMainImage" value={initialProduct.main_image_url} /> : null}
       {existingGallery.map((url) => (
@@ -82,7 +82,7 @@ export function AdminProductForm({
       ))}
 
       {saved ? <p className="successText">Saved successfully.</p> : null}
-      {error ? <p className="errorText">{decodeURIComponent(error)}</p> : null}
+      {error ? <p className="errorText">{error}</p> : null}
 
       <div className="adminFormGrid">
         <label className="field fieldFull">

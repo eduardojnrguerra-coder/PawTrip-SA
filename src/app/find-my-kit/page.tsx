@@ -16,10 +16,9 @@ export default async function FindMyKitPage() {
       <div className="container">
         <div className="sectionHeader kitFinderHeader">
           <span className="eyebrow">Kit Finder</span>
-          <h1>Find the PawTrip setup that fits your dog, car and routine.</h1>
+          <h1>Find the right dog travel setup in under a minute</h1>
           <p>
-            Five guided questions. One main recommendation, two useful add-ons and a related guide. Practical shopping,
-            without product overload.
+            Answer a few practical questions and PawTrip SA will suggest the best setup for your dog, car and routine.
           </p>
         </div>
         <QuizClient products={publicProducts} />

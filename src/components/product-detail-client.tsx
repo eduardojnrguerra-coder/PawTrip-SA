@@ -181,24 +181,26 @@ export function ProductDetailClient({ product, related }: { product: Product; re
             category={categoryValue}
           />
         </motion.div>
-        <div className="thumbRow">
-          {galleryImages.map((thumb, index) => (
-            <button
-              type="button"
-              key={thumb}
-              className={selected === index ? 'thumbButton thumbButtonActive' : 'thumbButton'}
-              onClick={() => setSelected(index)}
-              aria-label={`Show ${productName} image ${index + 1}`}
-            >
-              <ProductImage
-                src={thumb}
-                alt={getProductImageAlt(productName, categoryValue, `thumbnail ${index + 1}`)}
-                productName={productName}
-                category={categoryValue}
-              />
-            </button>
-          ))}
-        </div>
+        {galleryImages.length > 1 ? (
+          <div className="thumbRow">
+            {galleryImages.map((thumb, index) => (
+              <button
+                type="button"
+                key={thumb}
+                className={selected === index ? 'thumbButton thumbButtonActive' : 'thumbButton'}
+                onClick={() => setSelected(index)}
+                aria-label={`Show ${productName} image ${index + 1}`}
+              >
+                <ProductImage
+                  src={thumb}
+                  alt={getProductImageAlt(productName, categoryValue, `thumbnail ${index + 1}`)}
+                  productName={productName}
+                  category={categoryValue}
+                />
+              </button>
+            ))}
+          </div>
+        ) : null}
         {needsSupplierImages ? (
           <div className="imagePermissionNote">
             Internal note: supplier-approved or original product photos are still needed before final public launch.
@@ -423,7 +425,7 @@ export function ProductDetailClient({ product, related }: { product: Product; re
           </div>
           <div>
             <h1>{productName}</h1>
-            <p>{fullDescription}</p>
+            <p>{shortDescription}</p>
           </div>
           <div className="whyProductBox">
             <strong>Why this product?</strong>

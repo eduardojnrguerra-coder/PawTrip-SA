@@ -38,6 +38,7 @@ export function ProductCard({ product }: { product: Product }) {
               <Sparkles size={12} /> Best seller
             </span>
           ) : null}
+          {savings > 0 ? <span className="chip chipSale">Save {formatZar(savings)}</span> : null}
         </div>
         <p className="productProblemLine">{problemHeadline}</p>
         <Link href={`/shop/product/${product.slug}`} className="productName">
@@ -48,7 +49,7 @@ export function ProductCard({ product }: { product: Product }) {
         </p>
         <div className="priceRow">
           <strong>{formatZar(product.price)}</strong>
-          <span>{formatZar(product.compareAtPrice)}</span>
+          {product.compareAtPrice > product.price ? <span>{formatZar(product.compareAtPrice)}</span> : null}
         </div>
         {savings > 0 ? (
           <div className={product.isBundle ? 'bundleSavingsCallout' : 'savingsCallout'}>
@@ -64,7 +65,7 @@ export function ProductCard({ product }: { product: Product }) {
             Add to cart
           </button>
           <Link href={`/shop/product/${product.slug}`} className="button buttonGhost buttonSmall">
-            View <ArrowRight size={14} />
+            View product <ArrowRight size={14} />
           </Link>
         </div>
       </div>

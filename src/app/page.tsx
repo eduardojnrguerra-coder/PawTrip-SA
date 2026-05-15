@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowRight, BadgeCheck, Bone, Car, CheckCircle2, Dog, Gauge, HelpCircle, ShieldCheck, Sparkles, Waves, Wand2 } from 'lucide-react';
+import { ArrowRight, BadgeCheck, Bone, Car, CheckCircle2, Dog, Gauge, HelpCircle, ShieldCheck, Waves, Wand2 } from 'lucide-react';
 import { AnimatedHero } from '@/components/animated-hero';
 import { EmailCaptureBanner } from '@/components/email-capture-banner';
 import { KitFinderPreview } from '@/components/kit-finder-preview';
@@ -165,33 +165,56 @@ export default async function HomePage() {
       <section className="section premiumHomeSection cleanCarStory">
         <div className="container cleanCarPanel">
           <Reveal>
-            <div className="cleanCarCopy">
-              <span className="eyebrow">Clean car setup</span>
-              <h2>Before: mystery fur. After: a car you can offer someone a lift in.</h2>
-              <p>
-                Build around one protected travel zone, then add a towel, brush or bowl only when it solves the next
-                obvious problem.
+            <div className="cleanCarCopyCard">
+              <span className="eyebrow">Car protection</span>
+              <h2>Protect your car from the chaos dogs bring with them.</h2>
+              <p className="cleanCarLead">
+                Seat covers, boot liners and travel accessories that help keep hair, sand, mud and scratches under control.
               </p>
-              <Link href="/collections/car-protection-essentials" className="button buttonPrimary buttonSheen">
-                Shop car protection <ArrowRight size={15} />
-              </Link>
+              <p>
+                Create a protected travel zone for your dog and keep your back seats easier to clean after parks, beaches
+                and road trips.
+              </p>
+              <div className="beforeAfterGrid">
+                <div className="beforeAfterCard beforeCard">
+                  <span>Before</span>
+                  <strong>Hair, sand and muddy paws after every trip.</strong>
+                  <p>Back seats and boot areas that feel like they need a full reset after every outing.</p>
+                </div>
+                <div className="beforeAfterCard afterCard">
+                  <span>After</span>
+                  <strong>Protected seats and easier clean-up.</strong>
+                  <p>A more contained setup that is simpler to wipe down and easier to live with.</p>
+                </div>
+              </div>
+              <div className="cleanCarActions">
+                <Link href="/shop/category/car-protection" className="button buttonPrimary buttonSheen">
+                  Shop Car Protection <ArrowRight size={15} />
+                </Link>
+                <Link href="/find-my-kit" className="cleanCarTextLink">
+                  Find my pet kit
+                </Link>
+              </div>
             </div>
           </Reveal>
-          <div className="beforeAfterGrid">
-            <Reveal>
-              <div className="beforeAfterCard beforeCard">
-                <span>Before</span>
-                <strong>Hair, sand, wet paws</strong>
-                <p>The classic post-park upholstery situation.</p>
-              </div>
-            </Reveal>
-            <Reveal delay={0.06}>
-              <div className="beforeAfterCard afterCard">
-                <span>After</span>
-                <strong>Protected, wipeable, calmer</strong>
-                <p>A reset-friendly setup for real dog travel.</p>
-              </div>
-            </Reveal>
+          <Reveal delay={0.06}>
+            <div className="cleanCarVisualCard">
+              <img
+                src="/brand-assets/pawtrip-hero-dog-car.png"
+                alt="Dog relaxing in a protected PawTrip SA car travel setup"
+                className="cleanCarVisualImage"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+          </Reveal>
+        </div>
+        <div className="container">
+          <div className="cleanCarFeatureRow" aria-label="Car protection features">
+            <span>Waterproof-style protection</span>
+            <span>Scratch resistant</span>
+            <span>Easy to clean</span>
+            <span>Universal fit for most cars</span>
           </div>
         </div>
       </section>

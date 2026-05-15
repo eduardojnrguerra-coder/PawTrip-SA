@@ -104,7 +104,9 @@ export async function supabaseAdminRequest<T>(path: string, init?: RequestInit):
   });
 
   if (!response.ok) {
-    return { data: null, error: await response.text(), configured: true };
+    const errorBody = await response.text();
+    console.error(`supabaseAdminRequest failed ${response.status} for ${path}`, errorBody);
+    return { data: null, error: errorBody, configured: true };
   }
 
   if (response.status === 204) return { data: null, error: null, configured: true };
@@ -276,20 +278,38 @@ export async function uploadProductImage(file: File, slug: string, kind: 'main' 
   const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
   const filename = `${kind}-${Date.now()}-${index}.${extension}`;
   const objectPath = `products/${safeSlug}/${filename}`;
-  const bytes = Buffer.from(await file.arrayBuffer());
 
-  const response = await fetch(`${url}/storage/v1/object/product-images/${objectPath}`, {
-    method: 'POST',
-    headers: {
-      ...serviceHeaders(),
-      'Content-Type': file.type || 'application/octet-stream',
-      'x-upsert': 'true',
-    },
-    body: bytes,
-  });
+  let bytes;
+  try {
+    bytes = Buffer.from(await file.arrayBuffer());
+  } catch (readError) {
+    console.error('uploadProductImage file read failed', readError);
+    return { url: null, error: 'Failed to read the uploaded file.', configured: true };
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(`${url}/storage/v1/object/product-images/${objectPath}`, {
+      method: 'POST',
+      headers: {
+        ...serviceHeaders(),
+        'Content-Type': file.type || 'application/octet-stream',
+        'x-upsert': 'true',
+      },
+      body: bytes,
+    });
+  } catch (error) {
+    console.error('image upload failed', error);
+    return { url: null, error: 'Image upload failed before reaching Supabase Storage.', configured: true };
+  }
 
   if (!response.ok) {
-    return { url: null, error: await response.text(), configured: true };
+    const errorText = await response.text();
+    console.error('uploadProductImage storage upload failed', response.status, errorText);
+    if (errorText.toLowerCase().includes('bucket') || response.status === 404) {
+      return { url: null, error: 'Supabase Storage bucket "product-images" is missing or not public.', configured: true };
+    }
+    return { url: null, error: `Image upload failed (${response.status}).`, configured: true };
   }
 
   return {

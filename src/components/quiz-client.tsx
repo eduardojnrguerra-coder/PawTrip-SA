@@ -323,7 +323,7 @@ export function QuizClient({ products }: { products: Product[] }) {
           </div>
 
           <div className="kitQuizIncluded">
-            <h3>Included products</h3>
+            <h3>What&apos;s included</h3>
             <div className="kitQuizIncludedGrid">
               {result.includedProducts.map((item) => (
                 <span key={item}>
@@ -335,13 +335,10 @@ export function QuizClient({ products }: { products: Product[] }) {
 
           <div className="kitQuizActions">
             <button type="button" className="button buttonPrimary buttonSheen" onClick={addRecommendationToCart}>
-              Add full setup to cart
+              Add to cart
             </button>
             <Link href={`/shop/product/${result.primary.slug}`} className="button buttonSecondary buttonSheen">
-              View full details
-            </Link>
-            <Link href="/shop/category/travel-kits" className="button buttonGhost">
-              Compare another kit
+              View product
             </Link>
             <button
               type="button"
@@ -353,8 +350,11 @@ export function QuizClient({ products }: { products: Product[] }) {
                 setCompletedTracked(false);
               }}
             >
-              Start again
+              Restart quiz
             </button>
+            <Link href="/shop/category/travel-kits" className="button buttonGhost">
+              Compare another kit
+            </Link>
           </div>
         </div>
 

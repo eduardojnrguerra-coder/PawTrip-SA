@@ -8,6 +8,7 @@ export function SiteFooter() {
         <div>
           <strong>{siteName}</strong>
           <p>{siteTagline}</p>
+          <p>Practical dog travel accessories for cleaner cars, calmer trips and easier routines.</p>
         </div>
         <div>
           <h3>Shop</h3>
