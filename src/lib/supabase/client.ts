@@ -29,17 +29,108 @@ export function createSupabaseBrowserClient() {
   };
 }
 
+function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number) {
+  return new Promise<Blob | null>((resolve) => {
+    canvas.toBlob((blob) => resolve(blob), type, quality);
+  });
+}
+
+export async function compressImage(
+  file: File,
+  maxDimension = 2000,
+  quality = 0.84,
+): Promise<File> {
+  console.log('Selected image', file.name, file.size, file.type);
+
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+
+    img.onload = async () => {
+      URL.revokeObjectURL(url);
+
+      let { width, height } = img;
+      if (width > maxDimension || height > maxDimension) {
+        if (width > height) {
+          height = Math.round((height * maxDimension) / width);
+          width = maxDimension;
+        } else {
+          width = Math.round((width * maxDimension) / height);
+          height = maxDimension;
+        }
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        reject(new Error('Could not prepare image for compression.'));
+        return;
+      }
+      ctx.drawImage(img, 0, 0, width, height);
+
+      const baseName = file.name.replace(/\.[^.]+$/, '').replace(/[^a-z0-9-]+/gi, '-').replace(/^-|-$/g, '') || 'product-image';
+      const attempts = [
+        { type: 'image/webp', ext: 'webp', quality },
+        { type: 'image/webp', ext: 'webp', quality: 0.82 },
+        { type: 'image/webp', ext: 'webp', quality: 0.8 },
+        { type: 'image/jpeg', ext: 'jpg', quality: 0.84 },
+        { type: 'image/jpeg', ext: 'jpg', quality: 0.8 },
+      ];
+
+      let bestBlob: Blob | null = null;
+      let bestExt = 'jpg';
+      let bestType = 'image/jpeg';
+
+      for (const attempt of attempts) {
+        const blob = await canvasToBlob(canvas, attempt.type, attempt.quality);
+        if (!blob) continue;
+
+        if (!bestBlob || blob.size < bestBlob.size) {
+          bestBlob = blob;
+          bestExt = attempt.ext;
+          bestType = attempt.type;
+        }
+
+        if (blob.size <= 1024 * 1024) {
+          bestBlob = blob;
+          bestExt = attempt.ext;
+          bestType = attempt.type;
+          break;
+        }
+      }
+
+      if (!bestBlob) {
+        reject(new Error('Image compression failed.'));
+        return;
+      }
+
+      const compressed = new File([bestBlob], `${baseName}.${bestExt}`, { type: bestType });
+      console.log('Compressed image size', compressed.size);
+      resolve(compressed);
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('Could not read the image for compression.'));
+    };
+
+    img.src = url;
+  });
+}
+
 export async function uploadAdminProductImage(input: {
   slug: string;
   file: File;
   kind: 'main' | 'gallery';
   index?: number;
 }) {
-  console.log('uploading main image', input.file.name, input.file.size, input.file.type);
-  console.log('uploading to bucket', 'product-images');
+  console.log('Selected image', input.file.name, input.file.size, input.file.type);
 
   const signResponse = await fetch('/api/admin/product-images/sign', {
     method: 'POST',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
     },
@@ -56,35 +147,52 @@ export async function uploadAdminProductImage(input: {
     | {
         error?: string;
         signedUrl?: string;
+        signedURL?: string;
         publicUrl?: string;
+        objectPath?: string;
       }
     | null;
 
-  if (!signResponse.ok || !signPayload?.signedUrl || !signPayload.publicUrl) {
+  const signedUrl = signPayload?.signedUrl || signPayload?.signedURL || null;
+  console.log('Upload result', signPayload);
+
+  if (!signResponse.ok || !signedUrl || !signPayload?.publicUrl) {
     throw new Error(signPayload?.error || 'Could not prepare the image upload.');
   }
 
-  console.log('uploading to signed URL', signPayload.signedUrl);
+  console.log('Uploading to product-images', signPayload.objectPath || input.file.name);
 
-  const uploadResponse = await fetch(signPayload.signedUrl, {
+  const uploadHeaders = {
+    'Content-Type': input.file.type || 'application/octet-stream',
+    'x-upsert': 'true',
+  };
+
+  let uploadResponse = await fetch(signedUrl, {
     method: 'PUT',
-    headers: {
-      'Content-Type': input.file.type || 'application/octet-stream',
-      'x-upsert': 'true',
-    },
+    headers: uploadHeaders,
     body: input.file,
   });
 
+  if (!uploadResponse.ok && [400, 405, 415].includes(uploadResponse.status)) {
+    const firstError = await uploadResponse.text();
+    console.error('Upload failed with PUT', `${uploadResponse.status}: ${firstError}`);
+    uploadResponse = await fetch(signedUrl, {
+      method: 'POST',
+      headers: uploadHeaders,
+      body: input.file,
+    });
+  }
+
   if (!uploadResponse.ok) {
     const errorText = await uploadResponse.text();
-    console.error('main image upload failed', errorText);
+    console.error('Upload failed', errorText);
     if (errorText.toLowerCase().includes('bucket')) {
       throw new Error('Supabase Storage bucket product-images was not found.');
     }
-    throw new Error('Image upload failed.');
+    throw new Error(errorText || 'Image upload failed.');
   }
 
-  console.log('main image uploaded URL', signPayload.publicUrl);
+  console.log('Uploaded public URL', signPayload.publicUrl);
 
   return {
     publicUrl: signPayload.publicUrl,

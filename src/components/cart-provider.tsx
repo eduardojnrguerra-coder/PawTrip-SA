@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { CART_STORAGE_KEY, type CartItem } from '@/lib/cart';
 import type { Product } from '@/data/products';
 import { gaItem, trackEvent } from '@/lib/analytics';
+import { triggerMascotReaction } from '@/lib/mascot-events';
 
 type Toast = { id: string; message: string };
 
@@ -100,6 +101,7 @@ export function CartProvider({ children, products }: { children: React.ReactNode
             items: [gaItem(product, quantity)],
           });
         }
+        triggerMascotReaction({ action: 'celebrate', message: 'Packed!' });
         pushToast(`${product?.name ?? 'Item'} added to cart`);
       },
       decreaseItem: (slug: string) => {

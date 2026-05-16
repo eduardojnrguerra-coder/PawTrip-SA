@@ -19,6 +19,7 @@ export default async function AdminNewProductPage({ searchParams }: { searchPara
 
   return (
     <AdminShell title="Add product" description="Create a new product or draft without touching code.">
+      {categoriesResult.error ? <p className="errorText">Categories could not be loaded: {categoriesResult.error}</p> : null}
       <AdminProductForm categories={categoriesResult.data ?? []} action={createProductAction} error={params.error} />
     </AdminShell>
   );

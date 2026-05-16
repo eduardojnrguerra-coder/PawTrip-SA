@@ -28,6 +28,7 @@ export default async function AdminEditProductPage({
 
   return (
     <AdminShell title="Edit product" description="Update pricing, descriptions, images and publishing status.">
+      {categoriesResult.error ? <p className="errorText">Categories could not be loaded: {categoriesResult.error}</p> : null}
       <AdminProductForm
         categories={categoriesResult.data ?? []}
         initialProduct={productResult.data}

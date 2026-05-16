@@ -11,6 +11,7 @@ import {
 } from '@/lib/supabase/server';
 import {
   deleteProductById,
+  getCategoryBySlugAdmin,
   getProductBySlugAdmin,
   replaceProductFaqs,
   saveCategory,
@@ -155,6 +156,19 @@ export async function saveCategoryAction(formData: FormData) {
 
   if (!name || !slug) redirect('/admin/categories?error=validation');
 
+  let duplicateSlug = false;
+  try {
+    const existing = await getCategoryBySlugAdmin(slug);
+    if (existing.data && existing.data.id !== id) {
+      duplicateSlug = true;
+    }
+  } catch (error) {
+    console.error('saveCategoryAction slug check failed', error);
+    redirect('/admin/categories?error=save');
+  }
+  if (duplicateSlug) redirect('/admin/categories?error=duplicate');
+
+  let saveError: string | null = null;
   try {
     const result = await saveCategory({
       id,
@@ -168,12 +182,13 @@ export async function saveCategoryAction(formData: FormData) {
 
     if (result.error) {
       console.error('saveCategoryAction failed', result.error);
-      redirect('/admin/categories?error=save');
+      saveError = result.error;
     }
   } catch (error) {
     console.error('saveCategoryAction crashed', error);
     redirect('/admin/categories?error=save');
   }
+  if (saveError) redirect('/admin/categories?error=save');
 
   revalidatePath('/');
   revalidatePath('/shop');
@@ -228,13 +243,15 @@ export async function createProductAction(formData: FormData) {
       is_bundle: validation.values.isBundle,
     });
   } catch (error) {
-    console.error('createProductAction upsert crashed', error);
+    console.error('createProductAction failed', error);
+    if (validation.values.isActive) console.error('publishProductAction failed', error);
     redirect('/admin/products/new?error=save');
   }
 
   const product = productResult.data?.[0];
   if (!product || productResult.error) {
-    console.error('createProductAction upsert failed', productResult.error || 'no data returned');
+    console.error('createProductAction failed', productResult.error || 'no data returned');
+    if (validation.values.isActive) console.error('publishProductAction failed', productResult.error || 'no data returned');
     redirect('/admin/products/new?error=save');
   }
 
@@ -314,12 +331,14 @@ export async function updateProductAction(formData: FormData) {
     });
   } catch (error) {
     console.error('updateProductAction failed', error);
+    if (validation.values.isActive) console.error('publishProductAction failed', error);
     redirect(`/admin/products/${productId}/edit?error=save`);
   }
 
   const product = productResult.data?.[0];
   if (!product || productResult.error) {
     console.error('updateProductAction failed', productResult.error || 'no data returned');
+    if (validation.values.isActive) console.error('publishProductAction failed', productResult.error || 'no data returned');
     redirect(`/admin/products/${productId}/edit?error=save`);
   }
 

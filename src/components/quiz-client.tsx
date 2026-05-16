@@ -10,6 +10,7 @@ import { getProductImageAlt, ProductImage } from '@/components/product-image';
 import { blogPosts } from '@/data/blog';
 import type { Product } from '@/data/products';
 import { trackEvent } from '@/lib/analytics';
+import { triggerMascotReaction } from '@/lib/mascot-events';
 import { formatZar } from '@/lib/money';
 
 type AnswerKey = 'pet' | 'carType' | 'dogSize' | 'problem' | 'buyerType';
@@ -242,6 +243,7 @@ export function QuizClient({ products }: { products: Product[] }) {
       problem: answers.problem,
       buyer_type: answers.buyerType,
     });
+    triggerMascotReaction({ action: 'celebrate', message: 'Found it!' });
     setCompletedTracked(true);
   }, [answers.buyerType, answers.problem, complete, completedTracked, result.guide?.slug, result.primary.slug]);
 
@@ -260,6 +262,7 @@ export function QuizClient({ products }: { products: Product[] }) {
     if (!started) {
       setStarted(true);
       trackEvent('quiz_started', { first_question: current.field });
+      triggerMascotReaction({ action: 'excited', message: "Let's find your kit." });
     }
     setAnswers((currentAnswers) => ({ ...currentAnswers, [current.field]: option }));
     setStep((value) => value + 1);

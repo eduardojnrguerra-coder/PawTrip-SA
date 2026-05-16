@@ -38,6 +38,8 @@ export default async function AdminProductsPage({
     >
       {params.created ? <p className="successText">Product created.</p> : null}
       {params.deleted ? <p className="successText">Product deleted.</p> : null}
+      {categoriesResult.error ? <p className="errorText">Categories could not be loaded: {categoriesResult.error}</p> : null}
+      {productsResult.error ? <p className="errorText">Products could not be loaded: {productsResult.error}</p> : null}
       <form className="contentCard detailBlock adminFilters" method="get">
         <input className="input" type="search" name="q" defaultValue={params.q ?? ''} placeholder="Search by title, slug or SKU" />
         <select className="input" name="category" defaultValue={params.category ?? ''}>
@@ -79,6 +81,9 @@ export default async function AdminProductsPage({
                   {product.is_active ? 'Active' : 'Draft'}
                 </span>
                 {product.is_featured ? <span className="statusPill status-processing">Featured</span> : null}
+                <span className={product.main_image_url ? 'statusPill status-active' : 'statusPill status-draft'}>
+                  {product.main_image_url ? 'Image ready' : 'No image'}
+                </span>
               </div>
               <div className="cardActions">
                 <Link href={`/admin/products/${product.id}/edit`} className="button buttonSecondary buttonSmall">

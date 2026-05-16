@@ -93,6 +93,24 @@ function buildProductImagePublicUrl(objectPath: string) {
   return `${getSupabaseUrl()}/storage/v1/object/public/${PRODUCT_IMAGES_BUCKET}/${objectPath}`;
 }
 
+function resolveStorageSignedUrl(rawSignedUrl: string | null, bucket: string, objectPath: string, token?: string) {
+  const supabaseUrl = getSupabaseUrl();
+  const storageBase = `${supabaseUrl}/storage/v1`;
+
+  if (rawSignedUrl) {
+    if (rawSignedUrl.startsWith('http')) return rawSignedUrl;
+    if (rawSignedUrl.startsWith('/storage/v1')) return `${supabaseUrl}${rawSignedUrl}`;
+    if (rawSignedUrl.startsWith('/object')) return `${storageBase}${rawSignedUrl}`;
+    return `${storageBase}/${rawSignedUrl.replace(/^\/+/, '')}`;
+  }
+
+  if (token) {
+    return `${storageBase}/object/upload/sign/${bucket}/${objectPath}?token=${token}`;
+  }
+
+  return null;
+}
+
 export async function supabaseAdminRequest<T>(path: string, init?: RequestInit): Promise<RestResult<T>> {
   const url = getSupabaseUrl();
   const serviceRoleKey = getSupabaseServiceRoleKey();
@@ -137,6 +155,12 @@ export async function listActiveCategories() {
 
 export async function getCategoryById(id: string) {
   const query = new URLSearchParams({ select: '*', id: `eq.${id}`, limit: '1' });
+  const result = await supabaseAdminRequest<DbCategory[]>(`categories?${query.toString()}`);
+  return { ...result, data: result.data?.[0] ?? null };
+}
+
+export async function getCategoryBySlugAdmin(slug: string) {
+  const query = new URLSearchParams({ select: '*', slug: `eq.${slug}`, limit: '1' });
   const result = await supabaseAdminRequest<DbCategory[]>(`categories?${query.toString()}`);
   return { ...result, data: result.data?.[0] ?? null };
 }
@@ -325,7 +349,13 @@ export async function createSignedProductImageUpload(input: {
   const safeSlug = input.slug.replace(/[^a-z0-9-]/gi, '-').toLowerCase();
   const extension = input.filename.split('.').pop()?.toLowerCase() || 'jpg';
   const safeKind = input.kind === 'main' ? 'main' : 'gallery';
-  const filename = `${safeKind}-${Date.now()}-${input.index ?? 0}.${extension}`;
+  const baseName = input.filename
+    .replace(/\.[^.]+$/, '')
+    .replace(/[^a-z0-9-]+/gi, '-')
+    .replace(/^-|-$/g, '')
+    .toLowerCase()
+    .slice(0, 80) || 'product-image';
+  const filename = `${Date.now()}-${safeKind}-${input.index ?? 0}-${baseName}.${extension}`;
   const objectPath = `products/${safeSlug}/${filename}`;
 
   const response = await fetch(`${url}/storage/v1/object/upload/sign/${PRODUCT_IMAGES_BUCKET}/${objectPath}`, {
@@ -359,13 +389,7 @@ export async function createSignedProductImageUpload(input: {
   };
 
   const rawSignedUrl = payload.signedURL || payload.signedUrl || payload.url || null;
-  const signedUrl = rawSignedUrl
-    ? rawSignedUrl.startsWith('http')
-      ? rawSignedUrl
-      : `${url}${rawSignedUrl}`
-    : payload.token
-      ? `${url}/storage/v1/object/upload/sign/${PRODUCT_IMAGES_BUCKET}/${objectPath}?token=${payload.token}`
-      : null;
+  const signedUrl = resolveStorageSignedUrl(rawSignedUrl, PRODUCT_IMAGES_BUCKET, objectPath, payload.token);
 
   if (!signedUrl) {
     return { data: null, error: 'Supabase did not return a signed upload URL.', configured: true };

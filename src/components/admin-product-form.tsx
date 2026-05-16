@@ -1,9 +1,10 @@
 'use client';
 
-import { useMemo, useState, type ChangeEvent } from 'react';
+import Link from 'next/link';
+import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import type { DbCategory, DbProductFaq } from '@/lib/supabase/admin';
-import { uploadAdminProductImage } from '@/lib/supabase/client';
+import { compressImage, uploadAdminProductImage } from '@/lib/supabase/client';
 
 type ProductFormData = {
   id?: string;
@@ -67,11 +68,18 @@ export function AdminProductForm({
   );
   const [removeGallery, setRemoveGallery] = useState<string[]>([]);
   const [mainImageUrl, setMainImageUrl] = useState(initialProduct?.main_image_url ?? '');
+  const [mainImagePreviewUrl, setMainImagePreviewUrl] = useState(initialProduct?.main_image_url ?? '');
   const [uploadedGalleryUrls, setUploadedGalleryUrls] = useState<string[]>([]);
+  const [galleryPreviewUrls, setGalleryPreviewUrls] = useState<string[]>(initialProduct?.gallery_image_urls ?? []);
   const [uploadError, setUploadError] = useState('');
   const [uploadNotice, setUploadNotice] = useState('');
+  const [isCompressingMain, setIsCompressingMain] = useState(false);
   const [isUploadingMain, setIsUploadingMain] = useState(false);
+  const [isCompressingGallery, setIsCompressingGallery] = useState(false);
   const [isUploadingGallery, setIsUploadingGallery] = useState(false);
+  const [selectedMainFileName, setSelectedMainFileName] = useState('');
+  const [selectedGalleryFileNames, setSelectedGalleryFileNames] = useState<string[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
 
   const existingGallery = useMemo(() => initialProduct?.gallery_image_urls ?? [], [initialProduct?.gallery_image_urls]);
   const visibleGallery = useMemo(
@@ -79,21 +87,29 @@ export function AdminProductForm({
     [existingGallery, removeGallery, uploadedGalleryUrls],
   );
   const currentMainImageUrl = mainImageUrl || initialProduct?.main_image_url || visibleGallery[0] || '';
+  const previewGallery = useMemo(
+    () => [...new Set([...galleryPreviewUrls, ...visibleGallery])].filter((url) => !removeGallery.includes(url)),
+    [galleryPreviewUrls, removeGallery, visibleGallery],
+  );
+
+  useEffect(() => {
+    setMainImagePreviewUrl(currentMainImageUrl);
+  }, [currentMainImageUrl]);
 
   function onTitleChange(nextTitle: string) {
     setTitle(nextTitle);
     if (!slugTouched) setSlug(slugify(nextTitle));
   }
 
-  const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+  const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+  const MAX_ORIGINAL_SIZE = 15 * 1024 * 1024; // 15 MB pre-compression
 
-  function validateFile(file: File): string | null {
+  function validateOriginalFile(file: File): string | null {
     if (!ALLOWED_TYPES.includes(file.type)) {
-      return `Invalid file type "${file.type}". Allowed: JPG, PNG, WebP.`;
+      return 'Please upload a JPG, PNG or WebP image.';
     }
-    if (file.size > MAX_FILE_SIZE) {
-      return `File too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Max: 5 MB.`;
+    if (file.size > MAX_ORIGINAL_SIZE) {
+      return 'This image is too large. Please use an image under 15 MB.';
     }
     return null;
   }
@@ -104,12 +120,6 @@ export function AdminProductForm({
       throw new Error('Add a product title first so we can generate the image folder path.');
     }
 
-    const validationError = validateFile(file);
-    if (validationError) {
-      throw new Error(validationError);
-    }
-
-    console.log(`Uploading ${kind} image`, file.name, file.size, file.type);
     return uploadAdminProductImage({
       slug: uploadSlug,
       file,
@@ -121,21 +131,41 @@ export function AdminProductForm({
   async function handleMainImageChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
+    console.log('Selected image', file.name, file.size, file.type);
+    setSelectedMainFileName(file.name);
+
+    const fileError = validateOriginalFile(file);
+    if (fileError) {
+      setUploadError(fileError);
+      event.target.value = '';
+      return;
+    }
 
     setUploadError('');
     setUploadNotice('');
-    setIsUploadingMain(true);
+    setIsCompressingMain(true);
+    setMainImagePreviewUrl(URL.createObjectURL(file));
 
     try {
-      const upload = await uploadSingleFile(file, 'main');
+      setUploadNotice('Preparing image...');
+      const compressed = await compressImage(file, 2000, 0.84);
+
+      setIsCompressingMain(false);
+      setIsUploadingMain(true);
+      setUploadNotice('Uploading image...');
+
+      const upload = await uploadSingleFile(compressed, 'main');
       console.log('main image uploaded successfully, URL:', upload.publicUrl);
       setMainImageUrl(upload.publicUrl);
+      setMainImagePreviewUrl(upload.publicUrl);
       setRemoveGallery((current) => current.filter((item) => item !== upload.publicUrl));
-      setUploadNotice('Main image uploaded successfully.');
+      setUploadNotice('Image uploaded successfully');
     } catch (error) {
-      console.error('image upload failed', error);
-      setUploadError(error instanceof Error ? error.message : 'Image upload failed.');
+      console.error('Main image upload failed', error);
+      const message = error instanceof Error ? error.message : 'Image upload failed.';
+      setUploadError(`Upload failed: ${message}`);
     } finally {
+      setIsCompressingMain(false);
       setIsUploadingMain(false);
       event.target.value = '';
     }
@@ -144,31 +174,67 @@ export function AdminProductForm({
   async function handleGalleryImageChange(event: ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? []);
     if (!files.length) return;
+    files.forEach((file) => console.log('Selected image', file.name, file.size, file.type));
+    setSelectedGalleryFileNames(files.map((file) => file.name));
+
+    for (const file of files) {
+      const fileError = validateOriginalFile(file);
+      if (fileError) {
+        setUploadError(fileError);
+        event.target.value = '';
+        return;
+      }
+    }
 
     setUploadError('');
     setUploadNotice('');
-    setIsUploadingGallery(true);
+    setIsCompressingGallery(true);
+    setUploadNotice('Preparing image...');
+    const localPreviewUrls = files.map((file) => URL.createObjectURL(file));
+    setGalleryPreviewUrls((current) => [...current, ...localPreviewUrls]);
 
     try {
+      const compressedFiles: File[] = [];
+      for (const file of files) {
+        const compressed = await compressImage(file, 2000, 0.84);
+        compressedFiles.push(compressed);
+      }
+
+      setIsCompressingGallery(false);
+      setIsUploadingGallery(true);
+      setUploadNotice('Uploading images...');
+
       const uploads: string[] = [];
-      for (const [index, file] of files.entries()) {
-        console.log(`Uploading gallery image ${index + 1}/${files.length}`, file.name);
+      for (const [index, file] of compressedFiles.entries()) {
+        console.log(`Uploading gallery image ${index + 1}/${compressedFiles.length}`, file.name);
         const upload = await uploadSingleFile(file, 'gallery', index);
         uploads.push(upload.publicUrl);
       }
       setUploadedGalleryUrls((current) => [...current, ...uploads]);
-      setUploadNotice(uploads.length === 1 ? 'Gallery image uploaded successfully.' : `${uploads.length} gallery images uploaded successfully.`);
+      setGalleryPreviewUrls((current) => [...current.filter((url) => !localPreviewUrls.includes(url)), ...uploads]);
+      setUploadNotice(uploads.length === 1 ? 'Image uploaded successfully' : `${uploads.length} images uploaded successfully`);
     } catch (error) {
-      console.error('image upload failed', error);
-      setUploadError(error instanceof Error ? error.message : 'Image upload failed.');
+      console.error('Gallery image upload failed', error);
+      const message = error instanceof Error ? error.message : 'Image upload failed.';
+      setUploadError(`Upload failed: ${message}`);
     } finally {
+      setIsCompressingGallery(false);
       setIsUploadingGallery(false);
       event.target.value = '';
     }
   }
 
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    if (isCompressingMain || isCompressingGallery || isUploadingMain || isUploadingGallery) {
+      event.preventDefault();
+      setUploadError('Please wait for image uploads to finish before saving.');
+      return;
+    }
+    setIsSaving(true);
+  }
+
   return (
-    <form action={action} className="adminProductForm">
+    <form action={action} className="adminProductForm" onSubmit={handleSubmit}>
       {initialProduct?.id ? <input type="hidden" name="id" value={initialProduct.id} /> : null}
       {currentMainImageUrl ? <input type="hidden" name="existingMainImage" value={currentMainImageUrl} /> : null}
       {currentMainImageUrl ? <input type="hidden" name="mainImageUrl" value={currentMainImageUrl} /> : null}
@@ -183,6 +249,7 @@ export function AdminProductForm({
       {error ? <p className="errorText">{error}</p> : null}
       {uploadError ? <p className="errorText">{uploadError}</p> : null}
       {uploadNotice ? <p className="successText">{uploadNotice}</p> : null}
+      {isSaving ? <p className="successText">Saving product...</p> : null}
 
       <div className="adminFormGrid">
         <label className="field fieldFull">
@@ -214,6 +281,11 @@ export function AdminProductForm({
               </option>
             ))}
           </select>
+          {!categories.length ? (
+            <small>
+              No categories found. <Link href="/admin/categories">Create a category</Link> before publishing.
+            </small>
+          ) : null}
         </label>
 
         <label className="field">
@@ -325,27 +397,33 @@ export function AdminProductForm({
         <div className="adminFormGrid">
           <label className="field fieldFull">
             <span>Main image upload</span>
-            <input className="input" type="file" accept="image/*" onChange={handleMainImageChange} />
-            <small>{isUploadingMain ? 'Uploading main image...' : 'Images upload to Supabase Storage first, then the product saves with the image URL.'}</small>
+            <input className="input" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" onChange={handleMainImageChange} />
+            <small>
+              {selectedMainFileName ? `Selected: ${selectedMainFileName}. ` : ''}
+              {isCompressingMain ? 'Preparing image...' : isUploadingMain ? 'Uploading image...' : 'Images are resized, compressed and uploaded to Supabase Storage first. The product saves with the URL only.'}
+            </small>
           </label>
           <label className="field fieldFull">
             <span>Gallery image upload</span>
-            <input className="input" type="file" accept="image/*" multiple onChange={handleGalleryImageChange} />
-            <small>{isUploadingGallery ? 'Uploading gallery images...' : 'Use the product-images bucket. Publish only sends URLs, not raw files.'}</small>
+            <input className="input" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" multiple onChange={handleGalleryImageChange} />
+            <small>
+              {selectedGalleryFileNames.length ? `Selected: ${selectedGalleryFileNames.join(', ')}. ` : ''}
+              {isCompressingGallery ? 'Preparing image...' : isUploadingGallery ? 'Uploading image...' : 'Gallery images are optimized and saved as public URLs.'}
+            </small>
           </label>
         </div>
-        {currentMainImageUrl ? (
+        {mainImagePreviewUrl ? (
           <div className="adminImagePreviewGrid">
             <div className="adminImagePreview">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={currentMainImageUrl} alt={initialProduct?.title || title || 'Product main image'} />
+              <img src={mainImagePreviewUrl} alt={initialProduct?.title || title || 'Product main image'} />
               <span>Main image</span>
             </div>
           </div>
         ) : null}
-        {visibleGallery.length ? (
+        {previewGallery.length ? (
           <div className="adminImagePreviewGrid">
-            {visibleGallery.map((url) => (
+            {previewGallery.map((url) => (
               <label className="adminImagePreview" key={url}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={url} alt="Gallery image" />
@@ -430,10 +508,10 @@ export function AdminProductForm({
       </div>
 
       <div className="adminFormFooter">
-        <button type="submit" className="button buttonSecondary" name="intent" value="draft" disabled={isUploadingMain || isUploadingGallery}>
+        <button type="submit" className="button buttonSecondary" name="intent" value="draft" disabled={isCompressingMain || isCompressingGallery || isUploadingMain || isUploadingGallery || isSaving}>
           Save draft
         </button>
-        <button type="submit" className="button buttonPrimary buttonSheen" name="intent" value="publish" disabled={isUploadingMain || isUploadingGallery}>
+        <button type="submit" className="button buttonPrimary buttonSheen" name="intent" value="publish" disabled={isCompressingMain || isCompressingGallery || isUploadingMain || isUploadingGallery || isSaving}>
           Publish
         </button>
         {deleteAction && initialProduct?.id ? (
