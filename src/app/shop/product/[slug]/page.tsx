@@ -6,6 +6,8 @@ import { JsonLd } from '@/components/json-ld';
 import { breadcrumbSchema, faqSchema, pageMetadata, productSchema } from '@/lib/seo';
 import { getProductBySlugFromStore, getPublicProducts, getRelatedProductsFromStore } from '@/lib/storefront';
 
+export const dynamic = 'force-dynamic';
+
 export async function generateStaticParams() {
   const products = await getPublicProducts();
   return products.map((product) => ({ slug: product.slug }));

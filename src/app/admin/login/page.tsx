@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { LockKeyhole } from 'lucide-react';
 import { loginAdminAction } from '@/app/admin/actions';
+import { BrandLogo } from '@/components/BrandLogo';
 import { isSupabaseBrowserConfigured } from '@/lib/supabase/config';
 
 export const metadata: Metadata = {
@@ -16,6 +17,7 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: P
     <section className="section">
       <div className="container narrowContainer">
         <div className="contentCard detailBlock">
+          <BrandLogo variant="full" size="lg" showTagline />
           <span className="eyebrow">
             <LockKeyhole size={14} /> PawTrip SA admin
           </span>

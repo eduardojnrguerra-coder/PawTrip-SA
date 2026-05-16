@@ -17,6 +17,7 @@ export function ProductDetailClient({ product, related }: { product: Product; re
   const [selected, setSelected] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [showMobileBuyBar, setShowMobileBuyBar] = useState(false);
   const { addItem, products } = useCart();
   const productRecord = product as Partial<Product>;
   const asList = (value: unknown) =>
@@ -103,6 +104,9 @@ export function ProductDetailClient({ product, related }: { product: Product; re
       : price;
   const image = galleryImages[selected] ?? fallbackImage;
   const savings = Math.max(0, compareAtPrice - price);
+  const isOutOfStock = stockQuantity === 0;
+  const stockMessage = stockQuantity === null ? availability.replaceAll('_', ' ') : stockQuantity > 10 ? 'In stock' : stockQuantity > 0 ? 'Low stock' : 'Out of stock';
+  const stockClass = stockQuantity === 0 ? 'stockOut' : stockQuantity !== null && stockQuantity <= 10 ? 'stockLow' : 'stockIn';
   const needsSupplierImages = process.env.NODE_ENV === 'development' && product.sourcePermissionStatus !== 'supplier_permission_confirmed';
   const faqItems =
     safeFaqs.length > 0
@@ -126,6 +130,19 @@ export function ProductDetailClient({ product, related }: { product: Product; re
       items: [gaItem(product)],
     });
   }, [price, product]);
+
+  useEffect(() => {
+    setSelected(0);
+    setQuantity(1);
+  }, [product.slug]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handleScroll = () => setShowMobileBuyBar(window.scrollY > 520);
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   function showPreviousImage() {
     setSelected((current) => (current === 0 ? galleryImages.length - 1 : current - 1));
@@ -179,6 +196,7 @@ export function ProductDetailClient({ product, related }: { product: Product; re
             alt={getProductImageAlt(productName, categoryValue, `gallery image ${selected + 1}`)}
             productName={productName}
             category={categoryValue}
+            priority
           />
         </motion.div>
         {galleryImages.length > 1 ? (
@@ -423,17 +441,9 @@ export function ProductDetailClient({ product, related }: { product: Product; re
             ) : null}
             <span className="chip chipAccent">Best for</span>
           </div>
-          <div>
+          <div className="stickyTitleBlock">
             <h1>{productName}</h1>
-            <p>{shortDescription}</p>
-          </div>
-          <div className="whyProductBox">
-            <strong>Why this product?</strong>
-            <ul>
-              {(safeBenefits.length ? safeBenefits : [shortDescription]).slice(0, 3).map((benefit) => (
-                <li key={benefit}>{benefit}</li>
-              ))}
-            </ul>
+            <p className="stickyShortDesc">{shortDescription}</p>
           </div>
           <div className="priceBlock">
             <strong>{formatZar(price)}</strong>
@@ -442,8 +452,9 @@ export function ProductDetailClient({ product, related }: { product: Product; re
           {product.isBundle && savings > 0 ? (
             <div className="bundleSavingsCallout">Save {formatZar(savings)} with this bundle compared with the listed compare-at price.</div>
           ) : null}
-          <div className="availabilityNote">
-            Availability: {stockQuantity !== null ? (stockQuantity > 0 ? `${stockQuantity} in stock` : 'currently out of stock') : availability.replaceAll('_', ' ')}. Delivery estimates depend on product availability and your location.
+          <div className={`availabilityNote ${stockClass}`}>
+            {stockMessage}
+            {stockQuantity !== null && stockQuantity > 0 && stockQuantity <= 10 ? `: ${stockQuantity} left` : null}
           </div>
           <div className="quantityRow">
             <button type="button" className="quantityButton" onClick={() => setQuantity((value) => Math.max(1, value - 1))} aria-label="Decrease quantity">
@@ -454,9 +465,23 @@ export function ProductDetailClient({ product, related }: { product: Product; re
               <Plus size={16} />
             </button>
           </div>
-          <button type="button" className="button buttonPrimary" onClick={() => addItem(product.slug, quantity)}>
-            Add to cart
+          <button type="button" className="button buttonPrimary" onClick={() => addItem(product.slug, quantity)} disabled={isOutOfStock}>
+            {isOutOfStock ? 'Out of stock' : 'Add to cart'}
           </button>
+          <div className="purchaseTrustRow">
+            <span><CreditCard size={13} /> Secure PayFast checkout</span>
+            <span><Truck size={13} /> Delivery calculated before payment</span>
+            <span><ShieldCheck size={13} /> Support before paying</span>
+            <span><RotateCcw size={13} /> Easy returns</span>
+          </div>
+          <div className="whyProductBox">
+            <strong>Why this product?</strong>
+            <ul>
+              {(safeBenefits.length ? safeBenefits : [shortDescription]).slice(0, 3).map((benefit) => (
+                <li key={benefit}>{benefit}</li>
+              ))}
+            </ul>
+          </div>
           <div className="trustBlock">
             <ShieldCheck size={18} />
             <div>
@@ -503,13 +528,22 @@ export function ProductDetailClient({ product, related }: { product: Product; re
         </div>
       </aside>
 
-      <div className="mobileStickyCart">
+      <div className={showMobileBuyBar ? 'mobileStickyCart mobileStickyCartVisible' : 'mobileStickyCart'}>
         <div>
           <strong>{formatZar(price)}</strong>
-          <span>{productName}</span>
+          <span>{stockMessage}</span>
         </div>
-        <button type="button" className="button buttonPrimary buttonSheen" onClick={() => addItem(product.slug, quantity)}>
-          Add to cart
+        <div className="mobileStickyQty" aria-label="Quantity">
+          <button type="button" onClick={() => setQuantity((value) => Math.max(1, value - 1))} aria-label="Decrease quantity">
+            <Minus size={14} />
+          </button>
+          <strong>{quantity}</strong>
+          <button type="button" onClick={() => setQuantity((value) => value + 1)} aria-label="Increase quantity">
+            <Plus size={14} />
+          </button>
+        </div>
+        <button type="button" className="button buttonPrimary buttonSheen" onClick={() => addItem(product.slug, quantity)} disabled={isOutOfStock}>
+          {isOutOfStock ? 'Out' : 'Add'}
         </button>
       </div>
 

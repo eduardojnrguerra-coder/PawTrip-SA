@@ -1,12 +1,13 @@
 import Link from 'next/link';
-import { siteName, siteTagline } from '@/lib/site';
+import { BrandLogo } from '@/components/BrandLogo';
+import { siteTagline } from '@/lib/site';
 
 export function SiteFooter() {
   return (
     <footer className="footer">
       <div className="container footerGrid">
         <div>
-          <strong>{siteName}</strong>
+          <BrandLogo variant="full" size="lg" showTagline />
           <p>{siteTagline}</p>
           <p>Practical dog travel accessories for cleaner cars, calmer trips and easier routines.</p>
         </div>

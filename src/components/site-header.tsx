@@ -6,6 +6,7 @@ import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useCart } from '@/components/cart-provider';
+import { BrandLogo } from '@/components/BrandLogo';
 import type { Category } from '@/data/products';
 import { cn } from '@/lib/utils';
 
@@ -88,11 +89,7 @@ export function SiteHeader({ categories }: { categories: Category[] }) {
     <header className="header">
       <div className="container headerInner">
         <Link href="/" className="brand" onClick={() => setMobileOpen(false)}>
-          <span className="brandMark">P</span>
-          <span>
-            <strong>PawTrip SA</strong>
-            <small>Cleaner cars. Safer trips. Happier dogs.</small>
-          </span>
+          <BrandLogo variant="full" size="md" showTagline />
         </Link>
 
         <nav className="desktopNav" aria-label="Primary">

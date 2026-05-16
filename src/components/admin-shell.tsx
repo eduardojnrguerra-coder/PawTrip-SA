@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Package2, Tags, LayoutDashboard, ShoppingCart, LogOut } from 'lucide-react';
+import { BrandLogo } from '@/components/BrandLogo';
 
 export function AdminShell({
   title,
@@ -17,7 +18,7 @@ export function AdminShell({
       <div className="container adminLayout">
         <aside className="adminSidebar">
           <div className="adminSidebarBrand">
-            <span className="eyebrow">PawTrip SA</span>
+            <BrandLogo variant="full" size="sm" showTagline />
             <strong>Admin</strong>
             <p>Products, categories and orders.</p>
           </div>

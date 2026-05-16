@@ -9,7 +9,7 @@ import { SiteFooter } from '@/components/site-footer';
 import { Toasts } from '@/components/toasts';
 import { AnalyticsPlaceholder } from '@/components/analytics-placeholder';
 import { JsonLd } from '@/components/json-ld';
-import { MascotDog } from '@/components/mascot-dog';
+import { FloatingDogAssistant } from '@/components/FloatingDogAssistant';
 import { siteDescription, siteName, siteTagline, getSiteUrl } from '@/lib/site';
 import { defaultOgImage, organizationSchema, websiteSchema } from '@/lib/seo';
 import { getPublicCatalogSnapshot } from '@/lib/storefront';
@@ -64,7 +64,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         <CartProvider products={products}>
           <SiteHeader categories={categories} />
-          <MascotDog />
+          <FloatingDogAssistant />
           <main className="siteMain">{children}</main>
           <SiteFooter />
           <JsonLd data={[organizationSchema(), websiteSchema()]} />
