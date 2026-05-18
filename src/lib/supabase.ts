@@ -123,7 +123,7 @@ export function buildSupabaseOrderInsert(
     subtotal: order.subtotal,
     delivery_fee: order.deliveryFee,
     total: order.total,
-    payment_status: 'pending',
+    payment_status: 'pending_payment',
     fulfillment_status: 'unfulfilled',
     payfast_payment_id: null,
   };

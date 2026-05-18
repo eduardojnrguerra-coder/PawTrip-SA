@@ -52,6 +52,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ received: true });
   }
 
+  if (fields.merchant_key && fields.merchant_key !== config.merchantKey) {
+    console.warn('PayFast ITN merchant key mismatch', { orderReference: orderReference || 'unknown' });
+    return NextResponse.json({ received: true });
+  }
+
   if (!isPayFastSignatureValid(fields, config.passphrase)) {
     console.warn('PayFast ITN signature rejected', { orderReference: orderReference || 'unknown' });
     return NextResponse.json({ received: true });
@@ -103,9 +108,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ received: true });
   }
 
-  const normalizedStatus = paymentStatus.toUpperCase() === 'COMPLETE' ? 'paid' : paymentStatus.toLowerCase();
+  if (paymentStatus.toUpperCase() !== 'COMPLETE') {
+    console.info('PayFast ITN verified but payment is not complete; leaving order pending', {
+      orderReference,
+      paymentStatus,
+      payfastPaymentId: payfastPaymentId || 'not provided',
+    });
+    return NextResponse.json({ received: true });
+  }
+
   const updateResult = await updateSupabaseOrderByReference(orderReference, {
-    payment_status: normalizedStatus,
+    payment_status: 'paid',
     payfast_payment_id: payfastPaymentId || null,
   });
 
@@ -117,7 +130,7 @@ export async function POST(request: Request) {
   } else {
     console.info('PayFast ITN processed', {
       orderReference,
-      paymentStatus: normalizedStatus,
+      paymentStatus: 'paid',
       payfastPaymentId: payfastPaymentId || 'not provided',
     });
   }

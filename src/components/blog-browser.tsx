@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
-import { ArrowRight, Clock, Filter, Sparkles } from 'lucide-react';
+import { ArrowRight, Clock, Filter } from 'lucide-react';
 import { BlogImage } from '@/components/blog-image';
 import { publishedBlogPosts, validateBlogPost, type BlogPost } from '@/data/blog';
 
@@ -34,7 +34,7 @@ function matchesFilter(post: BlogPost, activeCategory: string) {
   return normaliseCategory(post.category || '') === activeCategory;
 }
 
-function BlogCard({ post, featured = false, index = 0 }: { post: BlogPost; featured?: boolean; index?: number }) {
+function BlogCard({ post, index = 0 }: { post: BlogPost; index?: number }) {
   const category = post.category || 'PawTrip SA Guide';
   const title = post.title || 'PawTrip SA Guide';
   const reduceMotion = useReducedMotion();
@@ -46,7 +46,7 @@ function BlogCard({ post, featured = false, index = 0 }: { post: BlogPost; featu
       viewport={{ once: true, margin: '-60px' }}
       transition={{ duration: 0.45, delay: Math.min(index * 0.04, 0.18) }}
       whileHover={reduceMotion ? undefined : { y: -6 }}
-      className={featured ? 'blogFeaturedCard' : 'blogCardPremium'}
+      className="blogCardPremium"
     >
       <Link href={`/blog/${post.slug}`} className="blogCardLink" aria-label={`Read ${title}`}>
         <div className="blogCardMedia">
@@ -56,19 +56,15 @@ function BlogCard({ post, featured = false, index = 0 }: { post: BlogPost; featu
         <div className="blogCardBody">
           <div className="blogMetaRow">
             <span>
-              <Clock size={15} aria-hidden="true" /> {post.readTime || 'Guide'}
+              <Clock size={14} aria-hidden="true" /> {post.readTime || 'Guide'}
             </span>
             <span>{post.date || 'PawTrip SA'}</span>
           </div>
           <h2>{title}</h2>
           <p>{post.excerpt || 'Practical guidance for South African dog owners.'}</p>
-          <div className="blogFunnyTeaser">
-            <Sparkles size={16} aria-hidden="true" />
-            <span>{post.funnyHook || 'Useful advice, fewer mystery purchases.'}</span>
-          </div>
-          <strong className="blogReadMore">
-            Read guide <ArrowRight size={16} aria-hidden="true" />
-          </strong>
+          <span className="blogReadMore">
+            Read guide <ArrowRight size={15} aria-hidden="true" />
+          </span>
         </div>
       </Link>
     </motion.article>
@@ -93,7 +89,7 @@ export function BlogBrowser() {
         >
           <span className="eyebrow">PawTrip SA Guides</span>
           <h1>Dog advice for cleaner cars, calmer trips and fewer tiny disasters.</h1>
-          <p>
+          <p className="blogHeroSub">
             Practical guides for South African dog owners who love their dogs, but maybe not the hair, mud and chaos
             they bring along.
           </p>
@@ -106,23 +102,9 @@ export function BlogBrowser() {
             </Link>
           </div>
         </motion.div>
-        <motion.div
-          className="blogHeroVisual"
-          initial={reduceMotion ? false : { opacity: 0, scale: 0.96 }}
-          animate={reduceMotion ? undefined : { opacity: 1, scale: 1 }}
-          transition={{ duration: 0.55, delay: 0.1 }}
-        >
-          <span>Clean car energy</span>
-          <strong>No fake fluff. Just useful dog-owner decisions.</strong>
-          <p>Seat covers, travel bowls, bored-dog fixes and the occasional polite warning about wet towels.</p>
-        </motion.div>
       </section>
 
       <section className="blogFilterPanel" aria-label="Blog category filters">
-        <div className="blogFilterTitle">
-          <Filter size={18} aria-hidden="true" />
-          <span>Filter by dog-owner problem</span>
-        </div>
         <div className="blogFilterRow">
           {filterCategories.map((category) => (
             <button
@@ -139,16 +121,26 @@ export function BlogBrowser() {
 
       {featuredPost ? (
         <section className="blogFeaturedSection" aria-labelledby="featured-guide">
-          <div className="sectionHeaderInline">
-            <div>
-              <span className="eyebrow">Featured guide</span>
-              <h2 id="featured-guide">Start here if your car has seen things.</h2>
+          <Link href={`/blog/${featuredPost.slug}`} className="blogFeaturedLink">
+            <div className="blogFeaturedMedia">
+              <BlogImage src={featuredPost.image} alt={featuredPost.title} category={featuredPost.category} />
+              <span className="blogCategoryPill">{featuredPost.category}</span>
             </div>
-            <Link href={`/blog/${featuredPost.slug}`} className="textLink">
-              Open featured guide
-            </Link>
-          </div>
-          <BlogCard post={featuredPost} featured />
+            <div className="blogFeaturedBody">
+              <span className="eyebrow">Featured guide</span>
+              <h2 id="featured-guide">{featuredPost.title}</h2>
+              <p>{featuredPost.excerpt}</p>
+              <div className="blogMetaRow">
+                <span>
+                  <Clock size={14} aria-hidden="true" /> {featuredPost.readTime || 'Guide'}
+                </span>
+                <span>{featuredPost.date || 'PawTrip SA'}</span>
+              </div>
+              <span className="blogReadMore">
+                Read guide <ArrowRight size={15} aria-hidden="true" />
+              </span>
+            </div>
+          </Link>
         </section>
       ) : null}
 
@@ -170,7 +162,7 @@ export function BlogBrowser() {
       <section className="blogUtilityGrid" aria-labelledby="useful-guides">
         <div className="blogUsefulPanel">
           <span className="eyebrow">Most useful guides</span>
-          <h2 id="useful-guides">The "I need an answer before checkout" shelf.</h2>
+          <h2 id="useful-guides">Quick links for common questions.</h2>
           <div className="blogUsefulLinks">
             {mostUseful.map((post) => (
               <Link href={`/blog/${post.slug}`} key={post.slug}>

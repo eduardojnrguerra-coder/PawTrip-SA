@@ -104,6 +104,16 @@ export async function POST(request: Request) {
   };
 
   try {
+    const storedOrder = await createSupabaseOrder(pendingOrder, totals.items);
+    if (!storedOrder.configured || storedOrder.error) {
+      console.error('Supabase order creation failed', {
+        orderReference,
+        reason: storedOrder.error || 'Supabase is not configured',
+      });
+
+      return NextResponse.json({ error: 'Order could not be stored. Please try again or contact PawTrip SA support.' }, { status: 500 });
+    }
+
     const payment = createPayFastPayment({
       amount: totals.total,
       orderReference,
@@ -113,20 +123,10 @@ export async function POST(request: Request) {
       itemDescription: `${totals.items.length} item(s) from PawTrip SA`,
     });
 
-    const storedOrder = await createSupabaseOrder(pendingOrder, totals.items);
-    if (storedOrder.configured && storedOrder.error) {
-      console.error('Supabase order creation failed', {
-        orderReference,
-        reason: storedOrder.error,
-      });
-
-      return NextResponse.json({ error: 'Order could not be stored. Please try again or contact PawTrip SA support.' }, { status: 500 });
-    }
-
     return NextResponse.json({
       payment,
       order: pendingOrder,
-      storage: storedOrder.configured ? 'supabase' : 'localStorage',
+      storage: 'supabase',
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : '';

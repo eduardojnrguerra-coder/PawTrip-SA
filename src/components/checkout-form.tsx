@@ -364,11 +364,12 @@ export function CheckoutForm() {
             <ShieldCheck size={18} />
             <div>
               <strong>Secure online payment</strong>
-              <p>You will be redirected to PayFast. PawTrip SA does not store your card details.</p>
+              <p>Card, Instant EFT and supported South African payment methods are handled by PayFast. PawTrip SA does not store card details.</p>
             </div>
           </div>
           <div className="checkoutTrustStrip">
             <span>Secure PayFast checkout</span>
+            <span>Card, Instant EFT and supported SA methods</span>
             <span>Card details handled by PayFast</span>
             <span>Delivery shown before payment</span>
             <span>Support before paying</span>
@@ -383,7 +384,7 @@ export function CheckoutForm() {
 
           <button type="submit" className="button buttonPrimary checkoutButton buttonSheen" disabled={loading || Boolean(cartIssue)}>
             {loading ? <Loader2 className="spin" size={16} /> : null}
-            Pay securely with PayFast
+            Secure checkout with Payfast
           </button>
           <AnimatePresence>
             {submitError ? (

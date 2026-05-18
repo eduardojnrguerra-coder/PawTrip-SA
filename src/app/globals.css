@@ -2393,20 +2393,15 @@ p {
 
 .blogHub {
   display: grid;
-  gap: clamp(1.5rem, 4vw, 3rem);
+  gap: 2rem;
 }
 
 .blogHubHero {
   position: relative;
   overflow: hidden;
-  display: grid;
-  grid-template-columns: minmax(0, 1.08fr) minmax(280px, 0.62fr);
-  gap: clamp(1.25rem, 4vw, 3rem);
-  align-items: center;
-  min-height: 520px;
-  padding: clamp(1.4rem, 5vw, 3.4rem);
+  padding: clamp(2rem, 5vw, 3.5rem);
   border: 1px solid rgba(31, 77, 58, 0.11);
-  border-radius: 34px;
+  border-radius: 32px;
   background:
     radial-gradient(circle at 12% 8%, rgba(232, 177, 90, 0.2), transparent 30%),
     linear-gradient(135deg, rgba(251, 248, 243, 0.92), rgba(167, 196, 174, 0.16)),
@@ -2415,116 +2410,112 @@ p {
 }
 
 .blogHubHero h1 {
-  max-width: 820px;
-  color: var(--forest);
-  font-size: clamp(2.8rem, 7vw, 5.8rem);
-  line-height: 0.96;
+  max-width: 780px;
+  color: #143628;
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  line-height: 1.04;
+  margin-top: 0.5rem;
 }
 
-.blogHubHero p {
-  max-width: 680px;
-  font-size: clamp(1.05rem, 1.7vw, 1.24rem);
+.blogHeroSub {
+  max-width: 620px;
+  font-size: clamp(1rem, 1.5vw, 1.15rem);
+  color: #3f3f35;
+  margin-top: 0.5rem;
 }
 
-.blogHeroActions,
-.blogArticleMeta {
+.blogHeroActions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
   align-items: center;
-  margin-top: 1.2rem;
-}
-
-.blogHeroVisual {
-  display: grid;
-  gap: 0.85rem;
-  align-content: end;
-  min-height: 360px;
-  padding: 1.35rem;
-  border: 1px solid rgba(31, 77, 58, 0.12);
-  border-radius: 30px;
-  background:
-    linear-gradient(180deg, rgba(31, 77, 58, 0.12), rgba(251, 248, 243, 0.2)),
-    url('/blog/travel-guide.svg') center / cover;
-  box-shadow: inset 0 -120px 120px rgba(31, 77, 58, 0.28), 0 24px 70px rgba(31, 41, 55, 0.12);
-  color: white;
-}
-
-.blogHeroVisual span,
-.blogHeroVisual strong,
-.blogHeroVisual p {
-  width: fit-content;
-  max-width: 100%;
-  padding: 0.6rem 0.8rem;
-  border: 1px solid rgba(255, 255, 255, 0.32);
-  border-radius: 16px;
-  background: rgba(31, 77, 58, 0.68);
-  color: white;
-  backdrop-filter: blur(14px);
-}
-
-.blogHeroVisual strong {
-  font-family: var(--font-sora), sans-serif;
-  font-size: 1.35rem;
-}
-
-.blogFilterPanel,
-.blogFeaturedCard,
-.blogUtilityGrid > div,
-.quickAnswerBox,
-.articleInfoBlock,
-.articleProductBlock,
-.articleFinalCta,
-.articleOutlinePremium,
-.articleKeywordBox {
-  border: 1px solid rgba(31, 77, 58, 0.11);
-  background: rgba(251, 248, 243, 0.82);
-  box-shadow: 0 18px 58px rgba(31, 41, 55, 0.075);
+  margin-top: 1.5rem;
 }
 
 .blogFilterPanel {
-  display: grid;
-  gap: 0.9rem;
-  padding: 1rem;
-  border-radius: 22px;
-}
-
-.blogFilterTitle {
-  display: inline-flex;
-  gap: 0.5rem;
-  align-items: center;
-  color: var(--forest);
-  font-weight: 900;
-}
-
-.blogFilterRow {
   display: flex;
   flex-wrap: wrap;
   gap: 0.65rem;
+  padding: 0.75rem 0;
 }
 
 .filterChip {
-  min-height: 42px;
-  border: 1px solid rgba(31, 77, 58, 0.12);
+  min-height: 38px;
+  border: 1px solid rgba(31, 77, 58, 0.14);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.68);
-  color: var(--forest);
+  background: rgba(255, 255, 255, 0.72);
+  color: #143628;
   cursor: pointer;
-  font-weight: 850;
-  padding: 0.6rem 0.9rem;
+  font-weight: 800;
+  font-size: 0.88rem;
+  padding: 0.5rem 0.85rem;
   transition:
     background 0.2s ease,
-    border-color 0.2s ease,
-    transform 0.2s ease;
+    border-color 0.2s ease;
 }
 
 .filterChip:hover,
 .filterChip.active {
-  border-color: rgba(232, 177, 90, 0.48);
-  background: rgba(232, 177, 90, 0.2);
-  transform: translateY(-1px);
+  border-color: rgba(232, 177, 90, 0.5);
+  background: rgba(232, 177, 90, 0.22);
 }
 
+/* ---------- Featured guide card ---------- */
+.blogFeaturedSection {
+  border-radius: 28px;
+  overflow: hidden;
+  border: 1px solid rgba(31, 77, 58, 0.11);
+  background: rgba(251, 248, 243, 0.88);
+  box-shadow: 0 18px 58px rgba(31, 41, 55, 0.075);
+}
+
+.blogFeaturedLink {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  color: inherit;
+  text-decoration: none;
+  min-height: 100%;
+}
+
+.blogFeaturedMedia {
+  position: relative;
+  overflow: hidden;
+  background: #f7efe2;
+  min-height: 320px;
+}
+
+.blogFeaturedMedia img,
+.blogFeaturedMedia .blogImagePlaceholder {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.35s ease;
+}
+
+.blogFeaturedSection:hover .blogFeaturedMedia img {
+  transform: scale(1.04);
+}
+
+.blogFeaturedBody {
+  display: grid;
+  gap: 0.85rem;
+  align-content: center;
+  padding: clamp(1.25rem, 3vw, 2rem);
+}
+
+.blogFeaturedBody h2 {
+  color: #143628;
+  font-size: clamp(1.3rem, 2.2vw, 1.85rem);
+  line-height: 1.15;
+}
+
+.blogFeaturedBody p {
+  color: #3f3f35;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+/* ---------- Blog card grid ---------- */
 .blogFeaturedSection,
 .blogUtilityGrid,
 .blogGridPremium {
@@ -2536,28 +2527,20 @@ p {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.blogCardPremium,
-.blogFeaturedCard {
+.blogCardPremium {
   overflow: hidden;
+  border-radius: 20px;
   border: 1px solid rgba(31, 77, 58, 0.11);
-  border-radius: 24px;
   background: rgba(251, 248, 243, 0.88);
   box-shadow: 0 18px 54px rgba(31, 41, 55, 0.075);
 }
 
-.blogFeaturedCard {
-  border-radius: 30px;
-}
-
 .blogCardLink {
   display: grid;
+  grid-template-rows: auto 1fr;
   height: 100%;
   color: inherit;
   text-decoration: none;
-}
-
-.blogFeaturedCard .blogCardLink {
-  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
 }
 
 .blogCardMedia {
@@ -2565,10 +2548,6 @@ p {
   aspect-ratio: 16 / 10;
   overflow: hidden;
   background: #f7efe2;
-}
-
-.blogFeaturedCard .blogCardMedia {
-  min-height: 360px;
 }
 
 .blogCardMedia img,
@@ -2579,122 +2558,137 @@ p {
   transition: transform 0.35s ease;
 }
 
-.blogCardPremium:hover .blogCardMedia img,
-.blogFeaturedCard:hover .blogCardMedia img {
+.blogCardPremium:hover .blogCardMedia img {
   transform: scale(1.04);
 }
 
 .blogCategoryPill {
   position: absolute;
-  left: 0.85rem;
-  top: 0.85rem;
+  left: 0.75rem;
+  top: 0.75rem;
   z-index: 1;
-  padding: 0.5rem 0.7rem;
-  border: 1px solid rgba(255, 255, 255, 0.72);
+  padding: 0.4rem 0.65rem;
+  border: 1px solid rgba(255, 255, 255, 0.6);
   border-radius: 999px;
-  background: rgba(251, 248, 243, 0.88);
-  color: var(--forest);
-  font-size: 0.78rem;
-  font-weight: 900;
-  backdrop-filter: blur(12px);
+  background: rgba(251, 248, 243, 0.9);
+  color: #143628;
+  font-size: 0.76rem;
+  font-weight: 850;
+  backdrop-filter: blur(8px);
 }
 
 .blogCardBody {
   display: grid;
-  gap: 0.8rem;
-  padding: 1.1rem;
-}
-
-.blogFeaturedCard .blogCardBody {
-  align-content: center;
-  padding: clamp(1.25rem, 3vw, 2rem);
+  gap: 0.6rem;
+  padding: 1rem 1.1rem 1.2rem;
+  align-content: start;
 }
 
 .blogCardBody h2 {
-  color: var(--forest);
-  font-size: clamp(1.25rem, 2vw, 2.25rem);
-  line-height: 1.08;
+  color: #143628;
+  font-size: clamp(1.05rem, 1.5vw, 1.25rem);
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.blogCardBody p {
+  color: #3f3f35;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .blogMetaRow {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.6rem;
-  color: var(--muted);
-  font-size: 0.86rem;
-  font-weight: 800;
+  gap: 0.5rem;
+  color: #6b675c;
+  font-size: 0.8rem;
+  font-weight: 750;
 }
 
-.blogMetaRow span,
-.blogReadMore,
-.blogArticleMeta span {
+.blogMetaRow span {
   display: inline-flex;
-  gap: 0.4rem;
+  gap: 0.35rem;
   align-items: center;
 }
 
-.blogFunnyTeaser {
-  display: flex;
-  gap: 0.55rem;
-  align-items: flex-start;
-  padding: 0.8rem;
-  border-radius: 16px;
-  background: rgba(167, 196, 174, 0.16);
-  color: var(--forest);
-  font-weight: 850;
-}
-
 .blogReadMore {
-  color: var(--forest);
-  font-weight: 900;
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+  color: #143628;
+  font-weight: 850;
+  font-size: 0.88rem;
+  margin-top: 0.2rem;
 }
 
 .blogCount {
-  color: var(--forest);
-  font-weight: 900;
+  color: #143628;
+  font-weight: 850;
 }
 
 .blogUtilityGrid {
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.7fr);
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.65fr);
+  gap: 1rem;
 }
 
 .blogUsefulPanel,
 .blogProblemPanel {
   display: grid;
   gap: 1rem;
-  border-radius: 26px;
-  padding: clamp(1rem, 3vw, 1.6rem);
+  border-radius: 24px;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  border: 1px solid rgba(31, 77, 58, 0.11);
+  background: rgba(251, 248, 243, 0.82);
+  box-shadow: 0 18px 58px rgba(31, 41, 55, 0.075);
 }
 
 .blogUsefulLinks,
 .blogProblemLinks {
   display: grid;
-  gap: 0.7rem;
+  gap: 0.6rem;
 }
 
 .blogUsefulLinks a,
 .blogProblemLinks a {
   display: grid;
-  gap: 0.25rem;
-  padding: 0.85rem 1rem;
+  gap: 0.2rem;
+  padding: 0.75rem 0.9rem;
   border: 1px solid rgba(31, 77, 58, 0.1);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.62);
-  color: var(--forest);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.65);
+  color: #143628;
   text-decoration: none;
+  transition: background 0.2s ease;
+}
+
+.blogUsefulLinks a:hover,
+.blogProblemLinks a:hover {
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .blogProblemLinks a {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-weight: 900;
+  font-weight: 850;
 }
 
 .blogUsefulLinks a span {
-  color: var(--muted);
-  font-size: 0.78rem;
-  font-weight: 900;
+  color: #6b675c;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.blogUsefulLinks a strong {
+  font-size: 0.92rem;
 }
 
 .blogArticlePremium {
@@ -5323,8 +5317,7 @@ p {
   .needGrid,
   .whyPawTrip,
   .proofGrid,
-  .blogHubHero,
-  .blogFeaturedCard .blogCardLink,
+  .blogFeaturedLink,
   .blogUtilityGrid,
   .blogArticleHeroPremium,
   .blogArticleLayout {
@@ -5693,11 +5686,15 @@ p {
     grid-template-columns: 1fr;
   }
 
-  .blogFeaturedCard .blogCardMedia,
+  .blogFeaturedLink {
+    grid-template-columns: 1fr;
+  }
+
+  .blogFeaturedMedia,
   .blogArticleHeroMedia,
   .blogArticleHeroMedia img,
   .blogArticleHeroMedia .blogImagePlaceholder {
-    min-height: 280px;
+    min-height: 240px;
   }
 
   .blogArticleHeroPremium {
@@ -6510,8 +6507,6 @@ summary,
   background: linear-gradient(90deg, #e8b15a, #d86f37);
 }
 
-.blogHubHero,
-.blogFeaturedCard,
 .blogProblemPanel,
 .blogUsefulPanel {
   background:
@@ -6520,10 +6515,6 @@ summary,
   color: #fbf8f3;
 }
 
-.blogHubHero h1,
-.blogHubHero p,
-.blogFeaturedCard h2,
-.blogFeaturedCard p,
 .blogProblemPanel h2,
 .blogProblemPanel p,
 .blogUsefulPanel h2 {
@@ -6543,7 +6534,6 @@ summary,
   color: #143628;
 }
 
-.blogFunnyTeaser,
 .homeGuideCard span {
   color: #d86f37;
 }
@@ -6937,14 +6927,6 @@ li,
 .proofGridWrap h3,
 .proofGridWrap p,
 .proofGridWrap .eyebrow,
-.blogHubHero h1,
-.blogHubHero h2,
-.blogHubHero h3,
-.blogHubHero p,
-.blogFeaturedCard h1,
-.blogFeaturedCard h2,
-.blogFeaturedCard h3,
-.blogFeaturedCard p,
 .blogProblemPanel h1,
 .blogProblemPanel h2,
 .blogProblemPanel h3,
@@ -9672,5 +9654,417 @@ select.input:focus {
 
   .mobileStickyCart {
     display: grid;
+  }
+}
+
+/* ---------- Contrast fixes for homepage sections ---------- */
+.whyPawTrip .sectionHeader h2,
+.whyPawTrip .sectionHeader p,
+.whyPawTrip .sectionHeader .eyebrow {
+  color: #fbf8f3;
+}
+
+.whyPawTrip .sectionHeader p {
+  color: rgba(251, 248, 243, 0.9);
+}
+
+.whyPawTrip .whyCard,
+.proofGridWrap .proofCard {
+  border-color: rgba(251, 248, 243, 0.2);
+  background: rgba(251, 248, 243, 0.12);
+}
+
+.whyPawTrip .whyCard strong,
+.proofGridWrap .proofCard strong {
+  color: #fff8ea;
+}
+
+.whyPawTrip .whyCard p,
+.proofGridWrap .proofCard p {
+  color: rgba(251, 248, 243, 0.88);
+}
+
+.whyPawTrip .whyCard svg,
+.proofGridWrap .proofCard svg {
+  color: #e8b15a;
+}
+
+.proofGridWrap .sectionHeader h2,
+.proofGridWrap .sectionHeader p,
+.proofGridWrap .sectionHeader .eyebrow {
+  color: #fbf8f3;
+}
+
+.proofGridWrap .sectionHeader p {
+  color: rgba(251, 248, 243, 0.9);
+}
+
+.premiumFinalCtaInner .sectionHeader h2,
+.premiumFinalCtaInner h2,
+.premiumFinalCtaInner p,
+.premiumFinalCtaInner .eyebrow {
+  color: #fbf8f3;
+}
+
+.chaosSection .needCard strong,
+.chaosSection .needCard p,
+.chaosSection .needCard span {
+  color: #143628;
+}
+
+/* ---------- Blog hub readability refresh ---------- */
+.blogHubSection {
+  background:
+    radial-gradient(circle at 8% 4%, rgba(232, 177, 90, 0.16), transparent 22rem),
+    linear-gradient(180deg, #fbf8f3 0%, #f4efe7 100%);
+}
+
+.blogHub {
+  gap: clamp(1.4rem, 3vw, 2.2rem);
+}
+
+.blogHubHero {
+  padding: clamp(1.5rem, 4vw, 3rem);
+  border: 1px solid rgba(31, 77, 58, 0.12);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 88% 14%, rgba(232, 177, 90, 0.18), transparent 16rem),
+    linear-gradient(135deg, #fbf8f3 0%, #f4efe7 100%);
+  box-shadow: 0 18px 52px rgba(31, 41, 55, 0.08);
+}
+
+.blogHubHero .eyebrow,
+.blogFeaturedBody .eyebrow,
+.blogUtilityGrid .eyebrow {
+  color: #9a5721;
+}
+
+.blogHubHero h1 {
+  max-width: 820px;
+  color: #143628;
+  font-size: clamp(2.1rem, 4.8vw, 4.2rem);
+  line-height: 1.02;
+  letter-spacing: 0;
+}
+
+.blogHeroSub {
+  max-width: 680px;
+  color: #3f3f35;
+  font-size: clamp(1rem, 1.4vw, 1.14rem);
+  line-height: 1.65;
+}
+
+.blogHeroActions .buttonSecondary {
+  border-color: rgba(31, 77, 58, 0.18);
+  background: rgba(31, 77, 58, 0.07);
+  color: #143628;
+}
+
+.blogFilterPanel {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.blogFilterRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.filterChip {
+  min-height: 40px;
+  border-color: rgba(31, 77, 58, 0.16);
+  background: #fbf8f3;
+  color: #143628;
+  box-shadow: 0 8px 18px rgba(31, 41, 55, 0.04);
+}
+
+.filterChip:hover,
+.filterChip.active {
+  border-color: rgba(216, 111, 55, 0.42);
+  background: rgba(232, 177, 90, 0.22);
+  color: #143628;
+}
+
+.blogFeaturedSection {
+  border: 1px solid rgba(31, 77, 58, 0.12);
+  border-radius: 28px;
+  background: #fbf8f3;
+  box-shadow: 0 18px 52px rgba(31, 41, 55, 0.08);
+}
+
+.blogFeaturedLink {
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+}
+
+.blogFeaturedMedia {
+  min-height: 340px;
+  background: #f4efe7;
+}
+
+.blogFeaturedBody h2 {
+  color: #143628;
+  font-size: clamp(1.55rem, 2.8vw, 2.35rem);
+  line-height: 1.12;
+}
+
+.blogFeaturedBody p {
+  color: #3f3f35;
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.blogMetaRow,
+.blogMetaRow span,
+.blogCount {
+  color: #6b675c;
+}
+
+.blogReadMore {
+  color: #143628;
+}
+
+.blogGridPremium {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 1rem;
+}
+
+.blogCardPremium {
+  height: 100%;
+  border: 1px solid rgba(31, 77, 58, 0.12);
+  border-radius: 22px;
+  background: #fbf8f3;
+  box-shadow: 0 14px 40px rgba(31, 41, 55, 0.07);
+}
+
+.blogCardLink {
+  height: 100%;
+  grid-template-rows: auto 1fr;
+}
+
+.blogCardMedia {
+  aspect-ratio: 16 / 10;
+  background: #f4efe7;
+}
+
+.blogCardBody {
+  min-height: 245px;
+  grid-template-rows: auto auto minmax(4.1rem, 1fr) auto;
+  gap: 0.7rem;
+}
+
+.blogCardBody h2 {
+  min-height: 3rem;
+  color: #143628;
+  font-size: clamp(1.05rem, 1.35vw, 1.22rem);
+  line-height: 1.22;
+}
+
+.blogCardBody p {
+  color: #3f3f35;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.blogCategoryPill {
+  border-color: rgba(31, 77, 58, 0.14);
+  background: rgba(251, 248, 243, 0.94);
+  color: #143628;
+}
+
+.blogUtilityGrid {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.blogUsefulPanel,
+.blogProblemPanel {
+  border: 1px solid rgba(31, 77, 58, 0.12);
+  background:
+    radial-gradient(circle at 92% 10%, rgba(232, 177, 90, 0.12), transparent 12rem),
+    #fbf8f3;
+  color: #143628;
+  box-shadow: 0 14px 42px rgba(31, 41, 55, 0.07);
+}
+
+.blogUsefulPanel h2,
+.blogProblemPanel h2 {
+  color: #143628;
+}
+
+.blogUsefulPanel p,
+.blogProblemPanel p {
+  color: #3f3f35;
+}
+
+.blogUsefulLinks a,
+.blogProblemLinks a {
+  border-color: rgba(31, 77, 58, 0.12);
+  background: rgba(255, 255, 255, 0.72);
+  color: #143628;
+}
+
+.blogUsefulLinks a span {
+  color: #6b675c;
+}
+
+.blogUsefulLinks a strong {
+  color: #143628;
+}
+
+@media (max-width: 1024px) {
+  .blogGridPremium {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .blogFeaturedLink,
+  .blogUtilityGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .blogGridPremium {
+    grid-template-columns: 1fr;
+  }
+
+  .blogCardBody {
+    min-height: auto;
+  }
+
+  .blogHeroActions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .blogHeroActions .button {
+    justify-content: center;
+    width: 100%;
+  }
+}
+
+/* ---------- Product purchase panel tightening ---------- */
+.productLayout {
+  align-items: start;
+}
+
+.stickyAddToCart {
+  position: sticky;
+  top: 118px;
+  align-self: start;
+  max-height: calc(100vh - 132px);
+  overflow: auto;
+}
+
+.stickyAddToCart .contentCard:first-child {
+  gap: 0.72rem;
+  padding: clamp(1rem, 2vw, 1.25rem);
+}
+
+.stickyAddToCart .cardMeta {
+  gap: 0.45rem;
+}
+
+.stickyAddToCart .chip {
+  padding: 0.42rem 0.62rem;
+  font-size: 0.78rem;
+}
+
+.stickyTitleBlock {
+  display: grid;
+  gap: 0.42rem;
+}
+
+.stickyTitleBlock h1 {
+  max-width: 18ch;
+  font-size: clamp(1.28rem, 2.1vw, 1.86rem);
+  line-height: 1.08;
+  letter-spacing: 0;
+}
+
+.stickyShortDesc {
+  display: -webkit-box;
+  margin: 0;
+  color: #3f3f35;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.priceBlock {
+  margin: 0.1rem 0 0;
+  padding: 0;
+}
+
+.priceBlock strong {
+  font-size: clamp(1.75rem, 3vw, 2.18rem);
+  line-height: 1;
+}
+
+.availabilityNote {
+  margin: 0;
+  padding: 0.48rem 0.68rem;
+  font-size: 0.86rem;
+}
+
+.quantityRow {
+  margin: 0.08rem 0;
+}
+
+.stickyAddToCart .buttonPrimary {
+  min-height: 48px;
+  width: 100%;
+}
+
+.purchaseTrustRow {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.38rem;
+  margin-top: 0;
+}
+
+.purchaseTrustRow span {
+  width: 100%;
+  justify-content: flex-start;
+  color: #143628;
+  font-size: 0.78rem;
+  font-weight: 800;
+  white-space: normal;
+}
+
+.whyProductBox {
+  margin-top: 0.15rem;
+}
+
+.whyProductBox ul {
+  gap: 0.35rem;
+}
+
+.trustBlock,
+.buyTrustGrid,
+.benefitList,
+.productHelpLinks {
+  margin-top: 0;
+}
+
+.mobileStickyCart {
+  min-height: 68px;
+}
+
+.mobileStickyCart .button {
+  min-height: 44px;
+  padding-inline: 1rem;
+}
+
+@media (max-width: 980px) {
+  .stickyAddToCart {
+    position: static;
+    max-height: none;
+    overflow: visible;
   }
 }
