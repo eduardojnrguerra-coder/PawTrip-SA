@@ -50,6 +50,17 @@ const SIGNATURE_FIELD_ORDER = [
 ];
 
 let payFastSignatureDebugLogged = false;
+const SANDBOX_PAYMENT_FIELD_KEYS = [
+  'merchant_id',
+  'merchant_key',
+  'return_url',
+  'cancel_url',
+  'notify_url',
+  'm_payment_id',
+  'amount',
+  'item_name',
+  'item_description',
+];
 
 function encodePayFastValue(value: string) {
   return encodeURIComponent(value.trim())
@@ -100,6 +111,28 @@ function orderedPayFastFields(fields: Record<string, string>) {
   }
 
   return output;
+}
+
+function sandboxPayFastFields(fields: Record<string, string>) {
+  const output: Record<string, string> = {};
+
+  for (const key of SANDBOX_PAYMENT_FIELD_KEYS) {
+    const value = fields[key];
+    if (value) output[key] = value.trim();
+  }
+
+  return output;
+}
+
+function signatureFields(fields: Record<string, string>, sortAlphabetically = false) {
+  const entries = Object.entries(fields)
+    .filter(([key, value]) => key !== 'signature' && value !== '');
+
+  if (sortAlphabetically) {
+    return entries.sort(([keyA], [keyB]) => keyA.localeCompare(keyB));
+  }
+
+  return entries;
 }
 
 export function formatPayFastAmount(amount: number) {
@@ -153,10 +186,9 @@ export function getOptionalPayFastConfig() {
   };
 }
 
-export function generatePayFastSignature(fields: Record<string, string>, passphrase?: string) {
-  const orderedFields = orderedPayFastFields(fields);
-  const signatureFieldEntries = Object.entries(orderedFields)
-    .filter(([key, value]) => key !== 'signature' && value !== '');
+export function generatePayFastSignature(fields: Record<string, string>, passphrase?: string, sortAlphabetically = false) {
+  const orderedFields = sortAlphabetically ? fields : orderedPayFastFields(fields);
+  const signatureFieldEntries = signatureFields(orderedFields, sortAlphabetically);
   const signatureSource = signatureFieldEntries
     .map(([key, value]) => `${key}=${encodePayFastValue(value)}`)
     .join('&');
@@ -168,10 +200,9 @@ export function generatePayFastSignature(fields: Record<string, string>, passphr
   return crypto.createHash('md5').update(sourceWithPassphrase).digest('hex');
 }
 
-function buildPayFastSignatureDebug(fields: Record<string, string>, passphrase?: string) {
-  const orderedFields = orderedPayFastFields(fields);
-  const signatureFieldEntries = Object.entries(orderedFields)
-    .filter(([key, value]) => key !== 'signature' && value !== '');
+function buildPayFastSignatureDebug(fields: Record<string, string>, passphrase?: string, sortAlphabetically = false) {
+  const orderedFields = sortAlphabetically ? fields : orderedPayFastFields(fields);
+  const signatureFieldEntries = signatureFields(orderedFields, sortAlphabetically);
   const rawSignatureString = signatureFieldEntries
     .map(([key, value]) => `${key}=${encodePayFastValue(value)}`)
     .join('&');
@@ -189,10 +220,10 @@ function buildPayFastSignatureDebug(fields: Record<string, string>, passphrase?:
   };
 }
 
-function debugPayFastSignature(fields: Record<string, string>, passphrase?: string) {
+function debugPayFastSignature(fields: Record<string, string>, passphrase?: string, sortAlphabetically = false) {
   if (payFastSignatureDebugLogged) return;
   payFastSignatureDebugLogged = true;
-  const debug = buildPayFastSignatureDebug(fields, passphrase);
+  const debug = buildPayFastSignatureDebug(fields, passphrase, sortAlphabetically);
   const redactedSubmittedFields = {
     ...fields,
     merchant_key: '[redacted]',
@@ -203,8 +234,8 @@ function debugPayFastSignature(fields: Record<string, string>, passphrase?: stri
     amount: fields.amount,
     item_name: fields.item_name,
     item_description: fields.item_description,
-    signatureFields: debug.fieldKeys,
-    submittedFieldKeys: [...debug.fieldKeys, 'signature'],
+    finalSubmittedFieldKeys: [...debug.fieldKeys, 'signature'],
+    finalSignatureFieldKeys: debug.fieldKeys,
     submittedFields: redactedSubmittedFields,
     passphraseIncluded: debug.passphraseIncluded,
     rawSignatureStringBeforeHashing: debug.redactedRawSignatureString,
@@ -253,7 +284,7 @@ export function createPayFastPayment(input: PayFastPaymentInput): PayFastPayment
 
   // Credentials must be set in .env.local and Vercel env vars only.
   // PAYFAST_PASSPHRASE is used only on the server to create the signature.
-  const baseFields = orderedPayFastFields({
+  const standardFields = {
     merchant_id: config.merchantId,
     merchant_key: config.merchantKey,
     return_url: `${siteUrl}/checkout/success?order_ref=${encodeURIComponent(input.orderReference)}`,
@@ -268,9 +299,13 @@ export function createPayFastPayment(input: PayFastPaymentInput): PayFastPayment
     item_name: 'PawTrip SA Order',
     item_description: 'PawTrip SA order',
     custom_str1: input.orderReference,
-  });
-  const signature = generatePayFastSignature(baseFields, config.passphrase);
-  debugPayFastSignature(baseFields, config.passphrase);
+  };
+  const baseFields = config.mode === 'sandbox'
+    ? sandboxPayFastFields(standardFields)
+    : orderedPayFastFields(standardFields);
+  const sortAlphabetically = config.mode === 'sandbox';
+  const signature = generatePayFastSignature(baseFields, config.passphrase, sortAlphabetically);
+  debugPayFastSignature(baseFields, config.passphrase, sortAlphabetically);
 
   return {
     url: config.url,
