@@ -29,7 +29,7 @@ export async function POST(request: Request) {
   try {
     fields = formDataToRecord(await request.formData());
   } catch {
-    console.info('PayFast ITN received with unreadable form payload');
+    console.info('PayFast ITN received with unreadable form payload', { orderUpdated: false });
     return NextResponse.json({ received: true });
   }
 
@@ -37,6 +37,24 @@ export async function POST(request: Request) {
   const payfastPaymentId = fields.pf_payment_id || '';
   const paymentStatus = fields.payment_status || 'UNKNOWN';
   const amountGross = fields.amount_gross || fields.amount || '';
+  let orderUpdated = false;
+
+  console.info('PayFast ITN notify route hit', {
+    paymentStatus,
+    orderReference: orderReference || 'unknown',
+    amountGross: amountGross || 'not provided',
+  });
+
+  const acknowledge = (reason: string) => {
+    console.info('PayFast ITN acknowledged', {
+      paymentStatus,
+      orderReference: orderReference || 'unknown',
+      amountGross: amountGross || 'not provided',
+      orderUpdated,
+      reason,
+    });
+    return NextResponse.json({ received: true });
+  };
 
   const config = getOptionalPayFastConfig();
   if (!config) {
@@ -44,22 +62,22 @@ export async function POST(request: Request) {
       orderReference: orderReference || 'unknown',
       paymentStatus,
     });
-    return NextResponse.json({ received: true });
+    return acknowledge('PayFast credentials are not configured');
   }
 
   if (fields.merchant_id && fields.merchant_id !== config.merchantId) {
     console.warn('PayFast ITN merchant mismatch', { orderReference: orderReference || 'unknown' });
-    return NextResponse.json({ received: true });
+    return acknowledge('merchant mismatch');
   }
 
   if (fields.merchant_key && fields.merchant_key !== config.merchantKey) {
     console.warn('PayFast ITN merchant key mismatch', { orderReference: orderReference || 'unknown' });
-    return NextResponse.json({ received: true });
+    return acknowledge('merchant key mismatch');
   }
 
   if (!isPayFastSignatureValid(fields, config.passphrase)) {
     console.warn('PayFast ITN signature rejected', { orderReference: orderReference || 'unknown' });
-    return NextResponse.json({ received: true });
+    return acknowledge('signature rejected');
   }
 
   let gatewayValid = false;
@@ -73,12 +91,12 @@ export async function POST(request: Request) {
   }
 
   if (!gatewayValid) {
-    return NextResponse.json({ received: true });
+    return acknowledge('gateway validation failed');
   }
 
   if (!orderReference) {
     console.warn('PayFast ITN missing order reference');
-    return NextResponse.json({ received: true });
+    return acknowledge('missing order reference');
   }
 
   const orderResult = await getSupabaseOrderByReference(orderReference);
@@ -88,7 +106,7 @@ export async function POST(request: Request) {
       paymentStatus,
       amountGross,
     });
-    return NextResponse.json({ received: true });
+    return acknowledge('Supabase is not configured');
   }
 
   if (orderResult.error || !orderResult.data) {
@@ -96,7 +114,7 @@ export async function POST(request: Request) {
       orderReference,
       reason: orderResult.error ?? 'Order not found',
     });
-    return NextResponse.json({ received: true });
+    return acknowledge('order lookup failed');
   }
 
   if (toCents(amountGross) !== toCents(orderResult.data.total)) {
@@ -105,7 +123,7 @@ export async function POST(request: Request) {
       expected: orderResult.data.total,
       received: amountGross,
     });
-    return NextResponse.json({ received: true });
+    return acknowledge('amount mismatch');
   }
 
   if (paymentStatus.toUpperCase() !== 'COMPLETE') {
@@ -114,7 +132,7 @@ export async function POST(request: Request) {
       paymentStatus,
       payfastPaymentId: payfastPaymentId || 'not provided',
     });
-    return NextResponse.json({ received: true });
+    return acknowledge('payment status is not complete');
   }
 
   const updateResult = await updateSupabaseOrderByReference(orderReference, {
@@ -128,12 +146,15 @@ export async function POST(request: Request) {
       reason: updateResult.error,
     });
   } else {
+    orderUpdated = true;
     console.info('PayFast ITN processed', {
       orderReference,
       paymentStatus: 'paid',
+      amountGross,
+      orderUpdated,
       payfastPaymentId: payfastPaymentId || 'not provided',
     });
   }
 
-  return NextResponse.json({ received: true });
+  return acknowledge(updateResult.error ? 'order update failed' : 'order updated');
 }

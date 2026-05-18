@@ -28,6 +28,8 @@ const PAYFAST_VALIDATE_URLS: Record<PayFastMode, string> = {
   production: 'https://www.payfast.co.za/eng/query/validate',
 };
 
+const PAWTRIP_CANONICAL_SITE_URL = 'https://www.pawtripsa.co.za';
+
 const SIGNATURE_FIELD_ORDER = [
   'merchant_id',
   'merchant_key',
@@ -133,6 +135,23 @@ function signatureFields(fields: Record<string, string>, sortAlphabetically = fa
   }
 
   return entries;
+}
+
+function getPayFastSiteUrl(siteUrl: string) {
+  const trimmed = siteUrl.replace(/\/$/, '');
+
+  try {
+    const parsed = new URL(trimmed);
+    const canonicalHost = new URL(PAWTRIP_CANONICAL_SITE_URL).hostname;
+    const rootHost = canonicalHost.replace(/^www\./, '');
+    if (parsed.hostname === rootHost || parsed.hostname === canonicalHost) {
+      return PAWTRIP_CANONICAL_SITE_URL;
+    }
+  } catch {
+    return trimmed;
+  }
+
+  return trimmed;
 }
 
 export function formatPayFastAmount(amount: number) {
@@ -280,15 +299,15 @@ export function createPayFastPayment(input: PayFastPaymentInput): PayFastPayment
   const config = getPayFastConfig();
   const [firstName, ...remainingName] = sanitizePayFastName(input.customerName, 'PawTrip customer').split(/\s+/);
   const lastName = remainingName.join(' ');
-  const siteUrl = config.siteUrl.replace(/\/$/, '');
+  const siteUrl = getPayFastSiteUrl(config.siteUrl);
 
   // Credentials must be set in .env.local and Vercel env vars only.
   // PAYFAST_PASSPHRASE is used only on the server to create the signature.
   const standardFields = {
     merchant_id: config.merchantId,
     merchant_key: config.merchantKey,
-    return_url: `${siteUrl}/checkout/success?order_ref=${encodeURIComponent(input.orderReference)}`,
-    cancel_url: `${siteUrl}/checkout/cancel?order_ref=${encodeURIComponent(input.orderReference)}`,
+    return_url: `${siteUrl}/checkout/success`,
+    cancel_url: `${siteUrl}/checkout/cancel`,
     notify_url: `${siteUrl}/api/payfast/notify`,
     name_first: sanitizePayFastName(firstName || input.customerName, 'PawTrip'),
     name_last: sanitizePayFastName(lastName || 'Customer'),
