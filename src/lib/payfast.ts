@@ -49,10 +49,38 @@ const SIGNATURE_FIELD_ORDER = [
   'custom_str5',
 ];
 
+let payFastSignatureDebugLogged = false;
+
 function encodePayFastValue(value: string) {
   return encodeURIComponent(value.trim())
     .replace(/[!'()*]/g, (character) => `%${character.charCodeAt(0).toString(16).toUpperCase()}`)
     .replace(/%20/g, '+');
+}
+
+function sanitizePayFastText(value: string, fallback = '') {
+  const cleaned = value
+    .normalize('NFKD')
+    .replace(/[^\w\s@.+-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return cleaned || fallback;
+}
+
+function sanitizePayFastName(value: string, fallback = '') {
+  const cleaned = value
+    .normalize('NFKD')
+    .replace(/[^a-zA-Z0-9 -]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return cleaned || fallback;
+}
+
+function sanitizePayFastEmail(value: string) {
+  return value
+    .normalize('NFKD')
+    .replace(/[^a-zA-Z0-9@._+-]/g, '')
+    .trim()
+    .toLowerCase();
 }
 
 function orderedPayFastFields(fields: Record<string, string>) {
@@ -128,7 +156,7 @@ export function getOptionalPayFastConfig() {
 export function generatePayFastSignature(fields: Record<string, string>, passphrase?: string) {
   const orderedFields = orderedPayFastFields(fields);
   const signatureFieldEntries = Object.entries(orderedFields)
-    .filter(([key, value]) => key !== 'signature' && value !== '')
+    .filter(([key, value]) => key !== 'signature' && value !== '');
   const signatureSource = signatureFieldEntries
     .map(([key, value]) => `${key}=${encodePayFastValue(value)}`)
     .join('&');
@@ -140,19 +168,47 @@ export function generatePayFastSignature(fields: Record<string, string>, passphr
   return crypto.createHash('md5').update(sourceWithPassphrase).digest('hex');
 }
 
-function debugPayFastSignature(fields: Record<string, string>, passphrase?: string) {
-  if (process.env.NODE_ENV !== 'development') return;
-
+function buildPayFastSignatureDebug(fields: Record<string, string>, passphrase?: string) {
   const orderedFields = orderedPayFastFields(fields);
-  const signatureFieldNames = Object.entries(orderedFields)
-    .filter(([key, value]) => key !== 'signature' && value !== '')
-    .map(([key]) => key);
+  const signatureFieldEntries = Object.entries(orderedFields)
+    .filter(([key, value]) => key !== 'signature' && value !== '');
+  const rawSignatureString = signatureFieldEntries
+    .map(([key, value]) => `${key}=${encodePayFastValue(value)}`)
+    .join('&');
+  const hasPassphrase = Boolean(passphrase?.trim());
+  const rawWithPassphrase = hasPassphrase ? `${rawSignatureString}&passphrase=${encodePayFastValue(passphrase ?? '')}` : rawSignatureString;
 
-  console.info('PayFast signature debug', {
+  return {
+    fieldKeys: signatureFieldEntries.map(([key]) => key),
+    rawSignatureString: rawWithPassphrase,
+    redactedRawSignatureString: rawWithPassphrase
+      .replace(/merchant_key=[^&]*/i, 'merchant_key=[redacted]')
+      .replace(/passphrase=[^&]*/i, 'passphrase=[redacted]'),
+    passphraseIncluded: hasPassphrase,
+    signature: crypto.createHash('md5').update(rawWithPassphrase).digest('hex'),
+  };
+}
+
+function debugPayFastSignature(fields: Record<string, string>, passphrase?: string) {
+  if (payFastSignatureDebugLogged) return;
+  payFastSignatureDebugLogged = true;
+  const debug = buildPayFastSignatureDebug(fields, passphrase);
+  const redactedSubmittedFields = {
+    ...fields,
+    merchant_key: '[redacted]',
+  };
+
+  console.warn('TEMP PayFast signature debug remove after testing', {
     merchant_id: fields.merchant_id,
     amount: fields.amount,
-    signatureFields: signatureFieldNames,
-    passphraseIncluded: Boolean(passphrase?.trim()),
+    item_name: fields.item_name,
+    item_description: fields.item_description,
+    signatureFields: debug.fieldKeys,
+    submittedFieldKeys: [...debug.fieldKeys, 'signature'],
+    submittedFields: redactedSubmittedFields,
+    passphraseIncluded: debug.passphraseIncluded,
+    rawSignatureStringBeforeHashing: debug.redactedRawSignatureString,
+    generatedSignature: debug.signature,
   });
 }
 
@@ -191,7 +247,7 @@ export async function validatePayFastItnWithGateway(fields: Record<string, strin
 
 export function createPayFastPayment(input: PayFastPaymentInput): PayFastPaymentPayload {
   const config = getPayFastConfig();
-  const [firstName, ...remainingName] = input.customerName.trim().split(/\s+/);
+  const [firstName, ...remainingName] = sanitizePayFastName(input.customerName, 'PawTrip customer').split(/\s+/);
   const lastName = remainingName.join(' ');
   const siteUrl = config.siteUrl.replace(/\/$/, '');
 
@@ -203,25 +259,24 @@ export function createPayFastPayment(input: PayFastPaymentInput): PayFastPayment
     return_url: `${siteUrl}/checkout/success?order_ref=${encodeURIComponent(input.orderReference)}`,
     cancel_url: `${siteUrl}/checkout/cancel?order_ref=${encodeURIComponent(input.orderReference)}`,
     notify_url: `${siteUrl}/api/payfast/notify`,
-    name_first: firstName || input.customerName,
-    name_last: lastName || '',
-    email_address: input.customerEmail,
-    cell_number: input.customerPhone ?? '',
+    name_first: sanitizePayFastName(firstName || input.customerName, 'PawTrip'),
+    name_last: sanitizePayFastName(lastName || 'Customer'),
+    email_address: sanitizePayFastEmail(input.customerEmail),
+    cell_number: sanitizePayFastText(input.customerPhone ?? ''),
     m_payment_id: input.orderReference,
     amount: formatPayFastAmount(input.amount),
-    item_name: `PawTrip SA Order [${input.orderReference}]`,
-    item_description: input.itemDescription ?? 'PawTrip SA ecommerce order',
+    item_name: 'PawTrip SA Order',
+    item_description: 'PawTrip SA order',
     custom_str1: input.orderReference,
   });
+  const signature = generatePayFastSignature(baseFields, config.passphrase);
+  debugPayFastSignature(baseFields, config.passphrase);
 
   return {
     url: config.url,
     fields: {
       ...baseFields,
-      signature: (() => {
-        debugPayFastSignature(baseFields, config.passphrase);
-        return generatePayFastSignature(baseFields, config.passphrase);
-      })(),
+      signature,
     },
     mode: config.mode,
   };
