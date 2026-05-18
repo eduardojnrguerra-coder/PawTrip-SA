@@ -11,6 +11,26 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
+function productWarnings(product: {
+  main_image_url?: string | null;
+  seo_title?: string | null;
+  seo_description?: string | null;
+  stock_quantity?: number | null;
+  price?: number | null;
+  cost_price?: number | null;
+  category_id?: string | null;
+}) {
+  const warnings: string[] = [];
+  if (!product.main_image_url) warnings.push('Missing image');
+  if (!product.seo_title || !product.seo_description) warnings.push('Missing SEO');
+  if (!product.category_id) warnings.push('Missing category');
+  if (Number(product.stock_quantity || 0) <= 0) warnings.push('No stock');
+  if (product.cost_price !== null && product.cost_price !== undefined && Number(product.price || 0) <= Number(product.cost_price || 0)) {
+    warnings.push('Price below cost');
+  }
+  return warnings;
+}
+
 export default async function AdminProductsPage({
   searchParams,
 }: {
@@ -71,10 +91,18 @@ export default async function AdminProductsPage({
               <div>
                 <strong>{product.title}</strong>
                 <p>{product.categories?.name || 'No category'}</p>
+                {productWarnings(product).length ? (
+                  <div className="adminWarningList">
+                    {productWarnings(product).map((warning) => (
+                      <span className="statusPill status-pending" key={warning}>{warning}</span>
+                    ))}
+                  </div>
+                ) : null}
               </div>
               <div>
                 <strong>R{Number(product.price || 0).toFixed(2)}</strong>
-                <p>Stock: {Number(product.stock_quantity || 0)}</p>
+                <p>Cost: {product.cost_price !== null && product.cost_price !== undefined ? `R${Number(product.cost_price).toFixed(2)}` : 'Not set'}</p>
+                <p>Stock: {Number(product.stock_quantity || 0)} · SKU: {product.sku || 'Not set'}</p>
               </div>
               <div>
                 <span className={product.is_active ? 'statusPill status-active' : 'statusPill status-draft'}>

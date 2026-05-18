@@ -16,6 +16,7 @@ import {
   replaceProductFaqs,
   saveCategory,
   supabaseAdminRequest,
+  updateOrderPaymentManual,
   updateOrderFulfillment,
   upsertProduct,
 } from '@/lib/supabase/admin';
@@ -398,4 +399,24 @@ export async function updateOrderFulfillmentAction(formData: FormData) {
   }
 
   redirect('/admin/orders?updated=1');
+}
+
+export async function markOrderPaidManualAction(formData: FormData) {
+  await requireAdminUser();
+  const orderReference = clean(formData.get('orderReference'));
+  const confirmation = clean(formData.get('confirmManualPaid'));
+  if (!orderReference || confirmation !== 'yes') redirect('/admin/orders?error=invalid');
+
+  try {
+    const result = await updateOrderPaymentManual(orderReference);
+    if (result.error) {
+      console.error('markOrderPaidManualAction failed', result.error);
+      redirect('/admin/orders?error=payment');
+    }
+  } catch (error) {
+    console.error('markOrderPaidManualAction crashed', error);
+    redirect('/admin/orders?error=payment');
+  }
+
+  redirect(`/admin/orders/${encodeURIComponent(orderReference)}?paid=manual`);
 }

@@ -24,8 +24,12 @@ export default function ShippingReturnsPage() {
         </p>
         <h2>Returns</h2>
         <p>
-          Unused items can usually be returned in line with the returns policy. Products should be unused, clean, complete and in original packaging where
-          practical. Hygiene-sensitive items, consumables, treats and size-sensitive products may have stricter return rules.
+          Unused items can usually be returned within 7 days in line with the returns policy. Products should be unused, clean, complete and in original
+          packaging where practical. Hygiene-sensitive items, consumables, treats and size-sensitive products may have stricter return rules.
+        </p>
+        <p>
+          Unless PawTrip SA supplied an incorrect or damaged item, return courier costs are normally the customer&apos;s responsibility. Contact support before
+          sending anything back so the return can be checked and handled clearly.
         </p>
         <h2>Damaged or incorrect items</h2>
         <p>

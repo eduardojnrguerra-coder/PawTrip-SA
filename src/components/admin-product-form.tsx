@@ -78,7 +78,9 @@ export function AdminProductForm({
   const [isCompressingGallery, setIsCompressingGallery] = useState(false);
   const [isUploadingGallery, setIsUploadingGallery] = useState(false);
   const [selectedMainFileName, setSelectedMainFileName] = useState('');
+  const [mainImageMeta, setMainImageMeta] = useState('');
   const [selectedGalleryFileNames, setSelectedGalleryFileNames] = useState<string[]>([]);
+  const [galleryImageMeta, setGalleryImageMeta] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
   const existingGallery = useMemo(() => initialProduct?.gallery_image_urls ?? [], [initialProduct?.gallery_image_urls]);
@@ -114,6 +116,26 @@ export function AdminProductForm({
     return null;
   }
 
+  function formatFileSize(size: number) {
+    return size >= 1024 * 1024 ? `${(size / 1024 / 1024).toFixed(2)} MB` : `${Math.round(size / 1024)} KB`;
+  }
+
+  function readImageDimensions(file: File) {
+    return new Promise<{ width: number; height: number }>((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const image = new Image();
+      image.onload = () => {
+        resolve({ width: image.naturalWidth, height: image.naturalHeight });
+        URL.revokeObjectURL(url);
+      };
+      image.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error('Could not read image dimensions.'));
+      };
+      image.src = url;
+    });
+  }
+
   async function uploadSingleFile(file: File, kind: 'main' | 'gallery', index = 0) {
     const uploadSlug = slug || slugify(title);
     if (!uploadSlug) {
@@ -133,6 +155,12 @@ export function AdminProductForm({
     if (!file) return;
     console.log('Selected image', file.name, file.size, file.type);
     setSelectedMainFileName(file.name);
+    try {
+      const dimensions = await readImageDimensions(file);
+      setMainImageMeta(`${dimensions.width}x${dimensions.height} · ${formatFileSize(file.size)}`);
+    } catch {
+      setMainImageMeta(formatFileSize(file.size));
+    }
 
     const fileError = validateOriginalFile(file);
     if (fileError) {
@@ -176,6 +204,17 @@ export function AdminProductForm({
     if (!files.length) return;
     files.forEach((file) => console.log('Selected image', file.name, file.size, file.type));
     setSelectedGalleryFileNames(files.map((file) => file.name));
+    const imageMeta = await Promise.all(
+      files.map(async (file) => {
+        try {
+          const dimensions = await readImageDimensions(file);
+          return `${file.name}: ${dimensions.width}x${dimensions.height} · ${formatFileSize(file.size)}`;
+        } catch {
+          return `${file.name}: ${formatFileSize(file.size)}`;
+        }
+      }),
+    );
+    setGalleryImageMeta(imageMeta);
 
     for (const file of files) {
       const fileError = validateOriginalFile(file);
@@ -301,6 +340,7 @@ export function AdminProductForm({
         <label className="field">
           <span>Cost price</span>
           <input className="input" name="costPrice" type="number" min="0" step="0.01" defaultValue={initialProduct?.cost_price ?? ''} />
+          <small>Use this for margin and dashboard profit estimates.</small>
         </label>
 
         <label className="field">
@@ -400,6 +440,7 @@ export function AdminProductForm({
             <input className="input" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" onChange={handleMainImageChange} />
             <small>
               {selectedMainFileName ? `Selected: ${selectedMainFileName}. ` : ''}
+              {mainImageMeta ? `${mainImageMeta}. ` : ''}
               {isCompressingMain ? 'Preparing image...' : isUploadingMain ? 'Uploading image...' : 'Images are resized, compressed and uploaded to Supabase Storage first. The product saves with the URL only.'}
             </small>
           </label>
@@ -408,6 +449,7 @@ export function AdminProductForm({
             <input className="input" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" multiple onChange={handleGalleryImageChange} />
             <small>
               {selectedGalleryFileNames.length ? `Selected: ${selectedGalleryFileNames.join(', ')}. ` : ''}
+              {galleryImageMeta.length ? `${galleryImageMeta.join(' | ')}. ` : ''}
               {isCompressingGallery ? 'Preparing image...' : isUploadingGallery ? 'Uploading image...' : 'Gallery images are optimized and saved as public URLs.'}
             </small>
           </label>

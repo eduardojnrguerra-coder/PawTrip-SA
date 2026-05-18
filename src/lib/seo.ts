@@ -4,9 +4,25 @@ import type { Category, Product } from '@/data/products';
 import { getSiteUrl, siteDescription, siteName, siteTagline } from '@/lib/site';
 
 export const defaultOgImage = '/opengraph-image';
+const pawtripCanonicalSiteUrl = 'https://www.pawtripsa.co.za';
+
+function canonicalBaseUrl() {
+  const rawBase = getSiteUrl().replace(/\/$/, '');
+
+  try {
+    const parsed = new URL(rawBase);
+    if (parsed.hostname === 'pawtripsa.co.za' || parsed.hostname === 'www.pawtripsa.co.za') {
+      return pawtripCanonicalSiteUrl;
+    }
+  } catch {
+    return rawBase;
+  }
+
+  return rawBase;
+}
 
 export function absoluteUrl(path = '/') {
-  const base = getSiteUrl().replace(/\/$/, '');
+  const base = canonicalBaseUrl();
   const route = path.startsWith('/') ? path : `/${path}`;
   return `${base}${route}`;
 }
@@ -103,6 +119,47 @@ export function productSchema(product: Product) {
     price: price.toFixed(2),
     url: absoluteUrl(`/shop/product/${product.slug}`),
     itemCondition: 'https://schema.org/NewCondition',
+    seller: {
+      '@type': 'Organization',
+      name: 'PawTrip SA',
+    },
+    // Delivery is calculated in checkout. This conservative schema keeps Google merchant data complete
+    // without changing visible delivery copy or promising same-day/local-stock fulfilment.
+    shippingDetails: {
+      '@type': 'OfferShippingDetails',
+      shippingDestination: {
+        '@type': 'DefinedRegion',
+        addressCountry: 'ZA',
+      },
+      shippingRate: {
+        '@type': 'MonetaryAmount',
+        value: 0,
+        currency: 'ZAR',
+      },
+      deliveryTime: {
+        '@type': 'ShippingDeliveryTime',
+        handlingTime: {
+          '@type': 'QuantitativeValue',
+          minValue: 1,
+          maxValue: 3,
+          unitCode: 'DAY',
+        },
+        transitTime: {
+          '@type': 'QuantitativeValue',
+          minValue: 3,
+          maxValue: 7,
+          unitCode: 'DAY',
+        },
+      },
+    },
+    hasMerchantReturnPolicy: {
+      '@type': 'MerchantReturnPolicy',
+      applicableCountry: 'ZA',
+      returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+      merchantReturnDays: 7,
+      returnMethod: 'https://schema.org/ReturnByMail',
+      returnFees: 'https://schema.org/ReturnFeesCustomerResponsibility',
+    },
   };
 
   const isInStock = typeof product.stockQuantity === 'number' ? product.stockQuantity > 0 : product.availability === 'in_stock';
@@ -120,7 +177,7 @@ export function productSchema(product: Product) {
     name,
     description,
     image: galleryImages.map(absoluteImageUrl),
-    sku: product.id,
+    sku: product.sku || product.id,
     brand: {
       '@type': 'Brand',
       name: 'PawTrip SA',

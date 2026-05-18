@@ -214,3 +214,20 @@ export async function updateSupabaseOrderByReference(orderReference: string, upd
     }),
   });
 }
+
+export async function updateSupabaseOrderById(orderId: string, update: SupabaseOrderUpdate) {
+  const query = new URLSearchParams({
+    id: `eq.${orderId}`,
+  });
+
+  return supabaseRequest<SupabaseOrder[]>(`orders?${query.toString()}`, {
+    method: 'PATCH',
+    headers: {
+      Prefer: 'return=representation',
+    },
+    body: JSON.stringify({
+      ...update,
+      updated_at: new Date().toISOString(),
+    }),
+  });
+}

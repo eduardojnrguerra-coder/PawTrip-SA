@@ -3,7 +3,7 @@ import { AdminShell } from '@/components/admin-shell';
 import { AdminCategoryForm } from '@/components/admin-category-form';
 import { saveCategoryAction } from '@/app/admin/actions';
 import { requireAdminUser } from '@/lib/supabase/server';
-import { listCategoriesAdmin } from '@/lib/supabase/admin';
+import { listCategoriesAdmin, listProductsAdmin } from '@/lib/supabase/admin';
 
 export const metadata: Metadata = {
   title: 'Manage categories',
@@ -15,8 +15,12 @@ export const dynamic = 'force-dynamic';
 export default async function AdminCategoriesPage({ searchParams }: { searchParams: Promise<{ saved?: string; error?: string }> }) {
   await requireAdminUser();
   const params = await searchParams;
-  const categoriesResult = await listCategoriesAdmin();
+  const [categoriesResult, productsResult] = await Promise.all([listCategoriesAdmin(), listProductsAdmin()]);
   const categories = categoriesResult.data ?? [];
+  const productCounts = new Map<string, number>();
+  (productsResult.data ?? []).forEach((product) => {
+    if (product.category_id) productCounts.set(product.category_id, (productCounts.get(product.category_id) ?? 0) + 1);
+  });
 
   return (
     <AdminShell title="Categories" description="Control the public category menu and category status.">
@@ -33,7 +37,10 @@ export default async function AdminCategoriesPage({ searchParams }: { searchPara
       <div className="adminCategoryGrid">
         {categories.map((category) => (
           <div className="contentCard detailBlock" key={category.id}>
-            <h2>{category.name}</h2>
+            <div className="sectionHeaderInline">
+              <h2>{category.name}</h2>
+              <span className="statusPill status-active">{productCounts.get(category.id) ?? 0} products</span>
+            </div>
             <AdminCategoryForm category={category} action={saveCategoryAction} submitLabel="Update category" />
           </div>
         ))}

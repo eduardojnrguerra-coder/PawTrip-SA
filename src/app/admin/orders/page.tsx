@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { Metadata } from 'next';
 import { AdminShell } from '@/components/admin-shell';
 import { requireAdminUser } from '@/lib/supabase/server';
@@ -66,6 +67,9 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
                 <div className="adminOrderTotal">
                   <strong>{formatZar(Number(order.total))}</strong>
                   <span>{new Date(order.created_at).toLocaleDateString('en-ZA')}</span>
+                  <Link href={`/admin/orders/${order.order_reference}`} className="button buttonGhost buttonSmall">
+                    Open details
+                  </Link>
                 </div>
               </div>
 
@@ -109,8 +113,11 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
                   <span>Fulfilment status</span>
                   <select className="input" name="fulfillmentStatus" defaultValue={order.fulfillment_status}>
                     <option value="unfulfilled">Unfulfilled</option>
+                    <option value="packed">Packed</option>
+                    <option value="ordered_from_supplier">Ordered from supplier</option>
                     <option value="processing">Processing</option>
                     <option value="shipped">Shipped</option>
+                    <option value="delivered">Delivered</option>
                     <option value="cancelled">Cancelled</option>
                   </select>
                 </label>

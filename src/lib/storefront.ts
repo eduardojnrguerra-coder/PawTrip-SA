@@ -58,6 +58,7 @@ function mapProduct(row: ProductRecord): Product {
 
   return {
     id: row.id,
+    sku: row.sku || row.id,
     slug: row.slug,
     name: row.title,
     price: Number(row.price || 0),

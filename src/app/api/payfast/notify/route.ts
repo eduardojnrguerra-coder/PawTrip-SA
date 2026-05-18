@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getOptionalPayFastConfig, getPayFastSignatureValidation, validatePayFastItnWithGateway } from '@/lib/payfast';
-import { getSupabaseOrderByReference, updateSupabaseOrderByReference } from '@/lib/supabase';
+import { getSupabaseOrderByReference, updateSupabaseOrderById } from '@/lib/supabase';
 
 function formDataToRecord(formData: FormData) {
   const fields: Record<string, string> = {};
@@ -37,7 +37,9 @@ export async function POST(request: Request) {
     return payFastResponse(400, 'unreadable form payload');
   }
 
-  const orderReference = fields.m_payment_id || fields.custom_str1 || '';
+  const payFastOrderReference = fields.m_payment_id || '';
+  const fallbackOrderReference = fields.custom_str1 || '';
+  const orderReference = payFastOrderReference || fallbackOrderReference;
   const payfastPaymentId = fields.pf_payment_id || '';
   const paymentStatus = fields.payment_status || 'UNKNOWN';
   const amountGross = fields.amount_gross || fields.amount || '';
@@ -45,7 +47,7 @@ export async function POST(request: Request) {
 
   console.info('PayFast notify received', {
     paymentStatus,
-    mPaymentId: fields.m_payment_id || 'not provided',
+    mPaymentId: payFastOrderReference || 'not provided',
     pfPaymentId: payfastPaymentId || 'not provided',
     orderReference: orderReference || 'unknown',
     amountGross: amountGross || 'not provided',
@@ -54,7 +56,7 @@ export async function POST(request: Request) {
   const acknowledge = (reason: string, status = 200) => {
     console.info('PayFast ITN acknowledged', {
       paymentStatus,
-      mPaymentId: fields.m_payment_id || 'not provided',
+      mPaymentId: payFastOrderReference || 'not provided',
       pfPaymentId: payfastPaymentId || 'not provided',
       orderReference: orderReference || 'unknown',
       amountGross: amountGross || 'not provided',
@@ -123,6 +125,9 @@ export async function POST(request: Request) {
 
   const orderResult = await getSupabaseOrderByReference(orderReference);
   console.info('PayFast ITN order lookup result', {
+    lookupColumn: 'order_reference',
+    lookupValue: orderReference,
+    sourceField: payFastOrderReference ? 'm_payment_id' : 'custom_str1',
     orderReference,
     configured: orderResult.configured,
     found: Boolean(orderResult.data),
@@ -184,13 +189,23 @@ export async function POST(request: Request) {
     return acknowledge('payment status is not complete');
   }
 
-  const updateResult = await updateSupabaseOrderByReference(orderReference, {
+  const updatePayload = {
     payment_status: 'paid',
     payfast_payment_id: payfastPaymentId || null,
+  };
+  console.info('PayFast ITN order update payload', {
+    lookupColumn: 'id',
+    lookupValue: orderResult.data.id,
+    orderReference,
+    updatePayload,
   });
+
+  const updateResult = await updateSupabaseOrderById(orderResult.data.id, updatePayload);
 
   if (updateResult.error) {
     console.error('PayFast ITN order update failed', {
+      lookupColumn: 'id',
+      lookupValue: orderResult.data.id,
       orderReference,
       reason: updateResult.error,
     });
@@ -202,6 +217,7 @@ export async function POST(request: Request) {
       paymentStatus: 'paid',
       amountGross,
       orderUpdated,
+      updatedRows: updateResult.data?.length ?? 0,
       payfastPaymentId: payfastPaymentId || 'not provided',
     });
   }

@@ -3139,14 +3139,19 @@ p {
 }
 
 .status-paid,
-.status-shipped {
+.status-shipped,
+.status-delivered,
+.status-active {
   background: rgba(43, 128, 85, 0.12);
   color: #1f6d49;
 }
 
 .status-pending,
 .status-pending_payment,
-.status-processing {
+.status-processing,
+.status-packed,
+.status-ordered_from_supplier,
+.status-draft {
   background: rgba(216, 111, 55, 0.12);
   color: #a94f24;
 }
@@ -3156,6 +3161,19 @@ p {
 .status-failed {
   background: rgba(151, 50, 37, 0.12);
   color: #973225;
+}
+
+.status-refunded {
+  background: rgba(66, 88, 110, 0.14);
+  color: #2f4d64;
+}
+
+.statusHeading {
+  text-transform: capitalize;
+}
+
+.statusText-paid {
+  color: #1f6d49;
 }
 
 .adminOrderDetails {
@@ -3168,6 +3186,31 @@ p {
 .adminOrderDetails ul {
   margin: 0.45rem 0 0;
   padding-left: 1rem;
+}
+
+.adminWarningList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.55rem;
+}
+
+.adminTemplateGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.adminTemplateCard {
+  border: 1px solid rgba(21, 70, 52, 0.12);
+  border-radius: 14px;
+  background: rgba(251, 248, 243, 0.8);
+  padding: 0.9rem;
+}
+
+.dangerCard {
+  border-color: rgba(151, 50, 37, 0.22);
+  background: rgba(255, 248, 244, 0.92);
 }
 
 .adminFulfillmentForm {
@@ -6333,6 +6376,24 @@ summary,
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.adminStatsGridWide {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.adminDashboardColumns,
+.adminDetailGrid {
+  display: grid;
+  gap: 1rem;
+}
+
+.adminDashboardColumns {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.adminDetailGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .adminQuickGrid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
@@ -6471,6 +6532,10 @@ summary,
 
   .adminStatsGrid,
   .adminQuickGrid,
+  .adminStatsGridWide,
+  .adminDashboardColumns,
+  .adminDetailGrid,
+  .adminTemplateGrid,
   .adminFilters,
   .adminFormGrid,
   .adminSimpleRow,

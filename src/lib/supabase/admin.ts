@@ -467,6 +467,29 @@ export async function listOrdersAdmin(limit = 20) {
   return supabaseAdminRequest<Array<DbOrder & { order_items?: DbOrderItem[] | null }>>(`orders?${query.toString()}`);
 }
 
+export async function getOrderByReferenceAdmin(orderReference: string) {
+  const query = new URLSearchParams({
+    select: '*, order_items(*)',
+    order_reference: `eq.${orderReference}`,
+    limit: '1',
+  });
+  const result = await supabaseAdminRequest<Array<DbOrder & { order_items?: DbOrderItem[] | null }>>(`orders?${query.toString()}`);
+  return { ...result, data: result.data?.[0] ?? null };
+}
+
+export async function updateOrderPaymentManual(orderReference: string) {
+  const query = new URLSearchParams({ order_reference: `eq.${orderReference}` });
+  return supabaseAdminRequest<DbOrder[]>(`orders?${query.toString()}`, {
+    method: 'PATCH',
+    headers: { Prefer: 'return=representation' },
+    body: JSON.stringify({
+      payment_status: 'paid',
+      payfast_payment_id: 'manual-admin-mark-paid',
+      updated_at: new Date().toISOString(),
+    }),
+  });
+}
+
 export async function updateOrderFulfillment(orderReference: string, fulfillmentStatus: string) {
   const query = new URLSearchParams({ order_reference: `eq.${orderReference}` });
   return supabaseAdminRequest<DbOrder[]>(`orders?${query.toString()}`, {
