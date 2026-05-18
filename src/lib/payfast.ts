@@ -263,15 +263,35 @@ function debugPayFastSignature(fields: Record<string, string>, passphrase?: stri
 }
 
 export function isPayFastSignatureValid(fields: Record<string, string>, passphrase?: string) {
-  const suppliedSignature = fields.signature;
-  if (!suppliedSignature) return false;
+  return getPayFastSignatureValidation(fields, passphrase).valid;
+}
 
-  const expectedSignature = generatePayFastSignature(fields, passphrase);
+function safeSignatureCompare(suppliedSignature: string, expectedSignature: string) {
   const supplied = Buffer.from(suppliedSignature, 'hex');
   const expected = Buffer.from(expectedSignature, 'hex');
 
   if (supplied.length !== expected.length) return false;
   return crypto.timingSafeEqual(supplied, expected);
+}
+
+export function getPayFastSignatureValidation(fields: Record<string, string>, passphrase?: string) {
+  const suppliedSignature = fields.signature;
+  if (!suppliedSignature) {
+    return { valid: false, method: 'missing_signature' } as const;
+  }
+
+  const candidates = [
+    { method: 'payfast_order', signature: generatePayFastSignature(fields, passphrase) },
+    { method: 'alphabetical', signature: generatePayFastSignature(fields, passphrase, true) },
+  ] as const;
+
+  for (const candidate of candidates) {
+    if (safeSignatureCompare(suppliedSignature, candidate.signature)) {
+      return { valid: true, method: candidate.method } as const;
+    }
+  }
+
+  return { valid: false, method: 'mismatch' } as const;
 }
 
 export async function validatePayFastItnWithGateway(fields: Record<string, string>, mode: PayFastMode) {

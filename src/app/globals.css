@@ -3145,12 +3145,14 @@ p {
 }
 
 .status-pending,
+.status-pending_payment,
 .status-processing {
   background: rgba(216, 111, 55, 0.12);
   color: #a94f24;
 }
 
 .status-cancelled,
+.status-canceled,
 .status-failed {
   background: rgba(151, 50, 37, 0.12);
   color: #973225;

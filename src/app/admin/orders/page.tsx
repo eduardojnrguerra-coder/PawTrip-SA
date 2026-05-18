@@ -17,6 +17,19 @@ function deliveryAddress(order: { delivery_address: Record<string, unknown> }) {
   return [address.address, address.suburb, address.city, address.province, address.postalCode].filter(Boolean).join(', ');
 }
 
+function paymentStatusLabel(status: string) {
+  const normalized = status.toLowerCase();
+  if (normalized === 'paid') return 'Paid';
+  if (normalized === 'pending_payment' || normalized === 'pending') return 'Pending payment';
+  if (normalized === 'failed') return 'Failed';
+  if (normalized === 'cancelled' || normalized === 'canceled') return 'Cancelled';
+  return status.replace(/_/g, ' ');
+}
+
+function fulfillmentStatusLabel(status: string) {
+  return status.replace(/_/g, ' ');
+}
+
 export default async function AdminOrdersPage({ searchParams }: { searchParams: Promise<{ updated?: string; error?: string }> }) {
   await requireAdminUser();
   const params = await searchParams;
@@ -57,8 +70,8 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
               </div>
 
               <div className="adminStatusRow">
-                <span className={`statusPill status-${order.payment_status}`}>Payment: {order.payment_status}</span>
-                <span className={`statusPill status-${order.fulfillment_status}`}>Fulfilment: {order.fulfillment_status}</span>
+                <span className={`statusPill status-${order.payment_status}`}>Payment: {paymentStatusLabel(order.payment_status)}</span>
+                <span className={`statusPill status-${order.fulfillment_status}`}>Fulfilment: {fulfillmentStatusLabel(order.fulfillment_status)}</span>
               </div>
 
               <div className="adminOrderDetails">
