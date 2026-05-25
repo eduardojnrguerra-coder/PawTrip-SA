@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
-import type { DbCategory, DbProductFaq } from '@/lib/supabase/admin';
+import type { DbCategory, DbProductCustomOption, DbProductFaq, DbProductVariant } from '@/lib/supabase/admin';
 import { compressImage, uploadAdminProductImage } from '@/lib/supabase/client';
 
 type ProductFormData = {
@@ -28,6 +28,32 @@ type ProductFormData = {
   is_featured?: boolean;
   is_bundle?: boolean;
   product_faqs?: DbProductFaq[] | null;
+  product_variants?: DbProductVariant[] | null;
+  product_custom_options?: DbProductCustomOption[] | null;
+};
+
+type VariantRow = {
+  key: string;
+  optionName: string;
+  optionValue: string;
+  price: string;
+  compareAtPrice: string;
+  costPrice: string;
+  sku: string;
+  stockQuantity: string;
+  active: boolean;
+};
+
+type CustomOptionRow = {
+  key: string;
+  label: string;
+  inputType: 'text' | 'textarea' | 'select';
+  required: boolean;
+  helpText: string;
+  placeholder: string;
+  maxLength: string;
+  choices: string;
+  active: boolean;
 };
 
 function slugify(value: string) {
@@ -66,6 +92,40 @@ export function AdminProductForm({
       ? initialProduct.product_faqs.map((faq) => ({ question: faq.question, answer: faq.answer }))
       : [{ question: '', answer: '' }],
   );
+  const [variants, setVariants] = useState<VariantRow[]>(
+    initialProduct?.product_variants?.length
+      ? [...initialProduct.product_variants]
+          .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+          .map((variant) => ({
+            key: variant.id,
+            optionName: variant.option_name || 'Size',
+            optionValue: variant.option_value || '',
+            price: String(variant.price ?? ''),
+            compareAtPrice: variant.compare_at_price === null || variant.compare_at_price === undefined ? '' : String(variant.compare_at_price),
+            costPrice: variant.cost_price === null || variant.cost_price === undefined ? '' : String(variant.cost_price),
+            sku: variant.sku ?? '',
+            stockQuantity: String(variant.stock_quantity ?? 0),
+            active: variant.active,
+          }))
+      : [],
+  );
+  const [customOptions, setCustomOptions] = useState<CustomOptionRow[]>(
+    initialProduct?.product_custom_options?.length
+      ? [...initialProduct.product_custom_options]
+          .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+          .map((option) => ({
+            key: option.id,
+            label: option.label || '',
+            inputType: option.input_type || 'text',
+            required: option.required,
+            helpText: option.help_text ?? '',
+            placeholder: option.placeholder ?? '',
+            maxLength: option.max_length === null || option.max_length === undefined ? '' : String(option.max_length),
+            choices: option.choices?.join('\n') ?? '',
+            active: option.active,
+          }))
+      : [],
+  );
   const [removeGallery, setRemoveGallery] = useState<string[]>([]);
   const [mainImageUrl, setMainImageUrl] = useState(initialProduct?.main_image_url ?? '');
   const [mainImagePreviewUrl, setMainImagePreviewUrl] = useState(initialProduct?.main_image_url ?? '');
@@ -101,6 +161,56 @@ export function AdminProductForm({
   function onTitleChange(nextTitle: string) {
     setTitle(nextTitle);
     if (!slugTouched) setSlug(slugify(nextTitle));
+  }
+
+  function addVariantRow() {
+    setVariants((current) => [
+      ...current,
+      {
+        key: `variant-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        optionName: current[0]?.optionName || 'Size',
+        optionValue: '',
+        price: '',
+        compareAtPrice: '',
+        costPrice: '',
+        sku: '',
+        stockQuantity: '0',
+        active: true,
+      },
+    ]);
+  }
+
+  function updateVariantRow(index: number, patch: Partial<VariantRow>) {
+    setVariants((current) => current.map((variant, rowIndex) => (rowIndex === index ? { ...variant, ...patch } : variant)));
+  }
+
+  function removeVariantRow(index: number) {
+    setVariants((current) => current.filter((_, rowIndex) => rowIndex !== index));
+  }
+
+  function addCustomOptionRow() {
+    setCustomOptions((current) => [
+      ...current,
+      {
+        key: `custom-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        label: '',
+        inputType: 'text',
+        required: true,
+        helpText: '',
+        placeholder: '',
+        maxLength: '30',
+        choices: '',
+        active: true,
+      },
+    ]);
+  }
+
+  function updateCustomOptionRow(index: number, patch: Partial<CustomOptionRow>) {
+    setCustomOptions((current) => current.map((option, rowIndex) => (rowIndex === index ? { ...option, ...patch } : option)));
+  }
+
+  function removeCustomOptionRow(index: number) {
+    setCustomOptions((current) => current.filter((_, rowIndex) => rowIndex !== index));
   }
 
   const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
@@ -351,12 +461,234 @@ export function AdminProductForm({
         <label className="field">
           <span>Stock quantity</span>
           <input className="input" name="stockQuantity" type="number" min="0" step="1" defaultValue={initialProduct?.stock_quantity ?? 0} />
+          {variants.length ? <small>Used as a fallback. Active variants carry their own public stock.</small> : null}
         </label>
+
+        <div className="field fieldFull adminNestedPanel">
+          <div className="sectionHeaderInline">
+            <div>
+              <span>Variants</span>
+              <small>Add sizes, colours or other purchasable options with separate prices, SKUs and stock.</small>
+            </div>
+            <button type="button" className="button buttonSecondary buttonSmall" onClick={addVariantRow}>
+              <Plus size={14} /> Add variant
+            </button>
+          </div>
+          {!variants.length ? (
+            <p className="mutedText">No variants enabled. This product will use the main product price and stock.</p>
+          ) : (
+            <div className="adminVariantTable">
+              {variants.map((variant, index) => (
+                <div className="adminVariantRow" key={variant.key}>
+                  <input type="hidden" name="variantActive" value={variant.active ? 'true' : 'false'} />
+                  <label className="field">
+                    <span>Option</span>
+                    <input
+                      className="input"
+                      name="variantOptionName"
+                      value={variant.optionName}
+                      onChange={(event) => updateVariantRow(index, { optionName: event.target.value })}
+                      placeholder="Size"
+                    />
+                  </label>
+                  <label className="field">
+                    <span>Value</span>
+                    <input
+                      className="input"
+                      name="variantOptionValue"
+                      value={variant.optionValue}
+                      onChange={(event) => updateVariantRow(index, { optionValue: event.target.value })}
+                      placeholder="Small - 60 x 47 cm"
+                    />
+                  </label>
+                  <label className="field">
+                    <span>Price</span>
+                    <input
+                      className="input"
+                      name="variantPrice"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={variant.price}
+                      onChange={(event) => updateVariantRow(index, { price: event.target.value })}
+                    />
+                  </label>
+                  <label className="field">
+                    <span>Compare-at</span>
+                    <input
+                      className="input"
+                      name="variantCompareAtPrice"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={variant.compareAtPrice}
+                      onChange={(event) => updateVariantRow(index, { compareAtPrice: event.target.value })}
+                    />
+                  </label>
+                  <label className="field">
+                    <span>Cost</span>
+                    <input
+                      className="input"
+                      name="variantCostPrice"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={variant.costPrice}
+                      onChange={(event) => updateVariantRow(index, { costPrice: event.target.value })}
+                    />
+                  </label>
+                  <label className="field">
+                    <span>SKU</span>
+                    <input
+                      className="input"
+                      name="variantSku"
+                      value={variant.sku}
+                      onChange={(event) => updateVariantRow(index, { sku: event.target.value })}
+                    />
+                  </label>
+                  <label className="field">
+                    <span>Stock</span>
+                    <input
+                      className="input"
+                      name="variantStockQuantity"
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={variant.stockQuantity}
+                      onChange={(event) => updateVariantRow(index, { stockQuantity: event.target.value })}
+                    />
+                  </label>
+                  <label className="adminToggle adminVariantToggle">
+                    <input
+                      type="checkbox"
+                      checked={variant.active}
+                      onChange={(event) => updateVariantRow(index, { active: event.target.checked })}
+                    />
+                    <span>Active</span>
+                  </label>
+                  <button type="button" className="iconButton subtle" onClick={() => removeVariantRow(index)} aria-label="Remove variant">
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         <label className="field fieldFull">
           <span>Short description</span>
           <textarea className="textarea" name="shortDescription" defaultValue={initialProduct?.short_description ?? ''} rows={3} />
         </label>
+
+        <div className="field fieldFull adminNestedPanel">
+          <div className="sectionHeaderInline">
+            <div>
+              <span>Custom product options</span>
+              <small>Use for personalised ID tags, engraving text, phone numbers or selectable tag colours.</small>
+            </div>
+            <button type="button" className="button buttonSecondary buttonSmall" onClick={addCustomOptionRow}>
+              <Plus size={14} /> Add option
+            </button>
+          </div>
+          {!customOptions.length ? (
+            <p className="mutedText">No custom options. Customers can add this product straight to cart.</p>
+          ) : (
+            <div className="adminCustomOptionTable">
+              {customOptions.map((option, index) => (
+                <div className="adminCustomOptionRow" key={option.key}>
+                  <input type="hidden" name="customOptionRequired" value={option.required ? 'true' : 'false'} />
+                  <input type="hidden" name="customOptionActive" value={option.active ? 'true' : 'false'} />
+                  <label className="field">
+                    <span>Label</span>
+                    <input
+                      className="input"
+                      name="customOptionLabel"
+                      value={option.label}
+                      onChange={(event) => updateCustomOptionRow(index, { label: event.target.value })}
+                      placeholder="Engraving line 1"
+                    />
+                  </label>
+                  <label className="field">
+                    <span>Type</span>
+                    <select
+                      className="input"
+                      name="customOptionInputType"
+                      value={option.inputType}
+                      onChange={(event) => updateCustomOptionRow(index, { inputType: event.target.value as CustomOptionRow['inputType'] })}
+                    >
+                      <option value="text">Text</option>
+                      <option value="textarea">Long text</option>
+                      <option value="select">Select</option>
+                    </select>
+                  </label>
+                  <label className="field">
+                    <span>Max length</span>
+                    <input
+                      className="input"
+                      name="customOptionMaxLength"
+                      type="number"
+                      min="1"
+                      step="1"
+                      value={option.maxLength}
+                      onChange={(event) => updateCustomOptionRow(index, { maxLength: event.target.value })}
+                    />
+                  </label>
+                  <label className="field">
+                    <span>Placeholder</span>
+                    <input
+                      className="input"
+                      name="customOptionPlaceholder"
+                      value={option.placeholder}
+                      onChange={(event) => updateCustomOptionRow(index, { placeholder: event.target.value })}
+                      placeholder="Bella"
+                    />
+                  </label>
+                  <label className="field fieldWide">
+                    <span>Help text</span>
+                    <input
+                      className="input"
+                      name="customOptionHelpText"
+                      value={option.helpText}
+                      onChange={(event) => updateCustomOptionRow(index, { helpText: event.target.value })}
+                      placeholder="Keep engraving short and double-check spelling."
+                    />
+                  </label>
+                  <label className="field fieldWide">
+                    <span>Choices</span>
+                    <textarea
+                      className="textarea"
+                      name="customOptionChoices"
+                      rows={3}
+                      value={option.choices}
+                      onChange={(event) => updateCustomOptionRow(index, { choices: event.target.value })}
+                      placeholder={'Black\nSilver\nGold'}
+                    />
+                    <small>Only used for select fields. One choice per line.</small>
+                  </label>
+                  <label className="adminToggle adminVariantToggle">
+                    <input
+                      type="checkbox"
+                      checked={option.required}
+                      onChange={(event) => updateCustomOptionRow(index, { required: event.target.checked })}
+                    />
+                    <span>Required</span>
+                  </label>
+                  <label className="adminToggle adminVariantToggle">
+                    <input
+                      type="checkbox"
+                      checked={option.active}
+                      onChange={(event) => updateCustomOptionRow(index, { active: event.target.checked })}
+                    />
+                    <span>Active</span>
+                  </label>
+                  <button type="button" className="iconButton subtle" onClick={() => removeCustomOptionRow(index)} aria-label="Remove custom option">
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         <label className="field fieldFull">
           <span>Full description</span>

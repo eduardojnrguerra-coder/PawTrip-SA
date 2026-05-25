@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect } from 'react';
 import { Minus, Plus, ShieldCheck, ShoppingBag, Sparkles, Trash2 } from 'lucide-react';
 import { useCart } from '@/components/cart-provider';
-import { calculateCartTotals } from '@/lib/cart';
+import { calculateCartTotals, cartItemKey } from '@/lib/cart';
 import { formatZar } from '@/lib/money';
 import { ProductCard } from '@/components/product-card';
 import { getProductImageAlt, ProductImage } from '@/components/product-image';
@@ -55,7 +55,7 @@ export function CartPageClient() {
           <h1>Your cart</h1>
           <div className="drawerList">
             {totals.items.map((item) => (
-              <div key={item.product.slug} className="drawerItem">
+              <div key={cartItemKey(item)} className="drawerItem">
                 <ProductImage
                   src={item.product.image}
                   alt={getProductImageAlt(item.product.name, item.product.category)}
@@ -65,18 +65,25 @@ export function CartPageClient() {
                 />
                 <div className="drawerItemInfo">
                   <Link href={`/shop/product/${item.product.slug}`}>{item.product.name}</Link>
-                  <span>{formatZar(item.product.price)}</span>
+                  {item.variant ? <small>{item.variant.optionName}: {item.variant.optionValue}</small> : null}
+                  {Object.keys(item.customOptions).length ? (
+                    <small>{Object.entries(item.customOptions).map(([label, value]) => `${label}: ${value}`).join(' · ')}</small>
+                  ) : null}
+                  <span>{formatZar(item.unitPrice)}</span>
+                  {item.product.type === 'kit' || item.product.isBundle ? (
+                    <small>Includes {item.product.whatsIncluded.length} products</small>
+                  ) : null}
                   <div className="qtyRow">
-                    <button type="button" className="qtyButton" onClick={() => decreaseItem(item.product.slug)} aria-label="Decrease quantity">
+                    <button type="button" className="qtyButton" onClick={() => decreaseItem(item.product.slug, item.variantId, item.customOptions)} aria-label="Decrease quantity">
                       <Minus size={14} />
                     </button>
                     <strong>{item.quantity}</strong>
-                    <button type="button" className="qtyButton" onClick={() => addItem(item.product.slug)} aria-label="Increase quantity">
+                    <button type="button" className="qtyButton" onClick={() => addItem(item.product.slug, 1, item.variantId, item.customOptions)} aria-label="Increase quantity">
                       <Plus size={14} />
                     </button>
                   </div>
                 </div>
-                <button type="button" className="iconButton subtle" onClick={() => removeItem(item.product.slug)} aria-label="Remove item">
+                <button type="button" className="iconButton subtle" onClick={() => removeItem(item.product.slug, item.variantId, item.customOptions)} aria-label="Remove item">
                   <Trash2 size={16} />
                 </button>
               </div>

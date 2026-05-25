@@ -19,6 +19,14 @@ export type SupabaseOrder = {
     id: string;
     order_id: string;
     product_id: string | null;
+    variant_id?: string | null;
+    variant_option_name?: string | null;
+    variant_option_value?: string | null;
+    custom_options?: Record<string, string> | null;
+    sku?: string | null;
+    kit_id?: string | null;
+    item_type?: string | null;
+    included_products_snapshot?: Array<Record<string, unknown>> | null;
     product_title: string;
     product_slug: string | null;
     quantity: number;
@@ -94,8 +102,13 @@ export function buildSupabaseOrderInsert(
   order: PendingOrder,
   detailedItems: Array<{
     productSlug: string;
+    variantId?: string | null;
     quantity: number;
-    product: { name: string; price: number; category: string };
+    product: { id?: string; name: string; price: number; category: string; type?: string; isBundle?: boolean; whatsIncluded?: string[] };
+    variant?: { id: string; optionName: string; optionValue: string; price: number; sku?: string | null } | null;
+    customOptions?: Record<string, string>;
+    unitPrice?: number;
+    sku?: string | null;
     lineTotal: number;
   }>,
 ): SupabaseOrderInsert {
@@ -116,8 +129,16 @@ export function buildSupabaseOrderInsert(
       productSlug: item.productSlug,
       name: item.product.name,
       category: item.product.category,
+      variantId: item.variant?.id ?? item.variantId ?? null,
+      variantOptionName: item.variant?.optionName ?? null,
+      variantOptionValue: item.variant?.optionValue ?? null,
+      customOptions: item.customOptions ?? {},
+      sku: item.sku ?? item.variant?.sku ?? null,
+      itemType: item.product.type === 'kit' || item.product.isBundle ? 'kit' : 'product',
+      kitId: item.product.type === 'kit' || item.product.isBundle ? item.product.id ?? null : null,
+      includedProducts: item.product.type === 'kit' || item.product.isBundle ? item.product.whatsIncluded ?? [] : [],
       quantity: item.quantity,
-      unitPrice: item.product.price,
+      unitPrice: item.unitPrice ?? item.variant?.price ?? item.product.price,
       lineTotal: item.lineTotal,
     })),
     subtotal: order.subtotal,
@@ -148,20 +169,39 @@ export async function createSupabaseOrder(
   const orderItems = detailedItems.map((item) => ({
     order_id: orderId,
     product_id: null,
+    variant_id: item.variant?.id ?? item.variantId ?? null,
+    variant_option_name: item.variant?.optionName ?? null,
+    variant_option_value: item.variant?.optionValue ?? null,
+    custom_options: item.customOptions ?? {},
+    sku: item.sku ?? item.variant?.sku ?? null,
+    kit_id: item.product.type === 'kit' || item.product.isBundle ? item.product.id ?? null : null,
+    item_type: item.product.type === 'kit' || item.product.isBundle ? 'kit' : 'product',
+    included_products_snapshot: item.product.type === 'kit' || item.product.isBundle ? item.product.whatsIncluded ?? [] : [],
     product_title: item.product.name,
     product_slug: item.productSlug,
     quantity: item.quantity,
-    unit_price: item.product.price,
+    unit_price: item.unitPrice ?? item.variant?.price ?? item.product.price,
     line_total: item.lineTotal,
   }));
 
-  const itemsInsert = await supabaseRequest<Array<Record<string, unknown>>>('order_items', {
+  let itemsInsert = await supabaseRequest<Array<Record<string, unknown>>>('order_items', {
     method: 'POST',
     headers: {
       Prefer: 'return=representation',
     },
     body: JSON.stringify(orderItems),
   });
+
+  if (itemsInsert.error && /custom_options|variant_id|variant_option_name|variant_option_value|sku|item_type|kit_id|included_products_snapshot|schema cache/i.test(itemsInsert.error)) {
+    const legacyOrderItems = orderItems.map(({ kit_id, item_type, included_products_snapshot, variant_id, variant_option_name, variant_option_value, custom_options, sku, ...item }) => item);
+    itemsInsert = await supabaseRequest<Array<Record<string, unknown>>>('order_items', {
+      method: 'POST',
+      headers: {
+        Prefer: 'return=representation',
+      },
+      body: JSON.stringify(legacyOrderItems),
+    });
+  }
 
   if (itemsInsert.error) {
     return {

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { blogPosts, categorySeoCopy } from '@/lib/catalog';
 import { ProductCard } from '@/components/product-card';
 import { Reveal } from '@/components/reveal';
@@ -13,13 +13,14 @@ import { collections } from '@/data/collections';
 import { getPublicCategories, getProductsByCategoryFromStore } from '@/lib/storefront';
 
 export function generateStaticParams() {
-  return ['travel-kits', 'car-protection', 'toys', 'treats-chews', 'grooming', 'bowls-feeding', 'beds-comfort', 'walking-gear', 'puppy-essentials'].map(
+  return ['travel-kits', 'car-protection', 'dog-toys', 'toys', 'treats-chews', 'grooming', 'bowls-feeding', 'beds-comfort', 'walking-gear', 'puppy-essentials'].map(
     (slug) => ({ slug }),
   );
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
+  if (slug === 'toys') redirect('/shop/category/dog-toys');
   const categories = await getPublicCategories();
   const category = categories.find((entry) => entry.slug === slug);
   if (!category || category.slug === 'all') return {};

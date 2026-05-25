@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { CART_STORAGE_KEY, type CartItem } from '@/lib/cart';
+import { cartItemKey, CART_STORAGE_KEY, type CartCustomOptions, type CartItem } from '@/lib/cart';
 import type { Product } from '@/data/products';
 import { gaItem, trackEvent } from '@/lib/analytics';
 import { triggerMascotReaction } from '@/lib/mascot-events';
@@ -12,10 +12,10 @@ type CartContextValue = {
   items: CartItem[];
   itemCount: number;
   isDrawerOpen: boolean;
-  addItem: (slug: string, quantity?: number) => void;
-  decreaseItem: (slug: string) => void;
-  removeItem: (slug: string) => void;
-  setQuantity: (slug: string, quantity: number) => void;
+  addItem: (slug: string, quantity?: number, variantId?: string | null, customOptions?: CartCustomOptions) => void;
+  decreaseItem: (slug: string, variantId?: string | null, customOptions?: CartCustomOptions) => void;
+  removeItem: (slug: string, variantId?: string | null, customOptions?: CartCustomOptions) => void;
+  setQuantity: (slug: string, quantity: number, variantId?: string | null, customOptions?: CartCustomOptions) => void;
   clearCart: () => void;
   openDrawer: () => void;
   closeDrawer: () => void;
@@ -67,16 +67,17 @@ export function CartProvider({ children, products }: { children: React.ReactNode
   }
 
   const api = useMemo<CartContextValue>(() => {
-    const update = (slug: string, nextQuantity: number) => {
+    const update = (slug: string, nextQuantity: number, variantId?: string | null, customOptions?: CartCustomOptions) => {
       setItems((current) => {
-        const existing = current.find((item) => item.productSlug === slug);
+        const targetKey = cartItemKey({ productSlug: slug, variantId, customOptions });
+        const existing = current.find((item) => cartItemKey(item) === targetKey);
         if (existing) {
           return current
-            .map((item) => (item.productSlug === slug ? { ...item, quantity: nextQuantity } : item))
+            .map((item) => (cartItemKey(item) === targetKey ? { ...item, quantity: nextQuantity } : item))
             .filter((item) => item.quantity > 0);
         }
         if (nextQuantity <= 0) return current;
-        return [...current, { productSlug: slug, quantity: nextQuantity }];
+        return [...current, { productSlug: slug, variantId: variantId ?? null, customOptions: customOptions ?? {}, quantity: nextQuantity }];
       });
     };
 
@@ -84,34 +85,37 @@ export function CartProvider({ children, products }: { children: React.ReactNode
       items,
       itemCount: items.reduce((sum, item) => sum + item.quantity, 0),
       isDrawerOpen,
-      addItem: (slug: string, quantity = 1) => {
+      addItem: (slug: string, quantity = 1, variantId?: string | null, customOptions?: CartCustomOptions) => {
         setItems((current) => {
-          const existing = current.find((item) => item.productSlug === slug);
+          const targetKey = cartItemKey({ productSlug: slug, variantId, customOptions });
+          const existing = current.find((item) => cartItemKey(item) === targetKey);
           const next = existing
-            ? current.map((item) => (item.productSlug === slug ? { ...item, quantity: item.quantity + quantity } : item))
-            : [...current, { productSlug: slug, quantity }];
+            ? current.map((item) => (cartItemKey(item) === targetKey ? { ...item, quantity: item.quantity + quantity } : item))
+            : [...current, { productSlug: slug, variantId: variantId ?? null, customOptions: customOptions ?? {}, quantity }];
           return next;
         });
         setCartBump((value) => value + 1);
         const product = products.find((entry) => entry.slug === slug);
+        const variant = variantId ? product?.variants?.find((entry) => entry.id === variantId) : null;
         if (product) {
           trackEvent('add_to_cart', {
             currency: 'ZAR',
-            value: product.price * quantity,
+            value: (variant?.price ?? product.price) * quantity,
             items: [gaItem(product, quantity)],
           });
         }
         triggerMascotReaction({ action: 'celebrate', message: 'Packed!' });
-        pushToast(`${product?.name ?? 'Item'} added to cart`);
+        pushToast(`${product?.name ?? 'Item'}${variant ? ` (${variant.optionValue})` : ''} added to cart`);
       },
-      decreaseItem: (slug: string) => {
+      decreaseItem: (slug: string, variantId?: string | null, customOptions?: CartCustomOptions) => {
         setItems((current) =>
           current
-            .map((item) => (item.productSlug === slug ? { ...item, quantity: item.quantity - 1 } : item))
+            .map((item) => (cartItemKey(item) === cartItemKey({ productSlug: slug, variantId, customOptions }) ? { ...item, quantity: item.quantity - 1 } : item))
             .filter((item) => item.quantity > 0),
         );
       },
-      removeItem: (slug: string) => setItems((current) => current.filter((item) => item.productSlug !== slug)),
+      removeItem: (slug: string, variantId?: string | null, customOptions?: CartCustomOptions) =>
+        setItems((current) => current.filter((item) => cartItemKey(item) !== cartItemKey({ productSlug: slug, variantId, customOptions }))),
       setQuantity: update,
       clearCart: () => setItems([]),
       openDrawer: () => setIsDrawerOpen(true),

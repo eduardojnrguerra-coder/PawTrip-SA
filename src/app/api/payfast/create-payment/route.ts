@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { calculateCartTotals, type CartItem, type PendingOrder } from '@/lib/cart';
+import { calculateCartTotals, cartItemKey, type CartItem, type PendingOrder } from '@/lib/cart';
 import { createPayFastPayment, generateOrderReference } from '@/lib/payfast';
 import { createSupabaseOrder } from '@/lib/supabase';
 import { getPublicProducts } from '@/lib/storefront';
@@ -53,24 +53,53 @@ function validateCustomer(customer: CreatePaymentRequest['customer']) {
   return cleaned;
 }
 
-function validateCartItems(items: CreatePaymentRequest['items'], productSlugs: Set<string>) {
+function validateCartItems(items: CreatePaymentRequest['items'], products: Awaited<ReturnType<typeof getPublicProducts>>) {
   if (!Array.isArray(items) || items.length === 0) return null;
 
-  const merged = new Map<string, number>();
+  const merged = new Map<string, CartItem>();
+  const productBySlug = new Map(products.map((product) => [product.slug, product]));
 
   for (const item of items) {
     const productSlug = cleanString(item.productSlug);
+    const variantId = cleanString(item.variantId) || null;
+    const customOptions =
+      item.customOptions && typeof item.customOptions === 'object' && !Array.isArray(item.customOptions)
+        ? Object.fromEntries(
+            Object.entries(item.customOptions)
+              .map(([key, value]) => [cleanString(key), cleanString(value)])
+              .filter(([key, value]) => key && value),
+          )
+        : {};
     const quantity = Number(item.quantity);
+    const product = productBySlug.get(productSlug);
 
-    if (!productSlug || !productSlugs.has(productSlug)) return null;
+    if (!productSlug || !product) return null;
+    if (variantId && !product.variants?.some((variant) => variant.id === variantId && variant.active && variant.stockQuantity > 0)) return null;
+    for (const option of product.customOptions?.filter((entry) => entry.active) ?? []) {
+      const value = customOptions[option.label] ?? '';
+      if (option.required && !value) return null;
+      if (option.maxLength && value.length > option.maxLength) return null;
+      if (option.inputType === 'select' && value && option.choices?.length && !option.choices.includes(value)) return null;
+    }
     if (!Number.isInteger(quantity) || quantity < 1 || quantity > 20) return null;
 
-    const nextQuantity = (merged.get(productSlug) ?? 0) + quantity;
+    const key = cartItemKey({ productSlug, variantId, customOptions });
+    const currentQuantity = merged.get(key)?.quantity ?? 0;
+    const nextQuantity = currentQuantity + quantity;
     if (nextQuantity > 20) return null;
-    merged.set(productSlug, nextQuantity);
+    merged.set(key, { productSlug, variantId, customOptions, quantity: nextQuantity });
   }
 
-  return Array.from(merged.entries()).map(([productSlug, quantity]) => ({ productSlug, quantity }));
+  for (const item of merged.values()) {
+    const product = productBySlug.get(item.productSlug);
+    if (!product) return null;
+    const variant = item.variantId ? product.variants?.find((entry) => entry.id === item.variantId && entry.active) : null;
+    const availableStock = variant ? variant.stockQuantity : product.stockQuantity;
+    if (typeof availableStock === 'number' && availableStock <= 0) return null;
+    if (typeof availableStock === 'number' && item.quantity > availableStock) return null;
+  }
+
+  return Array.from(merged.values());
 }
 
 export async function POST(request: Request) {
@@ -86,7 +115,7 @@ export async function POST(request: Request) {
   if (!customer) return badRequest('Missing or invalid customer details.');
 
   const products = await getPublicProducts();
-  const items = validateCartItems(body.items, new Set(products.map((product) => product.slug)));
+  const items = validateCartItems(body.items, products);
   if (!items) return badRequest('Missing or invalid cart items.');
 
   const totals = calculateCartTotals(items, products);

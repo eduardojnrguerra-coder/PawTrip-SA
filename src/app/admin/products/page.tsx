@@ -19,12 +19,15 @@ function productWarnings(product: {
   price?: number | null;
   cost_price?: number | null;
   category_id?: string | null;
+  product_variants?: Array<{ id: string; active?: boolean | null; stock_quantity?: number | null }> | null;
 }) {
   const warnings: string[] = [];
   if (!product.main_image_url) warnings.push('Missing image');
   if (!product.seo_title || !product.seo_description) warnings.push('Missing SEO');
   if (!product.category_id) warnings.push('Missing category');
-  if (Number(product.stock_quantity || 0) <= 0) warnings.push('No stock');
+  const activeVariants = product.product_variants?.filter((variant) => variant.active) ?? [];
+  const totalVariantStock = activeVariants.reduce((sum, variant) => sum + Number(variant.stock_quantity || 0), 0);
+  if (activeVariants.length ? totalVariantStock <= 0 : Number(product.stock_quantity || 0) <= 0) warnings.push('No stock');
   if (product.cost_price !== null && product.cost_price !== undefined && Number(product.price || 0) <= Number(product.cost_price || 0)) {
     warnings.push('Price below cost');
   }
@@ -102,7 +105,14 @@ export default async function AdminProductsPage({
               <div>
                 <strong>R{Number(product.price || 0).toFixed(2)}</strong>
                 <p>Cost: {product.cost_price !== null && product.cost_price !== undefined ? `R${Number(product.cost_price).toFixed(2)}` : 'Not set'}</p>
-                <p>Stock: {Number(product.stock_quantity || 0)} · SKU: {product.sku || 'Not set'}</p>
+                <p>
+                  Stock:{' '}
+                  {product.product_variants?.length
+                    ? product.product_variants.reduce((sum, variant) => sum + Number(variant.stock_quantity || 0), 0)
+                    : Number(product.stock_quantity || 0)}{' '}
+                  · SKU: {product.sku || 'Not set'}
+                </p>
+                {product.product_variants?.length ? <p>{product.product_variants.length} variant(s)</p> : null}
               </div>
               <div>
                 <span className={product.is_active ? 'statusPill status-active' : 'statusPill status-draft'}>

@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { AlertTriangle, Banknote, Package2, ShoppingCart, Tags } from 'lucide-react';
+import { AlertTriangle, Banknote, Boxes, Package2, ShoppingCart, Tags } from 'lucide-react';
 import { AdminShell } from '@/components/admin-shell';
 import { requireAdminUser } from '@/lib/supabase/server';
-import { listOrdersAdmin, listProductsAdmin } from '@/lib/supabase/admin';
+import { listKitsAdmin, listOrdersAdmin, listProductsAdmin } from '@/lib/supabase/admin';
 
 export const metadata: Metadata = {
   title: 'Admin dashboard',
@@ -14,9 +14,10 @@ export const dynamic = 'force-dynamic';
 
 export default async function AdminDashboardPage() {
   await requireAdminUser();
-  const [productsResult, ordersResult] = await Promise.all([listProductsAdmin(), listOrdersAdmin(100)]);
+  const [productsResult, ordersResult, kitsResult] = await Promise.all([listProductsAdmin(), listOrdersAdmin(100), listKitsAdmin()]);
   const products = productsResult.data ?? [];
   const orders = ordersResult.data ?? [];
+  const kits = kitsResult.data ?? [];
   const activeProducts = products.filter((product) => product.is_active).length;
   const draftProducts = products.filter((product) => !product.is_active).length;
   const paidOrders = orders.filter((order) => order.payment_status === 'paid');
@@ -75,6 +76,10 @@ export default async function AdminDashboardPage() {
           <h2>{draftProducts}</h2>
         </div>
         <div className="contentCard detailBlock">
+          <span className="eyebrow">Active kits</span>
+          <h2>{kits.filter((kit) => kit.active).length}</h2>
+        </div>
+        <div className="contentCard detailBlock">
           <span className="eyebrow">Low stock</span>
           <h2>{lowStockProducts}</h2>
         </div>
@@ -127,6 +132,11 @@ export default async function AdminDashboardPage() {
           <Tags size={18} />
           <strong>Manage categories</strong>
           <p>Control the active public menu and category copy.</p>
+        </Link>
+        <Link href="/admin/kits" className="contentCard detailBlock adminQuickCard">
+          <Boxes size={18} />
+          <strong>Manage kits</strong>
+          <p>Create bundles for Shop by Problem and guided shopping.</p>
         </Link>
       </div>
 

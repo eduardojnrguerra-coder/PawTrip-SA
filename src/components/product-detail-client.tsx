@@ -18,6 +18,18 @@ export function ProductDetailClient({ product, related }: { product: Product; re
   const [quantity, setQuantity] = useState(1);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [showMobileBuyBar, setShowMobileBuyBar] = useState(false);
+  const activeVariants = useMemo(
+    () => (product.variants ?? []).filter((variant) => variant.active).sort((a, b) => a.sortOrder - b.sortOrder),
+    [product.variants],
+  );
+  const preferredVariantId = activeVariants.find((variant) => variant.stockQuantity > 0)?.id ?? activeVariants[0]?.id ?? '';
+  const [selectedVariantId, setSelectedVariantId] = useState(preferredVariantId);
+  const activeCustomOptions = useMemo(
+    () => (product.customOptions ?? []).filter((option) => option.active).sort((a, b) => a.sortOrder - b.sortOrder),
+    [product.customOptions],
+  );
+  const [customOptionValues, setCustomOptionValues] = useState<Record<string, string>>({});
+  const [customOptionErrors, setCustomOptionErrors] = useState<Record<string, string>>({});
   const { addItem, products } = useCart();
   const productRecord = product as Partial<Product>;
   const asList = (value: unknown) =>
@@ -92,14 +104,22 @@ export function ProductDetailClient({ product, related }: { product: Product; re
     typeof productRecord.availability === 'string' && productRecord.availability.trim().length > 0
       ? productRecord.availability
       : 'checking_availability';
-  const stockQuantity = typeof productRecord.stockQuantity === 'number' && Number.isFinite(productRecord.stockQuantity) ? productRecord.stockQuantity : null;
+  const selectedVariant = activeVariants.find((variant) => variant.id === selectedVariantId) ?? activeVariants[0] ?? null;
+  const stockQuantity =
+    selectedVariant
+      ? selectedVariant.stockQuantity
+      : typeof productRecord.stockQuantity === 'number' && Number.isFinite(productRecord.stockQuantity)
+        ? productRecord.stockQuantity
+        : null;
   const shippingClass =
     typeof productRecord.shippingClass === 'string' && productRecord.shippingClass.trim().length > 0
       ? productRecord.shippingClass
       : 'standard';
-  const price = typeof productRecord.price === 'number' && Number.isFinite(productRecord.price) ? productRecord.price : 0;
+  const price = selectedVariant?.price ?? (typeof productRecord.price === 'number' && Number.isFinite(productRecord.price) ? productRecord.price : 0);
   const compareAtPrice =
-    typeof productRecord.compareAtPrice === 'number' && Number.isFinite(productRecord.compareAtPrice) && productRecord.compareAtPrice > 0
+    selectedVariant?.compareAtPrice && selectedVariant.compareAtPrice > 0
+      ? selectedVariant.compareAtPrice
+      : typeof productRecord.compareAtPrice === 'number' && Number.isFinite(productRecord.compareAtPrice) && productRecord.compareAtPrice > 0
       ? productRecord.compareAtPrice
       : price;
   const image = galleryImages[selected] ?? fallbackImage;
@@ -107,6 +127,7 @@ export function ProductDetailClient({ product, related }: { product: Product; re
   const isOutOfStock = stockQuantity === 0;
   const stockMessage = stockQuantity === null ? availability.replaceAll('_', ' ') : stockQuantity > 10 ? 'In stock' : stockQuantity > 0 ? 'Low stock' : 'Out of stock';
   const stockClass = stockQuantity === 0 ? 'stockOut' : stockQuantity !== null && stockQuantity <= 10 ? 'stockLow' : 'stockIn';
+  const isDogToy = categorySlug === 'dog-toys' || categorySlug === 'toys' || categoryValue.toLowerCase().includes('toy');
   const needsSupplierImages = process.env.NODE_ENV === 'development' && product.sourcePermissionStatus !== 'supplier_permission_confirmed';
   const faqItems =
     safeFaqs.length > 0
@@ -134,7 +155,10 @@ export function ProductDetailClient({ product, related }: { product: Product; re
   useEffect(() => {
     setSelected(0);
     setQuantity(1);
-  }, [product.slug]);
+    setSelectedVariantId(preferredVariantId);
+    setCustomOptionValues({});
+    setCustomOptionErrors({});
+  }, [preferredVariantId, product.slug]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -160,6 +184,42 @@ export function ProductDetailClient({ product, related }: { product: Product; re
       else showPreviousImage();
     }
     setTouchStart(null);
+  }
+
+  function updateCustomOption(optionId: string, value: string) {
+    setCustomOptionValues((current) => ({ ...current, [optionId]: value }));
+    setCustomOptionErrors((current) => ({ ...current, [optionId]: '' }));
+  }
+
+  function buildCustomOptionsForCart() {
+    const nextErrors: Record<string, string> = {};
+    const cleaned: Record<string, string> = {};
+
+    for (const option of activeCustomOptions) {
+      const value = (customOptionValues[option.id] ?? '').trim();
+      if (option.required && !value) {
+        nextErrors[option.id] = `${option.label} is required.`;
+        continue;
+      }
+      if (option.maxLength && value.length > option.maxLength) {
+        nextErrors[option.id] = `${option.label} must be ${option.maxLength} characters or fewer.`;
+        continue;
+      }
+      if (option.inputType === 'select' && value && option.choices?.length && !option.choices.includes(value)) {
+        nextErrors[option.id] = `Choose a valid ${option.label.toLowerCase()}.`;
+        continue;
+      }
+      if (value) cleaned[option.label] = value;
+    }
+
+    setCustomOptionErrors(nextErrors);
+    return Object.keys(nextErrors).length ? null : cleaned;
+  }
+
+  function handleAddToCart() {
+    const customOptions = buildCustomOptionsForCart();
+    if (!customOptions) return;
+    addItem(product.slug, quantity, selectedVariant?.id ?? null, customOptions);
   }
 
   const badges = useMemo(
@@ -386,6 +446,12 @@ export function ProductDetailClient({ product, related }: { product: Product; re
             <p>Wipe clean where needed and allow the product to dry fully before storing.</p>
           )}
         </div>
+        {isDogToy ? (
+          <div className="contentCard detailBlock">
+            <h2>Safety note</h2>
+            <p>Always supervise your dog during play. Remove the toy if damaged or if small parts become loose.</p>
+          </div>
+        ) : null}
         <div className="contentCard detailBlock">
           <h2>Delivery info</h2>
           <p>{deliveryNote}</p>
@@ -452,6 +518,79 @@ export function ProductDetailClient({ product, related }: { product: Product; re
           {product.isBundle && savings > 0 ? (
             <div className="bundleSavingsCallout">Save {formatZar(savings)} with this bundle compared with the listed compare-at price.</div>
           ) : null}
+          {activeVariants.length ? (
+            <div className="variantSelector" aria-label={`${activeVariants[0]?.optionName || 'Option'} selector`}>
+              <span>{activeVariants[0]?.optionName || 'Option'}</span>
+              <div className="variantOptionGrid">
+                {activeVariants.map((variant) => {
+                  const disabled = variant.stockQuantity <= 0;
+                  return (
+                    <button
+                      type="button"
+                      key={variant.id}
+                      className={selectedVariant?.id === variant.id ? 'variantOption variantOptionActive' : 'variantOption'}
+                      onClick={() => {
+                        setSelectedVariantId(variant.id);
+                        setQuantity(1);
+                      }}
+                      disabled={disabled}
+                    >
+                      <strong>{variant.optionValue}</strong>
+                      <small>
+                        {formatZar(variant.price)} · {disabled ? 'Out of stock' : `${variant.stockQuantity} available`}
+                      </small>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+          {activeCustomOptions.length ? (
+            <div className="customOptionPanel">
+              <span>Personalisation details</span>
+              <p>Enter engraving or custom details exactly as they should appear. Please double-check spelling before adding to cart.</p>
+              <div className="customOptionGrid">
+                {activeCustomOptions.map((option) => (
+                  <label className="field" key={option.id}>
+                    <span>
+                      {option.label}
+                      {option.required ? ' *' : ''}
+                    </span>
+                    {option.inputType === 'textarea' ? (
+                      <textarea
+                        className="textarea"
+                        value={customOptionValues[option.id] ?? ''}
+                        onChange={(event) => updateCustomOption(option.id, event.target.value)}
+                        placeholder={option.placeholder ?? ''}
+                        maxLength={option.maxLength ?? undefined}
+                        rows={3}
+                      />
+                    ) : option.inputType === 'select' ? (
+                      <select className="input" value={customOptionValues[option.id] ?? ''} onChange={(event) => updateCustomOption(option.id, event.target.value)}>
+                        <option value="">Choose an option</option>
+                        {(option.choices ?? []).map((choice) => (
+                          <option value={choice} key={choice}>
+                            {choice}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        className="input"
+                        value={customOptionValues[option.id] ?? ''}
+                        onChange={(event) => updateCustomOption(option.id, event.target.value)}
+                        placeholder={option.placeholder ?? ''}
+                        maxLength={option.maxLength ?? undefined}
+                      />
+                    )}
+                    {option.helpText ? <small>{option.helpText}</small> : null}
+                    {option.maxLength ? <small>{(customOptionValues[option.id] ?? '').length}/{option.maxLength} characters</small> : null}
+                    {customOptionErrors[option.id] ? <small className="fieldError">{customOptionErrors[option.id]}</small> : null}
+                  </label>
+                ))}
+              </div>
+            </div>
+          ) : null}
           <div className={`availabilityNote ${stockClass}`}>
             {stockMessage}
             {stockQuantity !== null && stockQuantity > 0 && stockQuantity <= 10 ? `: ${stockQuantity} left` : null}
@@ -461,11 +600,16 @@ export function ProductDetailClient({ product, related }: { product: Product; re
               <Minus size={16} />
             </button>
             <strong>{quantity}</strong>
-            <button type="button" className="quantityButton" onClick={() => setQuantity((value) => value + 1)} aria-label="Increase quantity">
+            <button
+              type="button"
+              className="quantityButton"
+              onClick={() => setQuantity((value) => (stockQuantity && stockQuantity > 0 ? Math.min(stockQuantity, value + 1) : value + 1))}
+              aria-label="Increase quantity"
+            >
               <Plus size={16} />
             </button>
           </div>
-          <button type="button" className="button buttonPrimary" onClick={() => addItem(product.slug, quantity)} disabled={isOutOfStock}>
+          <button type="button" className="button buttonPrimary" onClick={handleAddToCart} disabled={isOutOfStock}>
             {isOutOfStock ? 'Out of stock' : 'Add to cart'}
           </button>
           <div className="purchaseTrustRow">
@@ -538,11 +682,11 @@ export function ProductDetailClient({ product, related }: { product: Product; re
             <Minus size={14} />
           </button>
           <strong>{quantity}</strong>
-          <button type="button" onClick={() => setQuantity((value) => value + 1)} aria-label="Increase quantity">
+          <button type="button" onClick={() => setQuantity((value) => (stockQuantity && stockQuantity > 0 ? Math.min(stockQuantity, value + 1) : value + 1))} aria-label="Increase quantity">
             <Plus size={14} />
           </button>
         </div>
-        <button type="button" className="button buttonPrimary buttonSheen" onClick={() => addItem(product.slug, quantity)} disabled={isOutOfStock}>
+        <button type="button" className="button buttonPrimary buttonSheen" onClick={handleAddToCart} disabled={isOutOfStock}>
           {isOutOfStock ? 'Out' : 'Add'}
         </button>
       </div>

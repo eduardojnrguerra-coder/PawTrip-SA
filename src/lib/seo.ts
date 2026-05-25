@@ -113,10 +113,10 @@ export function productSchema(product: Product) {
         ? [product.image]
         : [defaultOgImage];
   const price = typeof product.price === 'number' && Number.isFinite(product.price) ? product.price : 0;
+  const activeVariants = product.variants?.filter((variant) => variant.active) ?? [];
   const offer: Record<string, unknown> = {
-    '@type': 'Offer',
+    '@type': activeVariants.length ? 'AggregateOffer' : 'Offer',
     priceCurrency: 'ZAR',
-    price: price.toFixed(2),
     url: absoluteUrl(`/shop/product/${product.slug}`),
     itemCondition: 'https://schema.org/NewCondition',
     seller: {
@@ -163,6 +163,15 @@ export function productSchema(product: Product) {
   };
 
   const isInStock = typeof product.stockQuantity === 'number' ? product.stockQuantity > 0 : product.availability === 'in_stock';
+
+  if (activeVariants.length) {
+    const prices = activeVariants.map((variant) => variant.price).filter((variantPrice) => Number.isFinite(variantPrice));
+    offer.lowPrice = Math.min(...prices).toFixed(2);
+    offer.highPrice = Math.max(...prices).toFixed(2);
+    offer.offerCount = activeVariants.length;
+  } else {
+    offer.price = price.toFixed(2);
+  }
 
   offer.availability =
     isInStock
@@ -245,8 +254,8 @@ export function blogPostingSchema(post: BlogPost) {
 
 export function categoryMetadata(category: Category) {
   return pageMetadata({
-    title: `${category.name} South Africa`,
-    description: category.description,
+    title: category.seoTitle || `${category.name} South Africa`,
+    description: category.seoDescription || category.description,
     path: `/shop/category/${category.slug}`,
     keywords: [`${category.name.toLowerCase()} South Africa`, 'PawTrip SA', 'dog products South Africa'],
   });

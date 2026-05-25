@@ -15,7 +15,7 @@ export function SiteFooter() {
           <h3>Shop</h3>
           <Link href="/shop/category/travel-kits">Travel Kits</Link>
           <Link href="/shop/category/car-protection">Car Protection</Link>
-          <Link href="/shop/category/toys">Toys</Link>
+          <Link href="/shop/category/dog-toys">Dog Toys</Link>
           <Link href="/collections/under-r250">Under R250</Link>
           <Link href="/collections/car-protection-essentials">Car Protection Essentials</Link>
         </div>

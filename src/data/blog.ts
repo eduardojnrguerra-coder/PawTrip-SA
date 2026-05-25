@@ -650,7 +650,7 @@ const starterBlogPosts: BlogPost[] = [
       { question: 'How many toys does a bored dog need?', answer: 'A small rotation is better than a pile. Two or three useful toy types can cover chewing, sniffing and settling.' },
     ],
     internalLinks: [
-      { label: 'Shop Toys', href: '/shop/category/toys' },
+      { label: 'Shop Dog Toys', href: '/shop/category/dog-toys' },
       { label: 'Compare lick mats and snuffle mats', href: '/blog/lick-mats-vs-snuffle-mats' },
       { label: 'Shop bored dog fixes', href: '/collections/bored-dog-fixes' },
     ],
@@ -687,7 +687,7 @@ const starterBlogPosts: BlogPost[] = [
       { question: 'What treats work in a snuffle mat?', answer: 'Small dry treats usually work best because they are easier to hide and cleaner to remove.' },
     ],
     internalLinks: [
-      { label: 'Shop Toys', href: '/shop/category/toys' },
+      { label: 'Shop Dog Toys', href: '/shop/category/dog-toys' },
       { label: 'Best toys for bored dogs', href: '/blog/best-toys-bored-dogs-destroy-everything' },
       { label: 'Shop Treats', href: '/shop/category/treats-chews' },
     ],

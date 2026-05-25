@@ -6,19 +6,15 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Minus, Plus, ShieldCheck, ShoppingBag, Sparkles, Trash2, X } from 'lucide-react';
 import { useCart } from '@/components/cart-provider';
 import { formatZar } from '@/lib/money';
+import { calculateCartTotals, cartItemKey } from '@/lib/cart';
 import { getProductImageAlt, ProductImage } from '@/components/product-image';
 import { trackEvent } from '@/lib/analytics';
 
 export function CartDrawer() {
   const { items, isDrawerOpen, closeDrawer, addItem, decreaseItem, removeItem, products } = useCart();
   const reduceMotion = useReducedMotion();
-  const detailed = items
-    .map((item) => {
-      const product = products.find((entry) => entry.slug === item.productSlug);
-      return product ? { ...item, product, lineTotal: product.price * item.quantity } : null;
-    })
-    .filter(Boolean);
-
+  const totals = calculateCartTotals(items, products);
+  const detailed = totals.items;
   const subtotal = detailed.reduce((sum, item) => sum + item!.lineTotal, 0);
   const deliveryThreshold = 1200;
   const thresholdRemaining = Math.max(0, deliveryThreshold - subtotal);
@@ -76,7 +72,7 @@ export function CartDrawer() {
             {detailed.length ? (
               <div className="drawerList">
                 {detailed.map((entry) => (
-                  <div key={entry!.product.slug} className="drawerItem">
+                  <div key={cartItemKey(entry)} className="drawerItem">
                     <ProductImage
                       src={entry!.product.image}
                       alt={getProductImageAlt(entry!.product.name, entry!.product.category)}
@@ -88,18 +84,25 @@ export function CartDrawer() {
                       <Link href={`/shop/product/${entry!.product.slug}`} onClick={closeDrawer}>
                         {entry!.product.name}
                       </Link>
-                      <span>{formatZar(entry!.product.price)}</span>
+                      {entry.variant ? <small>{entry.variant.optionName}: {entry.variant.optionValue}</small> : null}
+                      {Object.keys(entry.customOptions).length ? (
+                        <small>{Object.entries(entry.customOptions).map(([label, value]) => `${label}: ${value}`).join(' · ')}</small>
+                      ) : null}
+                      <span>{formatZar(entry!.unitPrice)}</span>
+                      {entry!.product.type === 'kit' || entry!.product.isBundle ? (
+                        <small>Includes {entry!.product.whatsIncluded.length} products</small>
+                      ) : null}
                       <div className="qtyRow">
-                        <button type="button" className="qtyButton" onClick={() => decreaseItem(entry!.product.slug)} aria-label="Decrease quantity">
+                        <button type="button" className="qtyButton" onClick={() => decreaseItem(entry!.product.slug, entry!.variantId, entry!.customOptions)} aria-label="Decrease quantity">
                           <Minus size={14} />
                         </button>
                         <strong>{entry!.quantity}</strong>
-                        <button type="button" className="qtyButton" onClick={() => addItem(entry!.product.slug)} aria-label="Increase quantity">
+                        <button type="button" className="qtyButton" onClick={() => addItem(entry!.product.slug, 1, entry!.variantId, entry!.customOptions)} aria-label="Increase quantity">
                           <Plus size={14} />
                         </button>
                       </div>
                     </div>
-                    <button type="button" className="iconButton subtle" onClick={() => removeItem(entry!.product.slug)} aria-label="Remove item">
+                    <button type="button" className="iconButton subtle" onClick={() => removeItem(entry!.product.slug, entry!.variantId, entry!.customOptions)} aria-label="Remove item">
                       <Trash2 size={16} />
                     </button>
                   </div>
@@ -131,7 +134,12 @@ export function CartDrawer() {
                 <div className="drawerCrossSell">
                   <strong>Complete your kit</strong>
                   {suggestions.map((product) => (
-                    <button type="button" key={product!.slug} className="drawerAddOn" onClick={() => addItem(product!.slug)}>
+                    <button
+                      type="button"
+                      key={product!.slug}
+                      className="drawerAddOn"
+                      onClick={() => addItem(product!.slug, 1, product!.variants?.find((variant) => variant.active && variant.stockQuantity > 0)?.id ?? product!.variants?.find((variant) => variant.active)?.id ?? null)}
+                    >
                       <span>{product!.name}</span>
                       <small>{formatZar(product!.price)}</small>
                     </button>

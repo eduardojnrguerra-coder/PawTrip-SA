@@ -46,7 +46,7 @@ const shopNeeds = [
   {
     title: 'Bored chewing',
     copy: 'Chew, sniff, lick and puzzle products for dogs with demolition energy.',
-    href: '/collections/bored-dog-fixes',
+    href: '/shop/category/dog-toys',
     icon: <Bone size={20} />,
   },
   {
@@ -94,7 +94,7 @@ export default async function HomePage() {
   const starterKits = products.filter((product) => product.isBundle).slice(0, 6);
   const bestSellers = featured.slice(0, 4);
   const coreCategories = categories.filter((category) =>
-    ['travel-kits', 'car-protection', 'toys', 'grooming'].includes(category.slug),
+    ['travel-kits', 'car-protection', 'dog-toys', 'grooming'].includes(category.slug),
   );
   const guideTeasers = blogPosts.slice(0, 3);
 

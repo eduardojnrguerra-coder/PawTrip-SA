@@ -48,6 +48,77 @@ create table if not exists public.product_faqs (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.product_variants (
+  id uuid primary key default gen_random_uuid(),
+  product_id uuid not null references public.products(id) on delete cascade,
+  option_name text not null default 'Size',
+  option_value text not null,
+  price numeric(10,2) not null check (price > 0),
+  compare_at_price numeric(10,2),
+  cost_price numeric(10,2),
+  sku text,
+  stock_quantity integer not null default 0 check (stock_quantity >= 0),
+  active boolean not null default true,
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint product_variants_compare_at_price_check check (compare_at_price is null or compare_at_price > price)
+);
+
+create table if not exists public.product_custom_options (
+  id uuid primary key default gen_random_uuid(),
+  product_id uuid not null references public.products(id) on delete cascade,
+  label text not null,
+  input_type text not null default 'text' check (input_type in ('text', 'textarea', 'select')),
+  required boolean not null default false,
+  help_text text,
+  placeholder text,
+  max_length integer,
+  choices text[] not null default '{}',
+  active boolean not null default true,
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.kits (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  slug text not null unique,
+  category text,
+  category_id uuid references public.categories(id) on delete set null,
+  problem_key text,
+  short_description text,
+  full_description text,
+  why_it_helps text,
+  price numeric(10,2) not null check (price > 0),
+  compare_at_price numeric(10,2),
+  cost_price numeric(10,2),
+  image_url text,
+  image_alt text,
+  badge_text text,
+  savings_text text,
+  best_for text[] not null default '{}',
+  active boolean not null default true,
+  featured boolean not null default false,
+  sort_order integer not null default 0,
+  seo_title text,
+  seo_description text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint kits_compare_at_price_check check (compare_at_price is null or compare_at_price > price)
+);
+
+create table if not exists public.kit_items (
+  id uuid primary key default gen_random_uuid(),
+  kit_id uuid not null references public.kits(id) on delete cascade,
+  product_id uuid references public.products(id) on delete restrict,
+  variant_id uuid,
+  quantity integer not null default 1 check (quantity > 0),
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now()
+);
+
 create table if not exists public.orders (
   id uuid primary key default gen_random_uuid(),
   order_reference text unique not null,
@@ -70,6 +141,14 @@ create table if not exists public.order_items (
   id uuid primary key default gen_random_uuid(),
   order_id uuid not null references public.orders(id) on delete cascade,
   product_id uuid references public.products(id) on delete set null,
+  variant_id uuid references public.product_variants(id) on delete set null,
+  variant_option_name text,
+  variant_option_value text,
+  custom_options jsonb not null default '{}'::jsonb,
+  sku text,
+  kit_id uuid references public.kits(id) on delete set null,
+  item_type text not null default 'product',
+  included_products_snapshot jsonb not null default '[]'::jsonb,
   product_title text not null,
   product_slug text,
   quantity integer not null check (quantity > 0),
@@ -83,6 +162,11 @@ create index if not exists products_active_idx on public.products (is_active, is
 create index if not exists products_category_idx on public.products (category_id);
 create index if not exists products_slug_idx on public.products (slug);
 create index if not exists product_faqs_product_idx on public.product_faqs (product_id, sort_order);
+create index if not exists product_variants_product_idx on public.product_variants (product_id, active, sort_order);
+create index if not exists product_custom_options_product_idx on public.product_custom_options (product_id, active, sort_order);
+create index if not exists kits_active_idx on public.kits (active, featured, sort_order);
+create index if not exists kits_slug_idx on public.kits (slug);
+create index if not exists kit_items_kit_id_idx on public.kit_items (kit_id, sort_order);
 create index if not exists orders_payment_status_idx on public.orders (payment_status);
 create index if not exists orders_fulfillment_status_idx on public.orders (fulfillment_status);
 create index if not exists orders_created_at_idx on public.orders (created_at desc);
@@ -91,6 +175,10 @@ create index if not exists order_items_order_id_idx on public.order_items (order
 alter table public.categories enable row level security;
 alter table public.products enable row level security;
 alter table public.product_faqs enable row level security;
+alter table public.product_variants enable row level security;
+alter table public.product_custom_options enable row level security;
+alter table public.kits enable row level security;
+alter table public.kit_items enable row level security;
 alter table public.orders enable row level security;
 alter table public.order_items enable row level security;
 
@@ -109,6 +197,26 @@ create policy "Public can read product faqs"
   on public.product_faqs for select
   using (true);
 
+drop policy if exists "Public can read active product variants" on public.product_variants;
+create policy "Public can read active product variants"
+  on public.product_variants for select
+  using (active = true and exists (select 1 from public.products where products.id = product_variants.product_id and products.is_active = true));
+
+drop policy if exists "Public can read active product custom options" on public.product_custom_options;
+create policy "Public can read active product custom options"
+  on public.product_custom_options for select
+  using (active = true and exists (select 1 from public.products where products.id = product_custom_options.product_id and products.is_active = true));
+
+drop policy if exists "Public can read active kits" on public.kits;
+create policy "Public can read active kits"
+  on public.kits for select
+  using (active = true);
+
+drop policy if exists "Public can read active kit items" on public.kit_items;
+create policy "Public can read active kit items"
+  on public.kit_items for select
+  using (exists (select 1 from public.kits where kits.id = kit_items.kit_id and kits.active = true));
+
 drop policy if exists "Service role manages categories" on public.categories;
 create policy "Service role manages categories"
   on public.categories for all
@@ -124,6 +232,30 @@ create policy "Service role manages products"
 drop policy if exists "Service role manages product faqs" on public.product_faqs;
 create policy "Service role manages product faqs"
   on public.product_faqs for all
+  using (auth.role() = 'service_role')
+  with check (auth.role() = 'service_role');
+
+drop policy if exists "Service role manages product variants" on public.product_variants;
+create policy "Service role manages product variants"
+  on public.product_variants for all
+  using (auth.role() = 'service_role')
+  with check (auth.role() = 'service_role');
+
+drop policy if exists "Service role manages product custom options" on public.product_custom_options;
+create policy "Service role manages product custom options"
+  on public.product_custom_options for all
+  using (auth.role() = 'service_role')
+  with check (auth.role() = 'service_role');
+
+drop policy if exists "Service role manages kits" on public.kits;
+create policy "Service role manages kits"
+  on public.kits for all
+  using (auth.role() = 'service_role')
+  with check (auth.role() = 'service_role');
+
+drop policy if exists "Service role manages kit items" on public.kit_items;
+create policy "Service role manages kit items"
+  on public.kit_items for all
   using (auth.role() = 'service_role')
   with check (auth.role() = 'service_role');
 
@@ -144,7 +276,8 @@ values
   ('Car Protection', 'car-protection', 'Seat covers, boot liners and cleanup gear for dog travel mess.', 1, true),
   ('Travel Kits', 'travel-kits', 'Practical dog travel setups and bundle-first essentials.', 2, true),
   ('Bowls & Feeding', 'bowls-feeding', 'Travel bowls, slow feeders and useful feeding accessories.', 3, true),
-  ('Grooming', 'grooming', 'Paw cleaning, hair removal and practical cleanup basics.', 4, true)
+  ('Grooming', 'grooming', 'Paw cleaning, hair removal and practical cleanup basics.', 4, true),
+  ('Dog Toys', 'dog-toys', 'Practical enrichment toys, chew toys and boredom-busting picks for happier dogs at home, in the car and between adventures.', 5, true)
 on conflict (slug) do update
 set
   name = excluded.name,

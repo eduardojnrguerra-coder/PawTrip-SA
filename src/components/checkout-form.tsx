@@ -68,14 +68,26 @@ function cleanPaymentError(message: string) {
 export function CheckoutForm() {
   const { items, products } = useCart();
   const totals = useMemo(() => calculateCartTotals(items, products), [items, products]);
-  const invalidItems = useMemo(() => items.filter((item) => !products.some((product) => product.slug === item.productSlug)), [items, products]);
+  const invalidItems = useMemo(
+    () =>
+      items.filter((item) => {
+        const product = products.find((entry) => entry.slug === item.productSlug);
+        if (!product) return true;
+        const activeRequiredOptions = product.customOptions?.filter((option) => option.active && option.required) ?? [];
+        const customOptions = item.customOptions ?? {};
+        if (activeRequiredOptions.some((option) => !(customOptions[option.label] ?? '').trim())) return true;
+        if (!item.variantId) return typeof product.stockQuantity === 'number' && product.stockQuantity <= 0;
+        return !product.variants?.some((variant) => variant.id === item.variantId && variant.active && variant.stockQuantity > 0);
+      }),
+    [items, products],
+  );
   const [form, setForm] = useState<FormState>(emptyState);
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
   const [submitError, setSubmitError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
-  const compareAtSubtotal = totals.items.reduce((sum, item) => sum + item.product.compareAtPrice * item.quantity, 0);
+  const compareAtSubtotal = totals.items.reduce((sum, item) => sum + item.compareAtPrice * item.quantity, 0);
   const savings = Math.max(0, compareAtSubtotal - totals.subtotal);
   const cartIssue =
     itemCount === 0
@@ -126,7 +138,12 @@ export function CheckoutForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           customer: form,
-          items: items.map((item) => ({ productSlug: item.productSlug, quantity: item.quantity })),
+          items: items.map((item) => ({
+            productSlug: item.productSlug,
+            variantId: item.variantId ?? null,
+            customOptions: item.customOptions ?? {},
+            quantity: item.quantity,
+          })),
         }),
       });
 

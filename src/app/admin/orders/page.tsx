@@ -87,7 +87,12 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
                   <strong>Items</strong>
                   <ul>
                     {(order.order_items?.length
-                      ? order.order_items.map((item) => ({ key: item.id, label: `${item.product_title} x ${item.quantity}` }))
+                      ? order.order_items.map((item) => ({
+                          key: item.id,
+                          label: `${item.product_title}${item.variant_option_value ? ` (${item.variant_option_value})` : ''}${
+                            item.custom_options && Object.keys(item.custom_options).length ? ` - ${Object.entries(item.custom_options).map(([label, value]) => `${label}: ${value}`).join(', ')}` : ''
+                          } x ${item.quantity}`,
+                        }))
                       : Array.isArray(order.items)
                         ? order.items.map((item, index) => ({
                             key: `${order.id}-${index}`,

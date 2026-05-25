@@ -68,7 +68,7 @@ export const educationBlocks: EducationBlock[] = [
 
 export function getEducationBlocksForCategory(slug: string) {
   if (slug === 'car-protection') return educationBlocks.slice(0, 2);
-  if (slug === 'toys') return educationBlocks.filter((block) => block.title === 'Lick mat vs snuffle mat');
+  if (slug === 'dog-toys' || slug === 'toys') return educationBlocks.filter((block) => block.title === 'Lick mat vs snuffle mat');
   if (slug === 'bowls-feeding') return educationBlocks.filter((block) => block.title === 'Slow feeder vs normal bowl');
   if (slug === 'walking-gear') return educationBlocks.filter((block) => block.title === 'Harness vs leash only');
   if (slug === 'travel-kits' || slug === 'beds-comfort') return educationBlocks.filter((block) => block.title === 'Ramp vs lifting your dog');

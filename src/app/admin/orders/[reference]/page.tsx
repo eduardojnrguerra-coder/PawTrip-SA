@@ -125,8 +125,18 @@ export default async function AdminOrderDetailPage({
           {(order.order_items?.length ? order.order_items : []).map((item) => (
             <div className="adminSimpleRow" key={item.id}>
               <div>
-                <strong>{item.product_title}</strong>
-                <p>{item.product_slug || 'No product slug'} x {item.quantity}</p>
+                <strong>{item.item_type === 'kit' ? `${item.product_title} kit` : item.product_title}</strong>
+                <p>
+                  {item.product_slug || 'No product slug'} x {item.quantity}
+                  {item.variant_option_value ? ` · ${item.variant_option_name || 'Variant'}: ${item.variant_option_value}` : ''}
+                </p>
+                {item.sku ? <p>SKU: {item.sku}</p> : null}
+                {item.custom_options && Object.keys(item.custom_options).length ? (
+                  <p>Custom: {Object.entries(item.custom_options).map(([label, value]) => `${label}: ${value}`).join(' · ')}</p>
+                ) : null}
+                {item.included_products_snapshot?.length ? (
+                  <p>Includes: {item.included_products_snapshot.join(', ')}</p>
+                ) : null}
               </div>
               <div>
                 <strong>{formatZar(Number(item.line_total))}</strong>

@@ -11,10 +11,14 @@ import { getProductImageAlt, ProductImage } from '@/components/product-image';
 export function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart();
   const reduceMotion = useReducedMotion();
-  const savings = Math.max(0, (product.compareAtPrice ?? product.price ?? 0) - (product.price ?? 0));
   const problemHeadline = product.problemsSolved?.[0] ?? product.shortDescription ?? 'Practical everyday dog gear.';
   const whyItHelps = product.benefits?.[0] ?? product.shortDescription ?? 'Useful for cleaner, calmer everyday routines.';
   const bestForLine = product.bestFor?.slice(0, 2).join(' | ') || product.categoryName || 'Everyday dog-owner routines';
+  const defaultVariant = product.variants?.find((variant) => variant.active && variant.stockQuantity > 0) ?? product.variants?.find((variant) => variant.active);
+  const displayPrice = defaultVariant?.price ?? product.price;
+  const displayCompareAtPrice = defaultVariant?.compareAtPrice ?? product.compareAtPrice;
+  const savings = Math.max(0, (displayCompareAtPrice ?? displayPrice ?? 0) - (displayPrice ?? 0));
+  const needsCustomisation = product.customOptions?.some((option) => option.active);
 
   if (!product.launchVisible || !product.imageReady || !product.slug) return null;
 
@@ -48,8 +52,8 @@ export function ProductCard({ product }: { product: Product }) {
           <strong>Why it helps:</strong> {whyItHelps}
         </p>
         <div className="priceRow">
-          <strong>{formatZar(product.price)}</strong>
-          {product.compareAtPrice > product.price ? <span>{formatZar(product.compareAtPrice)}</span> : null}
+          <strong>{product.variants?.length ? 'From ' : ''}{formatZar(displayPrice)}</strong>
+          {displayCompareAtPrice > displayPrice ? <span>{formatZar(displayCompareAtPrice)}</span> : null}
         </div>
         {savings > 0 ? (
           <div className={product.isBundle ? 'bundleSavingsCallout' : 'savingsCallout'}>
@@ -61,9 +65,15 @@ export function ProductCard({ product }: { product: Product }) {
           <span>Best for: {bestForLine}</span>
         </div>
         <div className="cardActions">
-          <button type="button" className="button buttonPrimary buttonSmall" onClick={() => addItem(product.slug)}>
-            Add to cart
-          </button>
+          {needsCustomisation ? (
+            <Link href={`/shop/product/${product.slug}`} className="button buttonPrimary buttonSmall">
+              Customise
+            </Link>
+          ) : (
+            <button type="button" className="button buttonPrimary buttonSmall" onClick={() => addItem(product.slug, 1, defaultVariant?.id ?? null)}>
+              Add to cart
+            </button>
+          )}
           <Link href={`/shop/product/${product.slug}`} className="button buttonGhost buttonSmall">
             View product <ArrowRight size={14} />
           </Link>

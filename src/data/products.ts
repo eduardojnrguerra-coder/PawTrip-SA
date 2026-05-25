@@ -53,6 +53,34 @@ export type Product = {
   returnsNote?: string;
   keywords?: string[];
   stockQuantity?: number;
+  variants?: ProductVariant[];
+  customOptions?: ProductCustomOption[];
+};
+
+export type ProductVariant = {
+  id: string;
+  optionName: string;
+  optionValue: string;
+  price: number;
+  compareAtPrice?: number | null;
+  costPrice?: number | null;
+  sku?: string | null;
+  stockQuantity: number;
+  active: boolean;
+  sortOrder: number;
+};
+
+export type ProductCustomOption = {
+  id: string;
+  label: string;
+  inputType: 'text' | 'textarea' | 'select';
+  required: boolean;
+  helpText?: string | null;
+  placeholder?: string | null;
+  maxLength?: number | null;
+  choices?: string[];
+  active: boolean;
+  sortOrder: number;
 };
 
 export type InternalProduct = Product & {
@@ -66,6 +94,8 @@ export type Category = {
   slug: CategorySlug | 'all';
   name: string;
   description: string;
+  seoTitle?: string;
+  seoDescription?: string;
 };
 
 const deliveryNote = 'Delivery estimates depend on product availability and customer location.';
@@ -74,7 +104,7 @@ const returnNote = 'Unused items can be returned in line with our returns policy
 const categoryMap: Record<string, { slug: CategorySlug; name: string }> = {
   travel: { slug: 'travel-kits', name: 'Travel Kits' },
   car: { slug: 'car-protection', name: 'Car Protection' },
-  toys: { slug: 'toys', name: 'Toys' },
+  toys: { slug: 'dog-toys', name: 'Dog Toys' },
   treats: { slug: 'treats-chews', name: 'Treats & Chews' },
   grooming: { slug: 'grooming', name: 'Grooming' },
   feeding: { slug: 'bowls-feeding', name: 'Bowls & Feeding' },
@@ -238,7 +268,13 @@ export const categories: Category[] = [
   { slug: 'all', name: 'All products', description: 'Browse the full PawTrip SA range.' },
   { slug: 'travel-kits', name: 'Travel Kits', description: 'Ready-made bundles for road trips and day-to-day travel.' },
   { slug: 'car-protection', name: 'Car Protection', description: 'Keep seats, boots and cargo areas cleaner for longer.' },
-  { slug: 'toys', name: 'Toys', description: 'Durable play for boredom, training and energy burn.' },
+  {
+    slug: 'dog-toys',
+    name: 'Dog Toys',
+    description: 'Practical enrichment toys, chew toys and boredom-busting picks for happier dogs at home, in the car and between adventures.',
+    seoTitle: 'Dog Toys South Africa | PawTrip SA',
+    seoDescription: 'Shop dog toys in South Africa, including chew toys, enrichment toys and boredom-busting picks for happier dogs at home and on the go.',
+  },
   { slug: 'treats-chews', name: 'Treats & Chews', description: 'Rewarding snacks and chew-time favourites.' },
   { slug: 'grooming', name: 'Grooming', description: 'Brushes, wash accessories and coat care basics.' },
   { slug: 'bowls-feeding', name: 'Bowls & Feeding', description: 'Feeding tools that make mealtimes calmer and tidier.' },
@@ -260,11 +296,17 @@ export const categorySeoCopy: Record<string, { title: string; intro: string; bod
     body:
       'Car protection is one of the most practical categories in the PawTrip SA store because it solves an everyday problem for almost every dog owner. Hair, sand, wet paws and muddy noses can turn even a short trip into a cleanup job. That is why we focus on simple protective products that make the back seat, boot and cargo areas easier to maintain. Good car protection should feel sturdy, fit sensibly and be straightforward to remove and clean. It should not turn your car into a temporary obstacle course. Our selection is designed to work well for South African routines, where dogs might hop in after a beach walk, a wet park visit or a long family drive. The point is not perfection; the point is to reduce friction. When the car is protected, spontaneous outings become easier to say yes to, and that is often the difference between keeping a dog active or leaving them behind. Browse this category if you want to keep your vehicle looking good while still making room for the dog life that is actually happening.',
   },
-  toys: {
-    title: 'Dog toys for boredom, chewing and play',
-    intro: 'Toys can support enrichment, training and healthier energy release without adding clutter to your shelf.',
+  'dog-toys': {
+    title: 'Dog Toys South Africa',
+    intro: 'Practical enrichment toys, chew toys and boredom-busting picks for happier dogs at home, in the car and between adventures.',
     body:
-      'A good toy is more than a distraction. It helps dogs work through energy, practice focus and stay occupied when the weather, schedule or space is not ideal. PawTrip SA toys are selected with that in mind. We look for play value, texture, bite appeal and practical durability rather than novelty alone. Some dogs need a chew that keeps them busy. Others need a tug or fetch option that builds connection and gives them a better outlet than the sofa cushion. Because boredom can show up as barking, pacing or chewing on the wrong things, this category plays a useful role in everyday dog care. The products here are meant to feel like tools, not clutter. They support indoor days, travel stops, training sessions and post-walk wind-downs. If your dog is restless, mischievous or simply full of life, this is where you can find toys that help the day go more smoothly.',
+      'A good dog toy is more than a distraction. It helps dogs work through energy, practice focus and stay occupied when the weather, schedule or space is not ideal. PawTrip SA dog toys are selected with that in mind. We look for play value, texture, bite appeal and practical durability rather than novelty alone. Some dogs need a chew toy that keeps them busy. Others need a tug, plush or puzzle option that builds connection and gives them a better outlet than the sofa cushion. Because boredom can show up as barking, pacing or chewing on the wrong things, this category plays a useful role in everyday dog care. The products here are meant to feel like tools, not clutter. They support indoor days, travel stops, training sessions, puppy routines and post-walk wind-downs. If your dog is restless, mischievous or simply full of life, this is where you can shop dog toys in South Africa that help the day go more smoothly.',
+  },
+  toys: {
+    title: 'Dog Toys South Africa',
+    intro: 'Practical enrichment toys, chew toys and boredom-busting picks for happier dogs at home, in the car and between adventures.',
+    body:
+      'A good dog toy is more than a distraction. It helps dogs work through energy, practice focus and stay occupied when the weather, schedule or space is not ideal. PawTrip SA dog toys are selected with that in mind. We look for play value, texture, bite appeal and practical durability rather than novelty alone. Some dogs need a chew toy that keeps them busy. Others need a tug, plush or puzzle option that builds connection and gives them a better outlet than the sofa cushion. Because boredom can show up as barking, pacing or chewing on the wrong things, this category plays a useful role in everyday dog care. The products here are meant to feel like tools, not clutter. They support indoor days, travel stops, training sessions, puppy routines and post-walk wind-downs. If your dog is restless, mischievous or simply full of life, this is where you can shop dog toys in South Africa that help the day go more smoothly.',
   },
   'treats-chews': {
     title: 'Treats and chews for everyday reward and calm focus',

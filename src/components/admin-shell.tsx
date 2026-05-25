@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { FileText, Package2, Settings, Tags, LayoutDashboard, ShoppingCart, LogOut, Users } from 'lucide-react';
+import { FileText, Package2, Settings, Tags, LayoutDashboard, ShoppingCart, LogOut, Users, Boxes } from 'lucide-react';
 import { BrandLogo } from '@/components/BrandLogo';
 
 export function AdminShell({
@@ -31,6 +31,9 @@ export function AdminShell({
             </Link>
             <Link href="/admin/categories">
               <Tags size={16} /> Categories
+            </Link>
+            <Link href="/admin/kits">
+              <Boxes size={16} /> Kits
             </Link>
             <Link href="/admin/orders">
               <ShoppingCart size={16} /> Orders

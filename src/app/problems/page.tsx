@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { problemSolutions } from '@/data/problems';
-import { blogPosts, products } from '@/lib/catalog';
+import { blogPosts } from '@/lib/catalog';
+import { getPublicProducts } from '@/lib/storefront';
 import { ProductCard } from '@/components/product-card';
 import { EducationBlocks } from '@/components/education-blocks';
 import { educationBlocks } from '@/lib/education';
@@ -15,7 +16,15 @@ export const metadata: Metadata = pageMetadata({
   keywords: ['dog car hair products South Africa', 'dog travel kit South Africa', 'puppy starter kit South Africa'],
 });
 
-export default function ProblemsPage() {
+export const dynamic = 'force-dynamic';
+
+export default async function ProblemsPage() {
+  const products = await getPublicProducts();
+  const problemMainSlugs = new Set(problemSolutions.map((problem) => problem.mainProductSlug));
+  const adminKits = products
+    .filter((product) => (product.type === 'kit' || product.isBundle) && !problemMainSlugs.has(product.slug))
+    .sort((a, b) => Number(b.featured) - Number(a.featured));
+
   return (
     <section className="section">
       <div className="container">
@@ -66,6 +75,21 @@ export default function ProblemsPage() {
             );
           })}
         </div>
+
+        {adminKits.length ? (
+          <>
+            <div className="sectionHeader" style={{ marginTop: 40 }}>
+              <span className="eyebrow">More PawTrip kits</span>
+              <h2>Admin-managed bundles ready to shop.</h2>
+              <p>These kits are controlled from the admin Kit Editor and can be updated without touching code.</p>
+            </div>
+            <div className="productGrid">
+              {adminKits.map((kit) => (
+                <ProductCard key={kit.slug} product={kit} />
+              ))}
+            </div>
+          </>
+        ) : null}
 
         <div className="sectionHeader" style={{ marginTop: 40 }}>
           <span className="eyebrow">Which one should I choose?</span>

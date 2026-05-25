@@ -3,15 +3,26 @@ import { blogPosts } from '@/data/blog';
 import { categorySeoCopy } from '@/data/products';
 import {
   listActiveCategories,
+  listPublicKitsWithItems,
   listPublicProductsWithCategories,
   type DbCategory,
+  type DbKit,
+  type DbKitItem,
   type DbProduct,
+  type DbProductCustomOption,
   type DbProductFaq,
+  type DbProductVariant,
 } from '@/lib/supabase/admin';
 
 export { blogPosts, categorySeoCopy };
 
-type ProductRecord = DbProduct & { categories?: DbCategory | null; product_faqs?: DbProductFaq[] | null };
+type ProductRecord = DbProduct & {
+  categories?: DbCategory | null;
+  product_faqs?: DbProductFaq[] | null;
+  product_variants?: DbProductVariant[] | null;
+  product_custom_options?: DbProductCustomOption[] | null;
+};
+type KitRecord = DbKit & { kit_items?: Array<DbKitItem & { products?: (DbProduct & { categories?: DbCategory | null }) | null }> | null };
 
 const placeholderImage = '/products/placeholder-brand.jpg';
 
@@ -20,7 +31,7 @@ function normaliseCategorySlug(name: string) {
 
   if (slug.includes('car')) return 'car-protection';
   if (slug.includes('travel')) return 'travel-kits';
-  if (slug.includes('toy')) return 'toys';
+  if (slug.includes('toy')) return 'dog-toys';
   if (slug.includes('treat')) return 'treats-chews';
   if (slug.includes('groom')) return 'grooming';
   if (slug.includes('feed') || slug.includes('bowl')) return 'bowls-feeding';
@@ -35,6 +46,8 @@ function mapCategory(row: DbCategory): Category {
     slug: normaliseCategorySlug(row.slug || row.name),
     name: row.name,
     description: row.description || `Browse ${row.name.toLowerCase()} at PawTrip SA.`,
+    seoTitle: row.seo_title || undefined,
+    seoDescription: row.seo_description || undefined,
   };
 }
 
@@ -54,15 +67,55 @@ function mapProduct(row: ProductRecord): Product {
       answer: faq.answer,
     })) ?? [];
   const stockQuantity = Number.isFinite(row.stock_quantity) ? row.stock_quantity : 0;
-  const availability = stockQuantity > 0 ? 'in_stock' : 'checking_availability';
+  const variants =
+    row.product_variants
+      ?.filter((variant) => variant.option_value && variant.price)
+      .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+      .map((variant) => ({
+        id: variant.id,
+        optionName: variant.option_name || 'Size',
+        optionValue: variant.option_value,
+        price: Number(variant.price || 0),
+        compareAtPrice: variant.compare_at_price === null ? null : Number(variant.compare_at_price),
+        costPrice: variant.cost_price === null ? null : Number(variant.cost_price),
+        sku: variant.sku,
+        stockQuantity: Number.isFinite(variant.stock_quantity) ? variant.stock_quantity : 0,
+        active: variant.active,
+        sortOrder: variant.sort_order ?? 0,
+      })) ?? [];
+  const activeVariants = variants.filter((variant) => variant.active);
+  const defaultVariant = activeVariants[0];
+  const customOptions =
+    row.product_custom_options
+      ?.filter((option) => option.label)
+      .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+      .map((option) => ({
+        id: option.id,
+        label: option.label,
+        inputType: option.input_type || 'text',
+        required: option.required,
+        helpText: option.help_text,
+        placeholder: option.placeholder,
+        maxLength: option.max_length,
+        choices: option.choices?.filter(Boolean) ?? [],
+        active: option.active,
+        sortOrder: option.sort_order ?? 0,
+      })) ?? [];
+  const availability = activeVariants.length
+    ? activeVariants.some((variant) => variant.stockQuantity > 0)
+      ? 'in_stock'
+      : 'unavailable'
+    : stockQuantity > 0
+      ? 'in_stock'
+      : 'checking_availability';
 
   return {
     id: row.id,
-    sku: row.sku || row.id,
+    sku: defaultVariant?.sku || row.sku || row.id,
     slug: row.slug,
     name: row.title,
-    price: Number(row.price || 0),
-    compareAtPrice: Number(row.compare_at_price ?? row.price ?? 0),
+    price: defaultVariant ? defaultVariant.price : Number(row.price || 0),
+    compareAtPrice: defaultVariant ? Number(defaultVariant.compareAtPrice ?? defaultVariant.price) : Number(row.compare_at_price ?? row.price ?? 0),
     category: categoryName,
     subcategory: categoryName,
     categorySlug,
@@ -105,7 +158,88 @@ function mapProduct(row: ProductRecord): Product {
     returnsNote: 'Unused items can be returned in line with our returns policy.',
     keywords: tags,
     type: row.is_bundle ? 'kit' : 'accessory',
-    stockQuantity,
+    stockQuantity: activeVariants.length ? activeVariants.reduce((sum, variant) => sum + variant.stockQuantity, 0) : stockQuantity,
+    variants,
+    customOptions,
+  };
+}
+
+function mapKit(row: KitRecord): Product {
+  const sortedItems = [...(row.kit_items ?? [])].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+  const includedProducts = sortedItems
+    .map((item) => {
+      const product = item.products;
+      if (!product) return null;
+      const quantity = item.quantity > 1 ? ` x ${item.quantity}` : '';
+      return `${product.title}${quantity}`;
+    })
+    .filter(Boolean) as string[];
+  const compareAtPrice = Number(row.compare_at_price ?? row.price ?? 0);
+  const image = row.image_url || placeholderImage;
+  const bestFor = row.best_for?.filter(Boolean) ?? [];
+  const shortDescription = row.short_description || 'A practical PawTrip SA bundle built around a real dog-owner problem.';
+  const fullDescription = row.full_description || row.why_it_helps || shortDescription;
+  const categoryName = row.category || 'Travel Kits';
+
+  return {
+    id: row.id,
+    sku: `KIT-${row.slug}`,
+    slug: row.slug,
+    name: row.title,
+    price: Number(row.price || 0),
+    compareAtPrice,
+    category: categoryName,
+    subcategory: categoryName,
+    categorySlug: 'travel-kits',
+    categoryName,
+    image,
+    gallery: [image],
+    galleryImages: [image],
+    shortDescription,
+    fullDescription,
+    benefits: [row.why_it_helps || shortDescription, row.savings_text || 'Bundle selected to reduce product overload.'].filter(Boolean),
+    features: ['Admin-managed kit', 'Manual kit pricing', 'Includes practical products'],
+    bestFor: bestFor.length ? bestFor : ['Dog travel', 'Practical bundles'],
+    notIdealFor: ['Owners who only need one small add-on.'],
+    qualityNotes: ['Kit contents are fulfilled from the products listed in the bundle.', 'Check each included product for detailed material notes.'],
+    material: 'Mixed materials across the included products.',
+    dimensions: [],
+    compatibility: [],
+    measurements: [],
+    whatsIncluded: includedProducts.length ? includedProducts : ['Included products will be confirmed before launch.'],
+    howToUse: ['Use the included products together as a simple setup for the problem this kit solves.'],
+    careInstructions: ['Follow the care instructions for each included product.'],
+    deliveryNote: 'Delivery estimates depend on product availability and customer location.',
+    returnNote: 'Unused items can be returned in line with our returns policy.',
+    seoTitle: row.seo_title || `${row.title} South Africa | PawTrip SA`,
+    seoDescription: row.seo_description || shortDescription,
+    tags: ['kit', row.problem_key, row.badge_text].filter(Boolean) as string[],
+    isBundle: true,
+    relatedProductSlugs: sortedItems.map((item) => item.products?.slug).filter(Boolean) as string[],
+    sourcePermissionStatus: image === placeholderImage ? 'original_photos_needed' : 'supplier_permission_confirmed',
+    availability: sortedItems.some((item) => item.products && item.products.stock_quantity <= 0) ? 'checking_availability' : 'in_stock',
+    shippingClass: 'bulky',
+    imageReady: Boolean(row.image_url),
+    launchVisible: row.active,
+    featured: row.featured,
+    problemsSolved: [row.why_it_helps || shortDescription],
+    faqs: [
+      {
+        question: 'What is included in this kit?',
+        answer: includedProducts.length ? includedProducts.join(', ') : 'The included products are listed on this page and may be updated by PawTrip SA.',
+      },
+      {
+        question: 'Can I buy the products separately?',
+        answer: 'Yes. Included products can also be browsed individually where they are available in the shop.',
+      },
+    ],
+    longDescription: fullDescription,
+    included: includedProducts,
+    care: ['Follow the care instructions for each included product.'],
+    returnsNote: 'Unused items can be returned in line with our returns policy.',
+    keywords: ['dog travel kit South Africa', 'dog bundle South Africa', row.title],
+    type: 'kit',
+    stockQuantity: sortedItems.length && sortedItems.every((item) => (item.products?.stock_quantity ?? 0) > 0) ? 20 : 0,
   };
 }
 
@@ -116,7 +250,10 @@ async function loadDbCategories() {
 
 async function loadDbProducts() {
   const result = await listPublicProductsWithCategories();
-  return result.data?.map(mapProduct) ?? [];
+  const productRows = result.data?.map(mapProduct) ?? [];
+  const kitsResult = await listPublicKitsWithItems();
+  const kitRows = kitsResult.data?.map(mapKit) ?? [];
+  return [...kitRows, ...productRows];
 }
 
 export async function getPublicCategories() {

@@ -5,6 +5,8 @@ export type DbCategory = {
   name: string;
   slug: string;
   description: string | null;
+  seo_title?: string | null;
+  seo_description?: string | null;
   image_url: string | null;
   sort_order: number | null;
   is_active: boolean;
@@ -37,11 +39,81 @@ export type DbProduct = {
   updated_at: string;
 };
 
+export type DbKit = {
+  id: string;
+  title: string;
+  slug: string;
+  category: string | null;
+  category_id: string | null;
+  problem_key: string | null;
+  short_description: string | null;
+  full_description: string | null;
+  why_it_helps: string | null;
+  price: number;
+  compare_at_price: number | null;
+  cost_price: number | null;
+  image_url: string | null;
+  image_alt: string | null;
+  badge_text: string | null;
+  savings_text: string | null;
+  best_for: string[] | null;
+  active: boolean;
+  featured: boolean;
+  sort_order: number;
+  seo_title: string | null;
+  seo_description: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type DbKitItem = {
+  id: string;
+  kit_id: string;
+  product_id: string;
+  variant_id: string | null;
+  quantity: number;
+  sort_order: number;
+  created_at: string;
+  products?: DbProduct | null;
+};
+
 export type DbProductFaq = {
   id: string;
   product_id: string;
   question: string;
   answer: string;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type DbProductVariant = {
+  id: string;
+  product_id: string;
+  option_name: string;
+  option_value: string;
+  price: number;
+  compare_at_price: number | null;
+  cost_price: number | null;
+  sku: string | null;
+  stock_quantity: number;
+  active: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type DbProductCustomOption = {
+  id: string;
+  product_id: string;
+  label: string;
+  input_type: 'text' | 'textarea' | 'select';
+  required: boolean;
+  help_text: string | null;
+  placeholder: string | null;
+  max_length: number | null;
+  choices: string[] | null;
+  active: boolean;
   sort_order: number;
   created_at: string;
   updated_at: string;
@@ -69,6 +141,14 @@ export type DbOrderItem = {
   id: string;
   order_id: string;
   product_id: string | null;
+  variant_id?: string | null;
+  variant_option_name?: string | null;
+  variant_option_value?: string | null;
+  custom_options?: Record<string, string> | null;
+  sku?: string | null;
+  kit_id?: string | null;
+  item_type?: string | null;
+  included_products_snapshot?: string[] | null;
   product_title: string;
   product_slug: string | null;
   quantity: number;
@@ -111,7 +191,7 @@ function resolveStorageSignedUrl(rawSignedUrl: string | null, bucket: string, ob
   return null;
 }
 
-export async function supabaseAdminRequest<T>(path: string, init?: RequestInit): Promise<RestResult<T>> {
+export async function supabaseAdminRequest<T>(path: string, init?: RequestInit, options?: { silentNotFound?: boolean; silent?: boolean }): Promise<RestResult<T>> {
   const url = getSupabaseUrl();
   const serviceRoleKey = getSupabaseServiceRoleKey();
   if (!url || !serviceRoleKey) return { data: null, error: null, configured: false };
@@ -128,7 +208,9 @@ export async function supabaseAdminRequest<T>(path: string, init?: RequestInit):
 
   if (!response.ok) {
     const errorBody = await response.text();
-    console.error(`supabaseAdminRequest failed ${response.status} for ${path}`, errorBody);
+    if (!options?.silent && !(options?.silentNotFound && response.status === 404)) {
+      console.error(`supabaseAdminRequest failed ${response.status} for ${path}`, errorBody);
+    }
     return { data: null, error: errorBody, configured: true };
   }
 
@@ -203,9 +285,12 @@ export async function listProductsAdmin(filters?: {
   categoryId?: string;
   status?: 'active' | 'draft' | 'all';
 }) {
-  const query = new URLSearchParams({
-    select: '*, categories(id,name,slug)',
+  const baseQuery = {
     order: 'updated_at.desc',
+  };
+  const query = new URLSearchParams({
+    select: '*, categories(id,name,slug), product_variants(id,active,stock_quantity), product_custom_options(id,active)',
+    ...baseQuery,
   });
 
   if (filters?.categoryId) query.set('category_id', `eq.${filters.categoryId}`);
@@ -213,41 +298,121 @@ export async function listProductsAdmin(filters?: {
   if (filters?.status === 'draft') query.set('is_active', 'eq.false');
   if (filters?.search) query.set('or', `(title.ilike.*${filters.search}*,slug.ilike.*${filters.search}*,sku.ilike.*${filters.search}*)`);
 
-  return supabaseAdminRequest<Array<DbProduct & { categories?: Pick<DbCategory, 'id' | 'name' | 'slug'> | null }>>(`products?${query.toString()}`);
+  const result = await supabaseAdminRequest<
+    Array<
+      DbProduct & {
+        categories?: Pick<DbCategory, 'id' | 'name' | 'slug'> | null;
+        product_variants?: Pick<DbProductVariant, 'id' | 'active' | 'stock_quantity'>[] | null;
+        product_custom_options?: Pick<DbProductCustomOption, 'id' | 'active'>[] | null;
+      }
+    >
+  >(`products?${query.toString()}`, undefined, { silent: true });
+  if (!result.error || !/product_variants|product_custom_options|relationship/i.test(result.error)) return result;
+
+  const fallbackQuery = new URLSearchParams({
+    select: '*, categories(id,name,slug)',
+    ...baseQuery,
+  });
+  if (filters?.categoryId) fallbackQuery.set('category_id', `eq.${filters.categoryId}`);
+  if (filters?.status === 'active') fallbackQuery.set('is_active', 'eq.true');
+  if (filters?.status === 'draft') fallbackQuery.set('is_active', 'eq.false');
+  if (filters?.search) fallbackQuery.set('or', `(title.ilike.*${filters.search}*,slug.ilike.*${filters.search}*,sku.ilike.*${filters.search}*)`);
+  return supabaseAdminRequest<
+    Array<
+      DbProduct & {
+        categories?: Pick<DbCategory, 'id' | 'name' | 'slug'> | null;
+        product_variants?: Pick<DbProductVariant, 'id' | 'active' | 'stock_quantity'>[] | null;
+        product_custom_options?: Pick<DbProductCustomOption, 'id' | 'active'>[] | null;
+      }
+    >
+  >(`products?${fallbackQuery.toString()}`);
 }
 
 export async function listPublicProductsWithCategories() {
   const query = new URLSearchParams({
+    select: '*, categories(id,name,slug,description,image_url,sort_order,is_active), product_faqs(*), product_variants(*), product_custom_options(*)',
+    is_active: 'eq.true',
+    order: 'updated_at.desc',
+  });
+  const result = await supabaseAdminRequest<
+    Array<
+      DbProduct & {
+        categories?: DbCategory | null;
+        product_faqs?: DbProductFaq[] | null;
+        product_variants?: DbProductVariant[] | null;
+        product_custom_options?: DbProductCustomOption[] | null;
+      }
+    >
+  >(`products?${query.toString()}`, undefined, { silent: true });
+  if (!result.error || !/product_variants|product_custom_options|relationship/i.test(result.error)) return result;
+
+  const fallbackQuery = new URLSearchParams({
     select: '*, categories(id,name,slug,description,image_url,sort_order,is_active), product_faqs(*)',
     is_active: 'eq.true',
     order: 'updated_at.desc',
   });
-  return supabaseAdminRequest<
-    Array<DbProduct & { categories?: DbCategory | null; product_faqs?: DbProductFaq[] | null }>
-  >(`products?${query.toString()}`);
+  return supabaseAdminRequest<Array<DbProduct & { categories?: DbCategory | null; product_faqs?: DbProductFaq[] | null }>>(
+    `products?${fallbackQuery.toString()}`,
+  );
 }
 
 export async function getProductByIdAdmin(id: string) {
   const query = new URLSearchParams({
-    select: '*, categories(id,name,slug,description,image_url,sort_order,is_active), product_faqs(*)',
+    select: '*, categories(id,name,slug,description,image_url,sort_order,is_active), product_faqs(*), product_variants(*), product_custom_options(*)',
     id: `eq.${id}`,
     limit: '1',
   });
   const result = await supabaseAdminRequest<
-    Array<DbProduct & { categories?: DbCategory | null; product_faqs?: DbProductFaq[] | null }>
-  >(`products?${query.toString()}`);
+    Array<
+      DbProduct & {
+        categories?: DbCategory | null;
+        product_faqs?: DbProductFaq[] | null;
+        product_variants?: DbProductVariant[] | null;
+        product_custom_options?: DbProductCustomOption[] | null;
+      }
+    >
+  >(`products?${query.toString()}`, undefined, { silent: true });
+  if (result.error && /product_variants|product_custom_options|relationship/i.test(result.error)) {
+    const fallbackQuery = new URLSearchParams({
+      select: '*, categories(id,name,slug,description,image_url,sort_order,is_active), product_faqs(*)',
+      id: `eq.${id}`,
+      limit: '1',
+    });
+    const fallbackResult = await supabaseAdminRequest<Array<DbProduct & { categories?: DbCategory | null; product_faqs?: DbProductFaq[] | null }>>(
+      `products?${fallbackQuery.toString()}`,
+    );
+    return { ...fallbackResult, data: fallbackResult.data?.[0] ?? null };
+  }
   return { ...result, data: result.data?.[0] ?? null };
 }
 
 export async function getProductBySlugAdmin(slug: string) {
   const query = new URLSearchParams({
-    select: '*, categories(id,name,slug,description,image_url,sort_order,is_active), product_faqs(*)',
+    select: '*, categories(id,name,slug,description,image_url,sort_order,is_active), product_faqs(*), product_variants(*), product_custom_options(*)',
     slug: `eq.${slug}`,
     limit: '1',
   });
   const result = await supabaseAdminRequest<
-    Array<DbProduct & { categories?: DbCategory | null; product_faqs?: DbProductFaq[] | null }>
-  >(`products?${query.toString()}`);
+    Array<
+      DbProduct & {
+        categories?: DbCategory | null;
+        product_faqs?: DbProductFaq[] | null;
+        product_variants?: DbProductVariant[] | null;
+        product_custom_options?: DbProductCustomOption[] | null;
+      }
+    >
+  >(`products?${query.toString()}`, undefined, { silent: true });
+  if (result.error && /product_variants|product_custom_options|relationship/i.test(result.error)) {
+    const fallbackQuery = new URLSearchParams({
+      select: '*, categories(id,name,slug,description,image_url,sort_order,is_active), product_faqs(*)',
+      slug: `eq.${slug}`,
+      limit: '1',
+    });
+    const fallbackResult = await supabaseAdminRequest<Array<DbProduct & { categories?: DbCategory | null; product_faqs?: DbProductFaq[] | null }>>(
+      `products?${fallbackQuery.toString()}`,
+    );
+    return { ...fallbackResult, data: fallbackResult.data?.[0] ?? null };
+  }
   return { ...result, data: result.data?.[0] ?? null };
 }
 
@@ -294,8 +459,201 @@ export async function replaceProductFaqs(productId: string, faqs: Array<{ questi
   });
 }
 
+export async function replaceProductVariants(
+  productId: string,
+  variants: Array<{
+    option_name: string;
+    option_value: string;
+    price: number;
+    compare_at_price: number | null;
+    cost_price: number | null;
+    sku: string | null;
+    stock_quantity: number;
+    active: boolean;
+    sort_order: number;
+  }>,
+) {
+  const deleteResult = await supabaseAdminRequest<null>(`product_variants?product_id=eq.${productId}`, { method: 'DELETE' }, { silentNotFound: true });
+  if (deleteResult.error) {
+    if (!variants.length && /product_variants|does not exist|schema cache|Could not find/i.test(deleteResult.error)) {
+      return { data: [], error: null, configured: isSupabaseConfigured() };
+    }
+    console.error('replaceProductVariants delete failed', deleteResult.error);
+    return deleteResult;
+  }
+  if (!variants.length) return { data: [], error: null, configured: isSupabaseConfigured() };
+
+  return supabaseAdminRequest<DbProductVariant[]>('product_variants', {
+    method: 'POST',
+    headers: { Prefer: 'return=representation' },
+    body: JSON.stringify(
+      variants.map((variant) => ({
+        product_id: productId,
+        option_name: variant.option_name,
+        option_value: variant.option_value,
+        price: variant.price,
+        compare_at_price: variant.compare_at_price,
+        cost_price: variant.cost_price,
+        sku: variant.sku,
+        stock_quantity: variant.stock_quantity,
+        active: variant.active,
+        sort_order: variant.sort_order,
+      })),
+    ),
+  });
+}
+
+export async function replaceProductCustomOptions(
+  productId: string,
+  options: Array<{
+    label: string;
+    input_type: 'text' | 'textarea' | 'select';
+    required: boolean;
+    help_text: string | null;
+    placeholder: string | null;
+    max_length: number | null;
+    choices: string[];
+    active: boolean;
+    sort_order: number;
+  }>,
+) {
+  const deleteResult = await supabaseAdminRequest<null>(`product_custom_options?product_id=eq.${productId}`, { method: 'DELETE' }, { silentNotFound: true });
+  if (deleteResult.error) {
+    if (!options.length && /product_custom_options|does not exist|schema cache|Could not find/i.test(deleteResult.error)) {
+      return { data: [], error: null, configured: isSupabaseConfigured() };
+    }
+    console.error('replaceProductCustomOptions delete failed', deleteResult.error);
+    return deleteResult;
+  }
+  if (!options.length) return { data: [], error: null, configured: isSupabaseConfigured() };
+
+  return supabaseAdminRequest<DbProductCustomOption[]>('product_custom_options', {
+    method: 'POST',
+    headers: { Prefer: 'return=representation' },
+    body: JSON.stringify(
+      options.map((option) => ({
+        product_id: productId,
+        label: option.label,
+        input_type: option.input_type,
+        required: option.required,
+        help_text: option.help_text,
+        placeholder: option.placeholder,
+        max_length: option.max_length,
+        choices: option.choices,
+        active: option.active,
+        sort_order: option.sort_order,
+      })),
+    ),
+  });
+}
+
 export async function deleteProductById(id: string) {
   return supabaseAdminRequest<null>(`products?id=eq.${id}`, { method: 'DELETE' });
+}
+
+export async function listKitsAdmin(filters?: {
+  status?: 'active' | 'inactive' | 'all';
+  featured?: boolean;
+  problem?: string;
+}) {
+  const query = new URLSearchParams({
+    select: '*, kit_items(id)',
+    order: 'sort_order.asc.nullslast,updated_at.desc',
+  });
+
+  if (filters?.status === 'active') query.set('active', 'eq.true');
+  if (filters?.status === 'inactive') query.set('active', 'eq.false');
+  if (typeof filters?.featured === 'boolean') query.set('featured', `eq.${filters.featured}`);
+  if (filters?.problem) query.set('problem_key', `eq.${filters.problem}`);
+
+  return supabaseAdminRequest<Array<DbKit & { kit_items?: Pick<DbKitItem, 'id'>[] | null }>>(`kits?${query.toString()}`);
+}
+
+export async function listPublicKitsWithItems() {
+  const query = new URLSearchParams({
+    select: '*, kit_items(*, products(*, categories(id,name,slug,description,image_url,sort_order,is_active)))',
+    active: 'eq.true',
+    order: 'sort_order.asc.nullslast,updated_at.desc',
+  });
+
+  return supabaseAdminRequest<Array<DbKit & { kit_items?: Array<DbKitItem & { products?: DbProduct & { categories?: DbCategory | null } }> | null }>>(
+    `kits?${query.toString()}`,
+    undefined,
+    { silentNotFound: true },
+  );
+}
+
+export async function getKitByIdAdmin(id: string) {
+  const query = new URLSearchParams({
+    select: '*, kit_items(*, products(*, categories(id,name,slug)))',
+    id: `eq.${id}`,
+    limit: '1',
+  });
+  const result = await supabaseAdminRequest<Array<DbKit & { kit_items?: Array<DbKitItem & { products?: DbProduct | null }> | null }>>(
+    `kits?${query.toString()}`,
+  );
+  return { ...result, data: result.data?.[0] ?? null };
+}
+
+export async function getKitBySlugAdmin(slug: string) {
+  const query = new URLSearchParams({ select: '*', slug: `eq.${slug}`, limit: '1' });
+  const result = await supabaseAdminRequest<DbKit[]>(`kits?${query.toString()}`);
+  return { ...result, data: result.data?.[0] ?? null };
+}
+
+export async function upsertKit(input: Partial<DbKit>) {
+  if (input.id) {
+    const { id: _id, created_at: _created_at, ...updateFields } = input;
+    const query = new URLSearchParams({ id: `eq.${_id}` });
+    return supabaseAdminRequest<DbKit[]>(`kits?${query.toString()}`, {
+      method: 'PATCH',
+      headers: { Prefer: 'return=representation' },
+      body: JSON.stringify({
+        ...updateFields,
+        updated_at: new Date().toISOString(),
+      }),
+    });
+  }
+
+  return supabaseAdminRequest<DbKit[]>('kits', {
+    method: 'POST',
+    headers: { Prefer: 'return=representation' },
+    body: JSON.stringify(input),
+  });
+}
+
+export async function replaceKitItems(
+  kitId: string,
+  items: Array<{ product_id: string; quantity: number; sort_order: number; variant_id?: string | null }>,
+) {
+  const deleteResult = await supabaseAdminRequest<null>(`kit_items?kit_id=eq.${kitId}`, { method: 'DELETE' });
+  if (deleteResult.error) {
+    console.error('replaceKitItems delete failed', deleteResult.error);
+    return deleteResult;
+  }
+  if (!items.length) return { data: [], error: null, configured: isSupabaseConfigured() };
+
+  return supabaseAdminRequest<DbKitItem[]>('kit_items', {
+    method: 'POST',
+    headers: { Prefer: 'return=representation' },
+    body: JSON.stringify(
+      items.map((item) => ({
+        kit_id: kitId,
+        product_id: item.product_id,
+        variant_id: item.variant_id ?? null,
+        quantity: item.quantity,
+        sort_order: item.sort_order,
+      })),
+    ),
+  });
+}
+
+export async function deactivateKitById(id: string) {
+  return supabaseAdminRequest<DbKit[]>(`kits?id=eq.${id}`, {
+    method: 'PATCH',
+    headers: { Prefer: 'return=representation' },
+    body: JSON.stringify({ active: false, updated_at: new Date().toISOString() }),
+  });
 }
 
 export async function ensureProductImagesBucket() {

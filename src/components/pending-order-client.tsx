@@ -52,9 +52,11 @@ export function PendingOrderClient({ orderRef }: { orderRef?: string }) {
       </p>
       <div className="summaryList">
         {totals.items.map((item) => (
-          <div key={item.product.slug} className="summaryItem">
+          <div key={`${item.product.slug}-${item.variantId ?? 'standard'}`} className="summaryItem">
             <span>
-              {item.product.name} x {item.quantity}
+              {item.product.name}
+              {item.variant ? ` (${item.variant.optionValue})` : ''} x {item.quantity}
+              {Object.keys(item.customOptions).length ? ` - ${Object.entries(item.customOptions).map(([label, value]) => `${label}: ${value}`).join(', ')}` : ''}
             </span>
             <strong>{formatZar(item.lineTotal)}</strong>
           </div>
