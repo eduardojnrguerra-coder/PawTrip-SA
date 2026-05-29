@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { FileText, Package2, Settings, Tags, LayoutDashboard, ShoppingCart, LogOut, Users, Boxes } from 'lucide-react';
+import { FileText, Package2, Settings, Tags, LayoutDashboard, ShoppingCart, LogOut, Users, Boxes, Search } from 'lucide-react';
 import { BrandLogo } from '@/components/BrandLogo';
 
 export function AdminShell({
@@ -43,6 +43,9 @@ export function AdminShell({
             </Link>
             <Link href="/admin/blog">
               <FileText size={16} /> Blog
+            </Link>
+            <Link href="/admin/marketing">
+              <Search size={16} /> Marketing / SEO
             </Link>
             <Link href="/admin/settings">
               <Settings size={16} /> Settings

@@ -6,11 +6,12 @@ import { ProductCard } from '@/components/product-card';
 import { Reveal } from '@/components/reveal';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { JsonLd } from '@/components/json-ld';
-import { breadcrumbSchema, categoryMetadata } from '@/lib/seo';
+import { breadcrumbSchema, categoryMetadata, faqSchema } from '@/lib/seo';
 import { EducationBlocks } from '@/components/education-blocks';
 import { getEducationBlocksForCategory } from '@/lib/education';
 import { collections } from '@/data/collections';
 import { getPublicCategories, getProductsByCategoryFromStore } from '@/lib/storefront';
+import { getCategoryFaqs, getProblemPagePath, getProblemsForCategorySlug } from '@/lib/problem-seo';
 
 export function generateStaticParams() {
   return ['travel-kits', 'car-protection', 'dog-toys', 'toys', 'treats-chews', 'grooming', 'bowls-feeding', 'beds-comfort', 'walking-gear', 'puppy-essentials'].map(
@@ -42,6 +43,8 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
     body: 'Browse practical PawTrip SA products chosen for everyday dog-owner problems in South Africa.',
   };
   const relatedGuides = blogPosts.filter((post) => post.category === category.name || post.category === category.name.replace(' & ', ' ') || post.title.toLowerCase().includes(category.name.toLowerCase().split(' ')[0])).slice(0, 3);
+  const relatedProblems = getProblemsForCategorySlug(category.slug).slice(0, 4);
+  const categoryFaqs = getCategoryFaqs(category.slug, category.name);
   const buyingIntentCollections = collections.filter((collection) =>
     collection.productSlugs.some((productSlug) => products.some((product) => product.slug === productSlug)),
   ).slice(0, 3);
@@ -54,7 +57,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
   return (
     <section className="section">
       <div className="container">
-        <JsonLd data={breadcrumbSchema(breadcrumbItems)} />
+        <JsonLd data={[breadcrumbSchema(breadcrumbItems), faqSchema(categoryFaqs)]} />
         <Breadcrumbs items={breadcrumbItems} />
         <div className="sectionHeader">
           <span className="eyebrow">Category</span>
@@ -66,6 +69,22 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
           <h2>{seo.title}</h2>
           <p>{seo.intro}</p>
           <p>{seo.body}</p>
+        </div>
+
+        <div className="contentCard detailBlock" style={{ marginBottom: 24 }}>
+          <span className="eyebrow">Category FAQ</span>
+          <h2>Quick buying answers for {category.name.toLowerCase()}.</h2>
+          <div className="internalLinkList">
+            {categoryFaqs.map((faq) => (
+              <div key={faq.question}>
+                <span>
+                  <strong>{faq.question}</strong>
+                  <br />
+                  {faq.answer}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="internalLinkGrid">
@@ -89,6 +108,24 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
                   <strong>Read</strong>
                 </Link>
               ))}
+            </div>
+          </div>
+          <div className="contentCard detailBlock">
+            <h2>Related problems</h2>
+            <div className="internalLinkList">
+              {relatedProblems.length ? (
+                relatedProblems.map((problem) => (
+                  <Link href={getProblemPagePath(problem.slug)} key={problem.slug}>
+                    <span>{problem.title}</span>
+                    <strong>View</strong>
+                  </Link>
+                ))
+              ) : (
+                <Link href="/problems">
+                  <span>Shop by dog-owner problem</span>
+                  <strong>View</strong>
+                </Link>
+              )}
             </div>
           </div>
         </div>

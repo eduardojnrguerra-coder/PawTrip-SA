@@ -5,6 +5,7 @@ import { Breadcrumbs } from '@/components/breadcrumbs';
 import { JsonLd } from '@/components/json-ld';
 import { breadcrumbSchema, faqSchema, pageMetadata, productSchema } from '@/lib/seo';
 import { getProductBySlugFromStore, getPublicProducts, getRelatedProductsFromStore } from '@/lib/storefront';
+import { getGuideLinksForProduct, getProblemLinksForProduct } from '@/lib/problem-seo';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,6 +37,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   if (!product) notFound();
 
   const related = await getRelatedProductsFromStore(product);
+  const relatedProblems = getProblemLinksForProduct(product);
+  const relatedGuides = getGuideLinksForProduct(product);
   const faqs = Array.isArray(product.faqs) ? product.faqs.filter((faq) => faq?.question && faq?.answer).slice(0, 5) : [];
   const categoryName = product.categoryName || product.category || 'Dog essentials';
   const shortDescription =
@@ -59,7 +62,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             Shop more {categoryName}
           </a>
         </div>
-        <ProductDetailClient product={product} related={related} />
+        <ProductDetailClient product={product} related={related} relatedProblems={relatedProblems} relatedGuides={relatedGuides} />
       </div>
     </section>
   );

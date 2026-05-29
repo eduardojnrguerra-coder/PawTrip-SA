@@ -13,7 +13,24 @@ import { getProductImageAlt, ProductImage } from '@/components/product-image';
 import { RecentlyViewedProducts, rememberRecentlyViewed } from '@/components/recently-viewed-products';
 import { gaItem, trackEvent } from '@/lib/analytics';
 
-export function ProductDetailClient({ product, related }: { product: Product; related: Product[] }) {
+type ProductDetailInternalLink = {
+  title: string;
+  href: string;
+  description?: string;
+  label?: string;
+};
+
+export function ProductDetailClient({
+  product,
+  related,
+  relatedProblems = [],
+  relatedGuides = [],
+}: {
+  product: Product;
+  related: Product[];
+  relatedProblems?: ProductDetailInternalLink[];
+  relatedGuides?: ProductDetailInternalLink[];
+}) {
   const [selected, setSelected] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -309,6 +326,56 @@ export function ProductDetailClient({ product, related }: { product: Product; re
             <p>{shortDescription}</p>
           )}
         </div>
+        {relatedProblems.length || relatedGuides.length ? (
+          <div className="contentCard detailBlock">
+            <span className="eyebrow">Helpful next steps</span>
+            <h2>More ways to choose confidently.</h2>
+            <div className="internalLinkGrid">
+              {relatedProblems.length ? (
+                <div>
+                  <h3>Related problems</h3>
+                  <div className="internalLinkList">
+                    {relatedProblems.slice(0, 4).map((link) => (
+                      <Link href={link.href} key={link.href}>
+                        <span>
+                          {link.label ? (
+                            <>
+                              <small>{link.label}</small>
+                              <br />
+                            </>
+                          ) : null}
+                          {link.title}
+                        </span>
+                        <strong>View</strong>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+              {relatedGuides.length ? (
+                <div>
+                  <h3>Related guides</h3>
+                  <div className="internalLinkList">
+                    {relatedGuides.slice(0, 4).map((link) => (
+                      <Link href={link.href} key={link.href}>
+                        <span>
+                          {link.label ? (
+                            <>
+                              <small>{link.label}</small>
+                              <br />
+                            </>
+                          ) : null}
+                          {link.title}
+                        </span>
+                        <strong>Read</strong>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
         <div className="contentCard detailBlock">
           <h2>Quality and material notes</h2>
           <p>

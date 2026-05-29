@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import type { BlogPost } from '@/data/blog';
 import type { Category, Product } from '@/data/products';
+import { shippingClassFees } from '@/lib/money';
 import { getSiteUrl, siteDescription, siteName, siteTagline } from '@/lib/site';
 
 export const defaultOgImage = '/opengraph-image';
@@ -114,6 +115,7 @@ export function productSchema(product: Product) {
         : [defaultOgImage];
   const price = typeof product.price === 'number' && Number.isFinite(product.price) ? product.price : 0;
   const activeVariants = product.variants?.filter((variant) => variant.active) ?? [];
+  const deliveryFee = shippingClassFees[product.shippingClass] ?? shippingClassFees.standard;
   const offer: Record<string, unknown> = {
     '@type': activeVariants.length ? 'AggregateOffer' : 'Offer',
     priceCurrency: 'ZAR',
@@ -123,8 +125,8 @@ export function productSchema(product: Product) {
       '@type': 'Organization',
       name: 'PawTrip SA',
     },
-    // Delivery is calculated in checkout. This conservative schema keeps Google merchant data complete
-    // without changing visible delivery copy or promising same-day/local-stock fulfilment.
+    // Delivery is calculated in checkout from the product shipping class. Keep this aligned with
+    // src/lib/money.ts so schema does not imply free shipping when checkout charges delivery.
     shippingDetails: {
       '@type': 'OfferShippingDetails',
       shippingDestination: {
@@ -133,7 +135,7 @@ export function productSchema(product: Product) {
       },
       shippingRate: {
         '@type': 'MonetaryAmount',
-        value: 0,
+        value: deliveryFee.toFixed(2),
         currency: 'ZAR',
       },
       deliveryTime: {

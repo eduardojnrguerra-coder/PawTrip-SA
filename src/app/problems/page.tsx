@@ -7,6 +7,7 @@ import { ProductCard } from '@/components/product-card';
 import { EducationBlocks } from '@/components/education-blocks';
 import { educationBlocks } from '@/lib/education';
 import { pageMetadata } from '@/lib/seo';
+import { getProblemPageDefinition, getProblemPagePath } from '@/lib/problem-seo';
 
 export const metadata: Metadata = pageMetadata({
   title: 'Shop Dog Products by Problem South Africa',
@@ -41,9 +42,10 @@ export default async function ProblemsPage() {
             const addOns = problem.addOnSlugs
               .map((slug) => products.find((product) => product.slug === slug))
               .filter(Boolean);
+            const problemPage = getProblemPageDefinition(problem.slug);
 
             return (
-              <article className="contentCard problemSolutionCard" key={problem.slug}>
+              <article className="contentCard problemSolutionCard" id={problem.slug} key={problem.slug}>
                 <div>
                   <span className="eyebrow">{problem.title}</span>
                   <h2>{problem.problem}</h2>
@@ -55,6 +57,11 @@ export default async function ProblemsPage() {
                       </span>
                     ))}
                   </div>
+                  {problemPage ? (
+                    <Link href={getProblemPagePath(problemPage.slug)} className="button buttonSecondary">
+                      View problem guide
+                    </Link>
+                  ) : null}
                 </div>
                 {mainProduct ? <ProductCard product={mainProduct} /> : null}
                 <div className="internalLinkList">

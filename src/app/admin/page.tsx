@@ -1,9 +1,10 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { AlertTriangle, Banknote, Boxes, Package2, ShoppingCart, Tags } from 'lucide-react';
+import { AlertTriangle, Banknote, Boxes, Package2, Search, ShoppingCart, Tags } from 'lucide-react';
 import { AdminShell } from '@/components/admin-shell';
 import { requireAdminUser } from '@/lib/supabase/server';
 import { listKitsAdmin, listOrdersAdmin, listProductsAdmin } from '@/lib/supabase/admin';
+import { getAdminProductReadiness } from '@/lib/admin-marketing';
 
 export const metadata: Metadata = {
   title: 'Admin dashboard',
@@ -27,6 +28,10 @@ export default async function AdminDashboardPage() {
   const averageOrderValue = paidOrders.length ? revenue / paidOrders.length : 0;
   const lowStock = products.filter((product) => Number(product.stock_quantity || 0) <= 3);
   const lowStockProducts = lowStock.length;
+  const readiness = products.map((product) => getAdminProductReadiness(product));
+  const missingImages = readiness.filter((entry) => !entry.hasImage).length;
+  const missingSeo = readiness.filter((entry) => !entry.hasSeo).length;
+  const noProblemLinks = readiness.filter((entry) => !entry.matchedProblems.length).length;
   const productCostBySlug = new Map(products.map((product) => [product.slug, Number(product.cost_price || 0)]));
   const estimatedCost = paidOrders.reduce((sum, order) => {
     const itemCost = (order.order_items ?? []).reduce((itemSum, item) => {
@@ -84,6 +89,18 @@ export default async function AdminDashboardPage() {
           <h2>{lowStockProducts}</h2>
         </div>
         <div className="contentCard detailBlock">
+          <span className="eyebrow">Missing images</span>
+          <h2>{missingImages}</h2>
+        </div>
+        <div className="contentCard detailBlock">
+          <span className="eyebrow">Missing SEO</span>
+          <h2>{missingSeo}</h2>
+        </div>
+        <div className="contentCard detailBlock">
+          <span className="eyebrow">No problem match</span>
+          <h2>{noProblemLinks}</h2>
+        </div>
+        <div className="contentCard detailBlock">
           <span className="eyebrow">
             <ShoppingCart size={14} /> Total orders
           </span>
@@ -137,6 +154,11 @@ export default async function AdminDashboardPage() {
           <Boxes size={18} />
           <strong>Manage kits</strong>
           <p>Create bundles for Shop by Problem and guided shopping.</p>
+        </Link>
+        <Link href="/admin/marketing" className="contentCard detailBlock adminQuickCard">
+          <Search size={18} />
+          <strong>Marketing / SEO</strong>
+          <p>Check readiness, missing images, SEO gaps and problem links.</p>
         </Link>
       </div>
 

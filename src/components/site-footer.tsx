@@ -16,6 +16,7 @@ export function SiteFooter() {
           <Link href="/shop/category/travel-kits">Travel Kits</Link>
           <Link href="/shop/category/car-protection">Car Protection</Link>
           <Link href="/shop/category/dog-toys">Dog Toys</Link>
+          <Link href="/problems">Shop by Problem</Link>
           <Link href="/collections/under-r250">Under R250</Link>
           <Link href="/collections/car-protection-essentials">Car Protection Essentials</Link>
         </div>
@@ -33,6 +34,7 @@ export function SiteFooter() {
           <Link href="/shipping-returns">Order support</Link>
           <Link href="/find-my-kit">Kit Finder</Link>
           <Link href="/dog-road-trip-checklist-south-africa">Road Trip Checklist</Link>
+          <Link href="/problems/dog-car-travel">Dog Travel Help</Link>
           <Link href="/terms">Terms</Link>
           <Link href="/blog">Blog</Link>
         </div>

@@ -6,15 +6,16 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { ArrowRight, Clock, Filter } from 'lucide-react';
 import { BlogImage } from '@/components/blog-image';
 import { publishedBlogPosts, validateBlogPost, type BlogPost } from '@/data/blog';
+import { blogTopicClusters } from '@/lib/problem-seo';
 
 const filterCategories = ['All', 'Car Protection', 'Travel', 'Puppy', 'Toys', 'Feeding', 'Grooming', 'Senior Dogs'];
 
 const shopProblems = [
-  { label: 'Dog hair in the car', href: '/problems#dog-hair-in-car' },
-  { label: 'Mud and beach sand', href: '/problems#mud-and-beach-sand' },
-  { label: 'Bored dog energy', href: '/problems#bored-dog' },
-  { label: 'Fast eating', href: '/problems#fast-eating' },
-  { label: 'Senior dog access', href: '/problems#senior-dog-access' },
+  { label: 'Dog hair in the car', href: '/problems/dog-hair-in-car' },
+  { label: 'Mud and beach sand', href: '/problems/mud-and-beach-sand' },
+  { label: 'Bored dog energy', href: '/problems/bored-dog' },
+  { label: 'Fast eating', href: '/problems/fast-eating' },
+  { label: 'Senior dog access', href: '/problems/senior-dog-access' },
   { label: 'Puppy chaos control', href: '/shop/category/puppy-essentials' },
 ];
 
@@ -105,6 +106,19 @@ export function BlogBrowser() {
       </section>
 
       <section className="blogFilterPanel" aria-label="Blog category filters">
+        <div className="sectionHeaderInline">
+          <div>
+            <span className="eyebrow">SEO topic hubs</span>
+            <h2>Guides grouped around how South African dog owners actually search.</h2>
+          </div>
+        </div>
+        <div className="blogFilterRow" style={{ marginBottom: 18 }}>
+          {blogTopicClusters.map((cluster) => (
+            <Link href={cluster.href} className="filterChip" key={cluster.title}>
+              {cluster.title}
+            </Link>
+          ))}
+        </div>
         <div className="blogFilterRow">
           {filterCategories.map((category) => (
             <button

@@ -3,6 +3,7 @@ import { collections } from '@/data/collections';
 import { getSiteUrl } from '@/lib/site';
 import { publishedBlogPosts } from '@/data/blog';
 import { getPublicCategories, getPublicProducts } from '@/lib/storefront';
+import { problemPageDefinitions } from '@/lib/problem-seo';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = getSiteUrl();
@@ -59,5 +60,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.72,
   }));
 
-  return [...staticRoutes, ...productRoutes, ...categoryRoutes, ...collectionRoutes, ...blogRoutes];
+  const problemRoutes = problemPageDefinitions.map((problem) => ({
+    url: `${base}/problems/${problem.slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly' as const,
+    priority: 0.74,
+  }));
+
+  return [...staticRoutes, ...productRoutes, ...categoryRoutes, ...collectionRoutes, ...problemRoutes, ...blogRoutes];
 }

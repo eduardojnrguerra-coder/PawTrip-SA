@@ -1,21 +1,22 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getBlogPostBySlug, products } from '@/lib/catalog';
+import { getBlogPostBySlug } from '@/lib/catalog';
 import { BlogArticleContent } from '@/components/blog-article-content';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { JsonLd } from '@/components/json-ld';
 import { blogPostingSchema, breadcrumbSchema, faqSchema, pageMetadata } from '@/lib/seo';
 import { blogPosts, getSafeBlogPost, getSafeBlogPostBySlug, publishedBlogPosts, validateBlogPost } from '@/data/blog';
 import type { Product } from '@/data/products';
+import { getPublicProducts } from '@/lib/storefront';
 
 export function generateStaticParams() {
   return blogPosts.filter((post) => post.slug).map((post) => ({ slug: post.slug }));
 }
 
-function warnAboutBrokenBlogData(post: (typeof blogPosts)[number]) {
+function warnAboutBrokenBlogData(post: (typeof blogPosts)[number], productCatalog: Product[]) {
   if (process.env.NODE_ENV !== 'development') return;
 
-  const productSlugs = new Set(products.map((product) => product.slug));
+  const productSlugs = new Set(productCatalog.map((product) => product.slug));
   const blogSlugs = new Set(blogPosts.map((entry) => entry.slug));
   const warnings: string[] = [];
   const relatedSlugs = Array.isArray(post.relatedProductSlugs) ? post.relatedProductSlugs : [];
@@ -69,23 +70,24 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
   const sourcePost = getBlogPostBySlug(slug);
   const post = getSafeBlogPost(sourcePost);
   if (!sourcePost || !post) notFound();
-  warnAboutBrokenBlogData(sourcePost);
+  const productCatalog = await getPublicProducts();
+  warnAboutBrokenBlogData(sourcePost, productCatalog);
   const relatedSlugs = Array.isArray(post.relatedProductSlugs) ? post.relatedProductSlugs : [];
   const recommendedSlugs =
     Array.isArray(post.recommendedProductSlugs) && post.recommendedProductSlugs.length
       ? post.recommendedProductSlugs
       : relatedSlugs;
   const relatedProducts = relatedSlugs
-    .map((productSlug) => products.find((product) => product.slug === productSlug))
+    .map((productSlug) => productCatalog.find((product) => product.slug === productSlug))
     .filter((product): product is Product => Boolean(product));
   const recommendedProducts = recommendedSlugs
-    .map((productSlug) => products.find((product) => product.slug === productSlug))
+    .map((productSlug) => productCatalog.find((product) => product.slug === productSlug))
     .filter((product): product is Product => Boolean(product));
   const relatedArticleSlugs = Array.isArray(post.relatedArticleSlugs) ? post.relatedArticleSlugs : [];
   const relatedArticles = relatedArticleSlugs
     .map((articleSlug) => publishedBlogPosts.find((article) => article.slug === articleSlug))
     .filter((article): article is (typeof publishedBlogPosts)[number] => Boolean(article));
-  const ctaBundle = post.ctaBundleSlug ? products.find((product) => product.slug === post.ctaBundleSlug) : undefined;
+  const ctaBundle = post.ctaBundleSlug ? productCatalog.find((product) => product.slug === post.ctaBundleSlug) : undefined;
   const breadcrumbItems = [
     { name: 'Home', path: '/' },
     { name: 'Blog', path: '/blog' },
